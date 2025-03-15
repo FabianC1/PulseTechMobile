@@ -1,29 +1,26 @@
 import 'styled-components/native';
 
-// Light Theme (ONLY ONE DECLARATION)
 export const lightTheme = {
   colors: {
-    background: '#ffffff', // Light background
-    text: '#0A1F44', // Dark text for readability
+    background: ['#758FFF', '#ffffff'], // Light mode gradient
+    text: '#0A1F44',
     primary: '#1E3A8A',
     secondary: '#93C5FD',
   },
 };
 
-// Dark Theme
 export const darkTheme = {
   colors: {
-    background: '#010055', // Dark background
-    text: '#ffffff', // Light text for readability
-    primary: '#1E3A8A',
-    secondary: '#93C5FD',
+    background: ['#1f1f1f', '#013a85bd'], // Dark mode gradient
+    text: '#FFFFFF',
+    primary: '#4A90E2',
+    secondary: '#A0CFFF',
   },
 };
 
 // Define Theme Type
 export type ThemeType = typeof lightTheme;
 
-// Extend Styled Components Theme to Avoid Type Errors
 declare module 'styled-components' {
   export interface DefaultTheme extends ThemeType {}
 }

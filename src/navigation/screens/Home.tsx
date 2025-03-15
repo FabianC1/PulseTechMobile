@@ -2,13 +2,14 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTheme } from 'styled-components/native';
 import { useNavigation } from '@react-navigation/native';
+import LinearGradient from 'react-native-linear-gradient';
 
 export function Home() {
   const theme = useTheme();
   const navigation = useNavigation();
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <LinearGradient colors={theme.colors.background} style={styles.container}>
       <Text style={[styles.title, { color: theme.colors.text }]}>Home Screen</Text>
       <Text style={[styles.subtitle, { color: theme.colors.secondary }]}>
         Welcome to PulseTech Mobile
@@ -27,7 +28,7 @@ export function Home() {
       >
         <Text style={styles.buttonText}>Go to Settings</Text>
       </TouchableOpacity>
-    </View>
+    </LinearGradient>
   );
 }
 

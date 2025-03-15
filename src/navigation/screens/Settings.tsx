@@ -1,5 +1,7 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useTheme } from 'styled-components/native';
+import LinearGradient from 'react-native-linear-gradient';
 
 interface SettingsProps {
   isDarkMode: boolean;
@@ -7,17 +9,21 @@ interface SettingsProps {
 }
 
 export function Settings({ isDarkMode, toggleTheme }: SettingsProps) {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Settings Screen</Text>
+  const theme = useTheme(); // Get theme colors
 
-      {/* ✅ Fix: Use TouchableOpacity instead of Button */}
-      <TouchableOpacity onPress={toggleTheme} style={styles.button}>
+  return (
+    <LinearGradient colors={theme.colors.background} style={styles.container}>
+      <Text style={[styles.text, { color: theme.colors.text }]}>Settings Screen</Text>
+
+      <TouchableOpacity
+        onPress={toggleTheme}
+        style={[styles.button, { backgroundColor: theme.colors.primary }]}
+      >
         <Text style={styles.buttonText}>
           Switch to {isDarkMode ? 'Light' : 'Dark'} Mode
         </Text>
       </TouchableOpacity>
-    </View>
+    </LinearGradient>
   );
 }
 
@@ -26,19 +32,19 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 10,
   },
   text: {
     fontSize: 18,
   },
   button: {
-    backgroundColor: '#1E3A8A',
-    padding: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
     borderRadius: 8,
     marginTop: 10,
   },
   buttonText: {
-    color: '#fff',
+    color: '#ffffff',
+    fontSize: 16,
     fontWeight: 'bold',
   },
 });
