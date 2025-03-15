@@ -4,7 +4,7 @@
     "slug": "PulseTechMobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/Icon.png",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "scheme": "pulsetechmobile",
@@ -12,11 +12,7 @@
       "supportsTablet": true
     },
     "android": {
-      "package": "com.pulsetech.mobile",
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#00000000"
-      }
+      "package": "com.pulsetech.mobile"
     },
     "web": {
       "favicon": "./assets/favicon.png"
