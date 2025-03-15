@@ -4,7 +4,7 @@
     "slug": "PulseTechMobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/AppIcon.png",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "scheme": "pulsetechmobile",
@@ -14,8 +14,8 @@
     "android": {
       "package": "com.pulsetech.mobile",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/Icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#00000000"
       }
     },
     "web": {
@@ -26,8 +26,8 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#0A1F44",
-          "image": "./assets/AppIcon.png"
+          "backgroundColor": "#ffffff",
+          "image": "./assets/adaptive-icon.png"
         }
       ],
       "react-native-edge-to-edge"
