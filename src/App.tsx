@@ -1,21 +1,17 @@
-import { Navigation } from './navigation/index';
+import React, { useState } from 'react';
+import { NavigationContainer } from '@react-navigation/native';
 import { ThemeProvider } from 'styled-components/native';
-import { lightTheme } from './theme';
-import styled from 'styled-components/native';
-import { SafeAreaView } from 'react-native';
+import { lightTheme, darkTheme } from './theme';
+import { Navigation } from './navigation/index';
 
 export default function App() {
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
   return (
-    <ThemeProvider theme={lightTheme}>
-      <AppContainer>
-        <Navigation />
-      </AppContainer>
+    <ThemeProvider theme={isDarkMode ? darkTheme : lightTheme}>
+      <NavigationContainer>
+        <Navigation isDarkMode={isDarkMode} toggleTheme={() => setIsDarkMode(!isDarkMode)} />
+      </NavigationContainer>
     </ThemeProvider>
   );
 }
-
-// ✅ This applies the background color globally
-const AppContainer = styled(SafeAreaView)`
-  flex: 1;
-  background-color: ${({ theme }: { theme: typeof lightTheme }) => theme.colors.background};
-`;
