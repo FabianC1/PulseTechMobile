@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Image, ScrollView, TouchableOpacity, View } from 'react-native';
 import { Animated } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 
 
 import { Settings } from './screens/Settings';
@@ -77,8 +78,11 @@ const ScrollableTabBar = (props: any) => {
 
               {/* Add vertical separator except for the last icon */}
               {index < props.state.routes.length - 1 && (
-                <View style={{ width: 2, height: 25, backgroundColor: '#FFFFFF', marginHorizontal: 10 }} />
-              )}
+                <LinearGradient
+                colors={['#8740c1', '#0c62a2']} // Gradient colors (white to blue)
+                style={{ width: 2, height: 30, marginHorizontal: 10 }}
+                />
+                )}
             </View>
           );
         })}
