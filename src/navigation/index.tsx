@@ -1,8 +1,10 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Image } from 'react-native';
-import { Profile } from './screens/Profile';
+import { Image, ScrollView, TouchableOpacity, View } from 'react-native';
+import { Animated } from 'react-native';
+
+
 import { Settings } from './screens/Settings';
 import { NotFound } from './screens/NotFound';
 
@@ -32,91 +34,99 @@ interface NavigationProps {
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
+const ScrollableTabBar = (props: any) => {
+  return (
+    <View style={{ position: 'absolute', bottom: 0, width: '100%', backgroundColor: '#202020' }}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: 70, // Keep the original height
+          paddingBottom: 10, // Prevents screen peek issue
+        }}
+      >
+        {props.state.routes.map((route: any, index: number) => {
+          const isFocused = props.state.index === index;
+          const scaleValue = new Animated.Value(isFocused ? 1.2 : 1);
+
+          Animated.timing(scaleValue, {
+            toValue: isFocused ? 1.4 : 1,
+            duration: 150,
+            useNativeDriver: true,
+          }).start();
+
+          return (
+            <View key={route.key} style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <TouchableOpacity
+                onPress={() => props.navigation.navigate(route.name)}
+                style={{ paddingHorizontal: 20 }}
+              >
+                <Animated.Image
+                  source={getIcon(route.name)}
+                  style={{
+                    width: 40,
+                    height: 40,
+                    tintColor: isFocused ? '#0084ff' : '#FFFFFF',
+                    transform: [{ scale: scaleValue }],
+                  }}
+                />
+              </TouchableOpacity>
+
+              {/* Add vertical separator except for the last icon */}
+              {index < props.state.routes.length - 1 && (
+                <View style={{ width: 2, height: 25, backgroundColor: '#FFFFFF', marginHorizontal: 10 }} />
+              )}
+            </View>
+          );
+        })}
+      </ScrollView>
+    </View>
+  );
+};
+
+
+// Function to return the correct icon for each tab
+const getIcon = (name: string) => {
+  switch (name) {
+    case 'Home':
+      return homeIcon;
+    case 'Dashboard':
+      return dashboardIcon;
+    case 'Records':
+      return recordsIcon;
+    case 'Symptom':
+      return symptomIcon;
+    case 'Appointments':
+      return appointmentsIcon;
+    case 'Medication':
+      return medicationIcon;
+    case 'Messages':
+      return messagesIcon;
+    default:
+      return homeIcon;
+  }
+};
+
 function HomeTabs() {
   return (
     <Tab.Navigator
       screenOptions={{
-        tabBarStyle: {
-          backgroundColor: '#202020', // Customize bottom bar color
-        },
-        tabBarActiveTintColor: '#0084ff', // Active tab color
-        tabBarInactiveTintColor: '#FFFFFF', // Inactive tab color
-        headerStyle: {
-          backgroundColor: '#002855', // Ensure top bar is same across all pages
-        },
-        headerTintColor: '#ffffff', // White text for the title
+        tabBarShowLabel: false,
+        headerStyle: { backgroundColor: '#002855' },
+        headerTintColor: '#ffffff',
       }}
+      tabBar={props => <ScrollableTabBar {...props} />}
     >
-      <Tab.Screen
-        name="Home"
-        component={Home}
-        options={{
-          title: 'PulseTech',
-          tabBarIcon: ({ color, size }) => (
-            <Image source={homeIcon} tintColor={color} style={{ width: size, height: size }} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Dashboard"
-        component={HealthDashboard}
-        options={{
-          title: 'Health Dashboard',
-          tabBarIcon: ({ color, size }) => (
-            <Image source={dashboardIcon} tintColor={color} style={{ width: size, height: size }} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Records"
-        component={MedicalRecords}
-        options={{
-          title: 'Medical Records',
-          tabBarIcon: ({ color, size }) => (
-            <Image source={recordsIcon} tintColor={color} style={{ width: size, height: size }} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Symptom"
-        component={SymptomChecker}
-        options={{
-          title: 'Symptom Checker',
-          tabBarIcon: ({ color, size }) => (
-            <Image source={symptomIcon} tintColor={color} style={{ width: size, height: size }} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Appointments"
-        component={Appointments}
-        options={{
-          title: 'Appointments',
-          tabBarIcon: ({ color, size }) => (
-            <Image source={appointmentsIcon} tintColor={color} style={{ width: size, height: size }} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Medication"
-        component={Medication}
-        options={{
-          title: 'Medication',
-          tabBarIcon: ({ color, size }) => (
-            <Image source={medicationIcon} tintColor={color} style={{ width: size, height: size }} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Messages"
-        component={Messages}
-        options={{
-          title: 'Messages',
-          tabBarIcon: ({ color, size }) => (
-            <Image source={messagesIcon} tintColor={color} style={{ width: size, height: size }} />
-          ),
-        }}
-      />
+      <Tab.Screen name="Home" component={Home} />
+      <Tab.Screen name="Dashboard" component={HealthDashboard} />
+      <Tab.Screen name="Records" component={MedicalRecords} />
+      <Tab.Screen name="Symptom" component={SymptomChecker} />
+      <Tab.Screen name="Appointments" component={Appointments} />
+      <Tab.Screen name="Medication" component={Medication} />
+      <Tab.Screen name="Messages" component={Messages} />
     </Tab.Navigator>
   );
 }
@@ -125,17 +135,11 @@ export function Navigation({ isDarkMode, toggleTheme }: NavigationProps) {
   return (
     <Stack.Navigator
       screenOptions={{
-        headerStyle: {
-          backgroundColor: '#002855', // Ensure consistent top bar color
-        },
-        headerTintColor: '#ffffff', // White text for the title
+        headerStyle: { backgroundColor: '#002855' },
+        headerTintColor: '#ffffff',
       }}
     >
-      <Stack.Screen
-        name="HomeTabs"
-        component={HomeTabs}
-        options={{ headerShown: false }}
-      />
+      <Stack.Screen name="HomeTabs" component={HomeTabs} options={{ headerShown: false }} />
       <Stack.Screen name="Settings">
         {() => <Settings isDarkMode={isDarkMode} toggleTheme={toggleTheme} />}
       </Stack.Screen>
