@@ -23,11 +23,15 @@ function HomeTabs() {
     <Tab.Navigator
       screenOptions={{
         tabBarStyle: {
-          backgroundColor: '#202020', // Manually set bottom bar color (Dark Blue)
+          backgroundColor: '#202020', // Dark Blue bottom bar
           borderTopWidth: 0, // Removes top border line
         },
         tabBarActiveTintColor: '#0084ff', // Gold color for active tab
         tabBarInactiveTintColor: '#FFFFFF', // White for inactive tabs
+        headerStyle: {
+          backgroundColor: '#002855', // Deep Navy Blue header for bottom tabs
+        },
+        headerTintColor: '#ffffff', // White text color for header
       }}
     >
       <Tab.Screen
@@ -35,10 +39,6 @@ function HomeTabs() {
         component={Home}
         options={{
           title: 'PulseTech',
-          headerStyle: {
-            backgroundColor: '#002855', // Manually set top header color (Deep Navy Blue)
-          },
-          headerTintColor: '#ffffff', // Gold color for the title text
           tabBarIcon: ({ color, size }) => (
             <Image
               source={newspaper}
@@ -65,15 +65,23 @@ function HomeTabs() {
   );
 }
 
+
 export function Navigation({ isDarkMode, toggleTheme }: NavigationProps) {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: '#002855', // Set consistent Deep Navy Blue header
+        },
+        headerTintColor: '#ffffff', // White text for the title
+      }}
+    >
       <Stack.Screen
         name="HomeTabs"
         component={HomeTabs}
         options={{ headerShown: false }}
       />
-      
+
       {/* Pass Dark Mode Props to Settings */}
       <Stack.Screen name="Settings">
         {() => <Settings isDarkMode={isDarkMode} toggleTheme={toggleTheme} />}

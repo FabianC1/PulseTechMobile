@@ -1,11 +1,15 @@
-import { Text } from '@react-navigation/elements';
-import { StyleSheet, View } from 'react-native';
+import React from 'react';
+import { Text, StyleSheet } from 'react-native';
+import { useTheme } from 'styled-components/native';
+import LinearGradient from 'react-native-linear-gradient';
 
 export function Updates() {
+  const theme = useTheme(); // Get theme colors
+
   return (
-    <View style={styles.container}>
-      <Text>Updates Screen</Text>
-    </View>
+    <LinearGradient colors={theme.colors.background} style={styles.container}>
+      <Text style={[styles.text, { color: theme.colors.text }]}>Updates Screen</Text>
+    </LinearGradient>
   );
 }
 
@@ -14,6 +18,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 10,
+  },
+  text: {
+    fontSize: 18,
   },
 });
