@@ -20,20 +20,30 @@ const Stack = createNativeStackNavigator();
 
 function HomeTabs() {
   return (
-    <Tab.Navigator>
+    <Tab.Navigator
+      screenOptions={{
+        tabBarStyle: {
+          backgroundColor: '#202020', // Manually set bottom bar color (Dark Blue)
+          borderTopWidth: 0, // Removes top border line
+        },
+        tabBarActiveTintColor: '#0084ff', // Gold color for active tab
+        tabBarInactiveTintColor: '#FFFFFF', // White for inactive tabs
+      }}
+    >
       <Tab.Screen
         name="Home"
         component={Home}
         options={{
           title: 'PulseTech',
+          headerStyle: {
+            backgroundColor: '#002855', // Manually set top header color (Deep Navy Blue)
+          },
+          headerTintColor: '#ffffff', // Gold color for the title text
           tabBarIcon: ({ color, size }) => (
             <Image
               source={newspaper}
               tintColor={color}
-              style={{
-                width: size,
-                height: size,
-              }}
+              style={{ width: size, height: size }}
             />
           ),
         }}
@@ -46,10 +56,7 @@ function HomeTabs() {
             <Image
               source={bell}
               tintColor={color}
-              style={{
-                width: size,
-                height: size,
-              }}
+              style={{ width: size, height: size }}
             />
           ),
         }}
