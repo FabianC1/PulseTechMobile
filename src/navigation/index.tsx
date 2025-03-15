@@ -2,13 +2,27 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Image } from 'react-native';
-import bell from '../assets/bell.png';
-import newspaper from '../assets/newspaper.png';
-import { Home } from './screens/Home';
 import { Profile } from './screens/Profile';
 import { Settings } from './screens/Settings';
-import { Updates } from './screens/Updates';
 import { NotFound } from './screens/NotFound';
+
+// Main App Screens
+import { Home } from './screens/Home';
+import { HealthDashboard } from './screens/HealthDashboard';
+import { MedicalRecords } from './screens/MedicalRecords';
+import { SymptomChecker } from './screens/SymptomChecker';
+import { Appointments } from './screens/Appointments';
+import { Medication } from './screens/Medication';
+import { Messages } from './screens/Messages';
+
+// Icons
+const homeIcon = require('../../assets/home.png');
+import dashboardIcon from '../assets/dashboard.png';
+import recordsIcon from '../assets/records.png';
+import symptomIcon from '../assets/symptom.png';
+import appointmentsIcon from '../assets/appointments.png';
+import medicationIcon from '../assets/medication.png';
+import messagesIcon from '../assets/messages.png';
 
 interface NavigationProps {
   isDarkMode: boolean;
@@ -23,15 +37,14 @@ function HomeTabs() {
     <Tab.Navigator
       screenOptions={{
         tabBarStyle: {
-          backgroundColor: '#202020', // Dark Blue bottom bar
-          borderTopWidth: 0, // Removes top border line
+          backgroundColor: '#202020', // Customize bottom bar color
         },
-        tabBarActiveTintColor: '#0084ff', // Gold color for active tab
-        tabBarInactiveTintColor: '#FFFFFF', // White for inactive tabs
+        tabBarActiveTintColor: '#0084ff', // Active tab color
+        tabBarInactiveTintColor: '#FFFFFF', // Inactive tab color
         headerStyle: {
-          backgroundColor: '#002855', // Deep Navy Blue header for bottom tabs
+          backgroundColor: '#002855', // Ensure top bar is same across all pages
         },
-        headerTintColor: '#ffffff', // White text color for header
+        headerTintColor: '#ffffff', // White text for the title
       }}
     >
       <Tab.Screen
@@ -40,24 +53,67 @@ function HomeTabs() {
         options={{
           title: 'PulseTech',
           tabBarIcon: ({ color, size }) => (
-            <Image
-              source={newspaper}
-              tintColor={color}
-              style={{ width: size, height: size }}
-            />
+            <Image source={homeIcon} tintColor={color} style={{ width: size, height: size }} />
           ),
         }}
       />
       <Tab.Screen
-        name="Updates"
-        component={Updates}
+        name="Dashboard"
+        component={HealthDashboard}
         options={{
+          title: 'Health Dashboard',
           tabBarIcon: ({ color, size }) => (
-            <Image
-              source={bell}
-              tintColor={color}
-              style={{ width: size, height: size }}
-            />
+            <Image source={dashboardIcon} tintColor={color} style={{ width: size, height: size }} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Records"
+        component={MedicalRecords}
+        options={{
+          title: 'Medical Records',
+          tabBarIcon: ({ color, size }) => (
+            <Image source={recordsIcon} tintColor={color} style={{ width: size, height: size }} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Symptom"
+        component={SymptomChecker}
+        options={{
+          title: 'Symptom Checker',
+          tabBarIcon: ({ color, size }) => (
+            <Image source={symptomIcon} tintColor={color} style={{ width: size, height: size }} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Appointments"
+        component={Appointments}
+        options={{
+          title: 'Appointments',
+          tabBarIcon: ({ color, size }) => (
+            <Image source={appointmentsIcon} tintColor={color} style={{ width: size, height: size }} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Medication"
+        component={Medication}
+        options={{
+          title: 'Medication',
+          tabBarIcon: ({ color, size }) => (
+            <Image source={medicationIcon} tintColor={color} style={{ width: size, height: size }} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Messages"
+        component={Messages}
+        options={{
+          title: 'Messages',
+          tabBarIcon: ({ color, size }) => (
+            <Image source={messagesIcon} tintColor={color} style={{ width: size, height: size }} />
           ),
         }}
       />
@@ -65,13 +121,12 @@ function HomeTabs() {
   );
 }
 
-
 export function Navigation({ isDarkMode, toggleTheme }: NavigationProps) {
   return (
     <Stack.Navigator
       screenOptions={{
         headerStyle: {
-          backgroundColor: '#002855', // Set consistent Deep Navy Blue header
+          backgroundColor: '#002855', // Ensure consistent top bar color
         },
         headerTintColor: '#ffffff', // White text for the title
       }}
@@ -81,12 +136,9 @@ export function Navigation({ isDarkMode, toggleTheme }: NavigationProps) {
         component={HomeTabs}
         options={{ headerShown: false }}
       />
-
-      {/* Pass Dark Mode Props to Settings */}
       <Stack.Screen name="Settings">
         {() => <Settings isDarkMode={isDarkMode} toggleTheme={toggleTheme} />}
       </Stack.Screen>
-
       <Stack.Screen name="NotFound" component={NotFound} />
     </Stack.Navigator>
   );

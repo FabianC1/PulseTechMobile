@@ -5,7 +5,7 @@ export const lightTheme = {
     background: ['#758FFF', '#ffffff'], // Light mode gradient
     text: '#0A1F44',
     primary: '#1E3A8A',
-    secondary: '#93C5FD',
+    secondary: '#000000',
   },
 };
 
