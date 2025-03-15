@@ -2,6 +2,6 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "moduleResolution": "bundler",
-    "strict": true
+    "strict": true,
   }
 }

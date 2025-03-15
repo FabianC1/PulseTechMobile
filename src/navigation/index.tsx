@@ -19,7 +19,7 @@ const HomeTabs = createBottomTabNavigator({
     Home: {
       screen: Home,
       options: {
-        title: 'Feed',
+        title: 'PulseTech',
         tabBarIcon: ({ color, size }) => (
           <Image
             source={newspaper}
