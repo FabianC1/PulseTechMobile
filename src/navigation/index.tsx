@@ -7,6 +7,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { Image, ScrollView, TouchableOpacity, View, Animated } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
+import { CustomDrawer } from './screens/CustomDrawer'; // Import the custom drawer
 
 // Screens
 import { Settings } from './screens/Settings';
@@ -172,6 +173,7 @@ function HomeTabs() {
 function DrawerNavigator({ isDarkMode, toggleTheme }: NavigationProps) {
   return (
     <Drawer.Navigator
+      drawerContent={(props) => <CustomDrawer {...props} />} // Use the custom drawer here
       screenOptions={{
         headerStyle: { backgroundColor: '#002855' },
         headerTintColor: '#ffffff',
