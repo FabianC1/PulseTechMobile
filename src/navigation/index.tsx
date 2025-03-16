@@ -1,10 +1,12 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createDrawerNavigator } from '@react-navigation/drawer';
 import { Image, ScrollView, TouchableOpacity, View } from 'react-native';
 import { Animated } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-
+import { useNavigation } from '@react-navigation/native';
+import { DrawerActions } from '@react-navigation/native';
 
 import { Settings } from './screens/Settings';
 import { NotFound } from './screens/NotFound';
@@ -27,6 +29,7 @@ import appointmentsIcon from '../assets/appointments.png';
 import medicationIcon from '../assets/medication.png';
 import messagesIcon from '../assets/messages.png';
 
+// **Define Navigation Props**
 interface NavigationProps {
   isDarkMode: boolean;
   toggleTheme: () => void;
@@ -34,7 +37,9 @@ interface NavigationProps {
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
+const Drawer = createDrawerNavigator();
 
+// **Scrollable Bottom Tab Bar**
 const ScrollableTabBar = (props: any) => {
   return (
     <View style={{ position: 'absolute', bottom: 0, width: '100%', backgroundColor: '#202020' }}>
@@ -45,7 +50,7 @@ const ScrollableTabBar = (props: any) => {
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'center',
-          height: 70, // Keep the original height
+          height: 70, // Keep original height
           paddingBottom: 10, // Prevents screen peek issue
         }}
       >
@@ -68,8 +73,8 @@ const ScrollableTabBar = (props: any) => {
                 <Animated.Image
                   source={getIcon(route.name)}
                   style={{
-                    width: 40,
-                    height: 40,
+                    width: 30,
+                    height: 30,
                     tintColor: isFocused ? '#0084ff' : '#FFFFFF',
                     transform: [{ scale: scaleValue }],
                   }}
@@ -79,10 +84,10 @@ const ScrollableTabBar = (props: any) => {
               {/* Add vertical separator except for the last icon */}
               {index < props.state.routes.length - 1 && (
                 <LinearGradient
-                colors={['#8740c1', '#0c62a2']} // Gradient colors (white to blue)
-                style={{ width: 2, height: 30, marginHorizontal: 10 }}
+                  colors={['#8740c1', '#0c62a2']} // Gradient colors (white to blue)
+                  style={{ width: 2, height: 30, marginHorizontal: 10 }}
                 />
-                )}
+              )}
             </View>
           );
         })}
@@ -91,8 +96,7 @@ const ScrollableTabBar = (props: any) => {
   );
 };
 
-
-// Function to return the correct icon for each tab
+// **Function to return the correct icon for each tab**
 const getIcon = (name: string) => {
   switch (name) {
     case 'Home':
@@ -114,13 +118,36 @@ const getIcon = (name: string) => {
   }
 };
 
+// **Bottom Tab Navigator**
 function HomeTabs() {
+  const navigation = useNavigation(); // Get navigation object to open drawer
+
   return (
     <Tab.Navigator
       screenOptions={{
         tabBarShowLabel: false,
-        headerStyle: { backgroundColor: '#002855' },
-        headerTintColor: '#ffffff',
+        headerStyle: { backgroundColor: '#002855' }, // Top bar color
+        headerTintColor: '#ffffff', // White text
+        headerTitleAlign: 'center', // Center the title
+        headerLeft: () => (
+          <TouchableOpacity
+            onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}
+            style={{ marginLeft: 15 }}
+          >
+            <Image source={require('../../assets/menu.png')} style={{ width: 25, height: 25 }} />
+          </TouchableOpacity>
+        ),
+        headerRight: () => (
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Settings' as never)}
+            style={{ marginRight: 15 }}
+          >
+            <Image
+              source={require('../../assets/ProfileIcon.png')}
+              style={{ width: 30, height: 30, borderRadius: 15 }}
+            />
+          </TouchableOpacity>
+        ),
       }}
       tabBar={props => <ScrollableTabBar {...props} />}
     >
@@ -135,6 +162,19 @@ function HomeTabs() {
   );
 }
 
+// **Drawer Navigator (Only for Settings)**
+function DrawerNavigator({ isDarkMode, toggleTheme }: NavigationProps) {
+  return (
+    <Drawer.Navigator>
+      <Drawer.Screen name="HomeTabs" component={HomeTabs} options={{ headerShown: false }} />
+      <Drawer.Screen name="Settings">
+        {() => <Settings isDarkMode={isDarkMode} toggleTheme={toggleTheme} />}
+      </Drawer.Screen>
+    </Drawer.Navigator>
+  );
+}
+
+// **Main Navigation with Stack**
 export function Navigation({ isDarkMode, toggleTheme }: NavigationProps) {
   return (
     <Stack.Navigator
@@ -143,9 +183,11 @@ export function Navigation({ isDarkMode, toggleTheme }: NavigationProps) {
         headerTintColor: '#ffffff',
       }}
     >
-      <Stack.Screen name="HomeTabs" component={HomeTabs} options={{ headerShown: false }} />
-      <Stack.Screen name="Settings">
-        {() => <Settings isDarkMode={isDarkMode} toggleTheme={toggleTheme} />}
+      <Stack.Screen
+        name="Drawer"
+        options={{ headerShown: false }}
+      >
+        {() => <DrawerNavigator isDarkMode={isDarkMode} toggleTheme={toggleTheme} />}
       </Stack.Screen>
       <Stack.Screen name="NotFound" component={NotFound} />
     </Stack.Navigator>
