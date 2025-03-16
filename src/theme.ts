@@ -14,7 +14,7 @@ export const darkTheme = {
     background: ['#1f1f1f', '#013a85bd'], // Dark mode gradient
     text: '#FFFFFF',
     primary: '#4A90E2',
-    secondary: '#A0CFFF',
+    secondary: '#ffffff',
   },
 };
 
