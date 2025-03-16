@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { ThemeProvider } from 'styled-components/native';
 import { lightTheme, darkTheme } from './theme';
-import { Navigation } from './navigation/index';
+import { DrawerNavigator } from './navigation/index';
 
 export default function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -10,7 +10,7 @@ export default function App() {
   return (
     <ThemeProvider theme={isDarkMode ? darkTheme : lightTheme}>
       <NavigationContainer>
-        <Navigation isDarkMode={isDarkMode} toggleTheme={() => setIsDarkMode(!isDarkMode)} />
+        <DrawerNavigator isDarkMode={isDarkMode} toggleTheme={() => setIsDarkMode(!isDarkMode)} />
       </NavigationContainer>
     </ThemeProvider>
   );

@@ -2,16 +2,14 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
-import { Image, ScrollView, TouchableOpacity, View } from 'react-native';
-import { Animated } from 'react-native';
+import { DrawerActions } from '@react-navigation/native';
+import { NavigationContainer } from '@react-navigation/native';
+import { Image, ScrollView, TouchableOpacity, View, Animated } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
-import { DrawerActions } from '@react-navigation/native';
 
+// Screens
 import { Settings } from './screens/Settings';
-import { NotFound } from './screens/NotFound';
-
-// Main App Screens
 import { Home } from './screens/Home';
 import { HealthDashboard } from './screens/HealthDashboard';
 import { MedicalRecords } from './screens/MedicalRecords';
@@ -19,17 +17,19 @@ import { SymptomChecker } from './screens/SymptomChecker';
 import { Appointments } from './screens/Appointments';
 import { Medication } from './screens/Medication';
 import { Messages } from './screens/Messages';
+import { NotFound } from './screens/NotFound';
 
 // Icons
 const homeIcon = require('../../assets/home.png');
+const menuIcon = require('../../assets/menu.png');
+const profileIcon = require('../../assets/ProfileIcon.png');
 import dashboardIcon from '../assets/dashboard.png';
 import recordsIcon from '../assets/records.png';
 import symptomIcon from '../assets/symptom.png';
 import appointmentsIcon from '../assets/appointments.png';
 import medicationIcon from '../assets/medication.png';
-import messagesIcon from '../assets/messages.png';
+import messagesIcon from '../assets/messages.png'; 
 
-// **Define Navigation Props**
 interface NavigationProps {
   isDarkMode: boolean;
   toggleTheme: () => void;
@@ -134,7 +134,7 @@ function HomeTabs() {
             onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}
             style={{ marginLeft: 15 }}
           >
-            <Image source={require('../../assets/menu.png')} style={{ width: 25, height: 25 }} />
+            <Image source={menuIcon} style={{ width: 25, height: 25 }} />
           </TouchableOpacity>
         ),
         headerRight: () => (
@@ -142,10 +142,7 @@ function HomeTabs() {
             onPress={() => navigation.navigate('Settings' as never)}
             style={{ marginRight: 15 }}
           >
-            <Image
-              source={require('../../assets/ProfileIcon.png')}
-              style={{ width: 30, height: 30, borderRadius: 15 }}
-            />
+            <Image source={profileIcon} style={{ width: 30, height: 30, borderRadius: 15 }} />
           </TouchableOpacity>
         ),
       }}
@@ -165,7 +162,12 @@ function HomeTabs() {
 // **Drawer Navigator (Only for Settings)**
 function DrawerNavigator({ isDarkMode, toggleTheme }: NavigationProps) {
   return (
-    <Drawer.Navigator>
+    <Drawer.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: '#002855' },
+        headerTintColor: '#ffffff',
+      }}
+    >
       <Drawer.Screen name="HomeTabs" component={HomeTabs} options={{ headerShown: false }} />
       <Drawer.Screen name="Settings">
         {() => <Settings isDarkMode={isDarkMode} toggleTheme={toggleTheme} />}
@@ -177,19 +179,10 @@ function DrawerNavigator({ isDarkMode, toggleTheme }: NavigationProps) {
 // **Main Navigation with Stack**
 export function Navigation({ isDarkMode, toggleTheme }: NavigationProps) {
   return (
-    <Stack.Navigator
-      screenOptions={{
-        headerStyle: { backgroundColor: '#002855' },
-        headerTintColor: '#ffffff',
-      }}
-    >
-      <Stack.Screen
-        name="Drawer"
-        options={{ headerShown: false }}
-      >
-        {() => <DrawerNavigator isDarkMode={isDarkMode} toggleTheme={toggleTheme} />}
-      </Stack.Screen>
-      <Stack.Screen name="NotFound" component={NotFound} />
-    </Stack.Navigator>
+    <NavigationContainer>
+      <DrawerNavigator isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
+    </NavigationContainer>
   );
 }
+
+export { DrawerNavigator };
