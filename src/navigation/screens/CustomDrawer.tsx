@@ -40,7 +40,7 @@ export function CustomDrawer(props: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#002855', // Dark blue background
+    backgroundColor: '#040014de', // Dark blue background
   },
   drawerItems: {
     flex: 1,
