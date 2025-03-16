@@ -19,6 +19,15 @@ import { Medication } from './screens/Medication';
 import { Messages } from './screens/Messages';
 import { NotFound } from './screens/NotFound';
 
+//Menu screens
+import { TermsConditions } from './screens/TermsConditions';
+import { PrivacySecurity } from './screens/PrivacySecurity';
+import { HealthGuidelines } from './screens/HealthGuidelines';
+import { Cookies } from './screens/Cookies';
+import { ContactUs } from './screens/ContactUs';
+import { Help } from './screens/Help';
+import { EmergencyContact } from './screens/EmergencyContact';
+
 // Icons
 const homeIcon = require('../../assets/home.png');
 const menuIcon = require('../../assets/menu.png');
@@ -159,7 +168,7 @@ function HomeTabs() {
   );
 }
 
-// **Drawer Navigator (Only for Settings)**
+// **Drawer Navigator (With All Menu Screens)**
 function DrawerNavigator({ isDarkMode, toggleTheme }: NavigationProps) {
   return (
     <Drawer.Navigator
@@ -168,8 +177,15 @@ function DrawerNavigator({ isDarkMode, toggleTheme }: NavigationProps) {
         headerTintColor: '#ffffff',
       }}
     >
-      <Drawer.Screen name="HomeTabs" component={HomeTabs} options={{ headerShown: false }} />
-      <Drawer.Screen name="Settings">
+      <Drawer.Screen name="Home Page" component={HomeTabs} options={{ headerShown: false }} />
+      <Drawer.Screen name="Terms & Conditions" component={TermsConditions} />
+      <Drawer.Screen name="Privacy & Security" component={PrivacySecurity} />
+      <Drawer.Screen name="Health & Wellness Guidelines" component={HealthGuidelines} />
+      <Drawer.Screen name="Cookies Policy" component={Cookies} />
+      <Drawer.Screen name="Contact Us" component={ContactUs} />
+      <Drawer.Screen name="Help & Support" component={Help} />
+      <Drawer.Screen name="Emergency Contact" component={EmergencyContact} />
+      <Drawer.Screen name="Account Settings">
         {() => <Settings isDarkMode={isDarkMode} toggleTheme={toggleTheme} />}
       </Drawer.Screen>
     </Drawer.Navigator>
