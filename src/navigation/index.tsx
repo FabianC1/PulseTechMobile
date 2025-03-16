@@ -148,12 +148,12 @@ function HomeTabs() {
         ),
         headerRight: () => (
           <TouchableOpacity
-            onPress={() => navigation.navigate('Settings' as never)}
+            onPress={() => navigation.dispatch(DrawerActions.jumpTo('Account Settings'))}
             style={{ marginRight: 15 }}
           >
             <Image source={profileIcon} style={{ width: 30, height: 30, borderRadius: 15 }} />
           </TouchableOpacity>
-        ),
+        ),        
       }}
       tabBar={props => <ScrollableTabBar {...props} />}
     >
