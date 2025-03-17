@@ -4,7 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { DrawerActions } from '@react-navigation/native';
 import { NavigationContainer } from '@react-navigation/native';
-import { Image, ScrollView, TouchableOpacity, View, Animated, StyleSheet  } from 'react-native';
+import { Image, ScrollView, TouchableOpacity, View, Animated, StyleSheet } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { CustomDrawer } from './screens/CustomDrawer'; // Import the custom drawer
@@ -53,7 +53,7 @@ const Drawer = createDrawerNavigator();
 const ScrollableTabBar = (props: any) => {
   return (
     <LinearGradient
-      colors={['#001d24','#141414ff', '#2a004d']} // Gradient colors for the bottom bar
+      colors={['#001d24', '#141414ff', '#2a004d']} // Gradient colors for the bottom bar
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 0 }}
       style={styles.bottomNavGradient} // Apply styles
@@ -215,6 +215,7 @@ function HomeTabs() {
 
 // **Drawer Navigator (With All Menu Screens)**
 function DrawerNavigator({ isDarkMode, toggleTheme }: NavigationProps) {
+  const navigation = useNavigation(); // Get navigation object
   return (
     <Drawer.Navigator
       drawerContent={(props) => <CustomDrawer {...props} />}
@@ -230,6 +231,14 @@ function DrawerNavigator({ isDarkMode, toggleTheme }: NavigationProps) {
             end={{ x: 1, y: 0 }} // End at the top-right
             style={{ flex: 1 }}
           />
+        ),
+        headerRight: () => (
+          <TouchableOpacity
+            onPress={() => navigation.dispatch(DrawerActions.jumpTo('Account Settings'))}
+            style={{ marginRight: 15 }}
+          >
+            <Image source={profileIcon} style={{ width: 30, height: 30, borderRadius: 15 }} />
+          </TouchableOpacity>
         ),
       }}
     >
