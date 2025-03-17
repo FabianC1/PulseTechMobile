@@ -4,39 +4,47 @@ import { DrawerContentScrollView, DrawerItem } from '@react-navigation/drawer';
 import LinearGradient from 'react-native-linear-gradient';
 
 export function CustomDrawer(props: any) {
+  const activeRouteIndex = props.state.index; // Get active screen index
+  const activeRouteName = props.state.routeNames[activeRouteIndex]; // Get active screen name
+
   return (
     <View style={styles.drawerContainer}>
       {/* Vertical Gradient Background */}
       <LinearGradient
-        colors={['#040014de', '#040014de', '#34005f']} // Gradient colors
-        start={{ x: 0, y: 0 }} // Start from the top
-        end={{ x: 0, y: 1 }} // End at the bottom
+        colors={['#040014de', '#040014de', '#34005f']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
         style={[StyleSheet.absoluteFill, { borderTopRightRadius: 20, borderBottomRightRadius: 20 }]}
       />
 
       {/* Custom Drawer Content */}
       <DrawerContentScrollView {...props} contentContainerStyle={styles.container}>
         <View style={styles.drawerItems}>
-          {props.state.routes.map((route: any, index: number) => (
-            <View key={route.key}>
-              {/* Drawer Button */}
-              <DrawerItem
-                label={route.name}
-                onPress={() => props.navigation.navigate(route.name)}
-                labelStyle={styles.drawerItemText}
-              />
+          {props.state.routes.map((route: any, index: number) => {
+            const isSelected = route.name === activeRouteName; // Check if active
 
-              {/* Horizontal Separator (Left to Right Gradient) */}
-              {index < props.state.routes.length - 1 && (
-                <LinearGradient
-                  colors={['#8400ff', '#0091ff']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.separator}
+            return (
+              <View key={route.key}>
+                {/* Drawer Button */}
+                <DrawerItem
+                  label={route.name}
+                  onPress={() => props.navigation.navigate(route.name)}
+                  style={isSelected ? styles.selectedDrawerButton : undefined} // Apply selection style
+                  labelStyle={styles.drawerItemText}
                 />
-              )}
-            </View>
-          ))}
+
+                {/* Horizontal Separator (Left to Right Gradient) */}
+                {index < props.state.routes.length - 1 && (
+                  <LinearGradient
+                    colors={['#8400ff', '#0091ff']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.separator}
+                  />
+                )}
+              </View>
+            );
+          })}
         </View>
 
         {/* Logout Button */}
@@ -56,16 +64,15 @@ export function CustomDrawer(props: any) {
   );
 }
 
-
 const styles = StyleSheet.create({
   drawerContainer: {
     flex: 1,
     flexDirection: 'row', // Makes the drawer and gradient sit side by side
   },
   container: {
-    flex: 1, // Keeps the drawer flexible
-    borderTopRightRadius: 20, // Optional: Add rounded corners
-    borderBottomRightRadius: 20, // Optional: Add rounded corners
+    flex: 1,
+    borderTopRightRadius: 20,
+    borderBottomRightRadius: 20,
   },
   drawerItems: {
     flex: 1,
@@ -74,6 +81,13 @@ const styles = StyleSheet.create({
   drawerItemText: {
     color: '#ffffff',
     fontSize: 16,
+  },
+  selectedDrawerButton: {
+    backgroundColor: '#008cffbe', // Change background when selected
+    width: '85%', // Reduce width so it's smaller
+    alignSelf: 'flex-start', // Align it properly
+    right: -10, // Shift slightly to the right
+    borderRadius: 8, // Rounded corners
   },
   separator: {
     height: 2,
@@ -96,13 +110,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   rightGradient: {
-    position: 'absolute', // Ensure it stays in place
-    right: 0, // Stick to the right edge
-    top: 20, // Align with the top
-    width: 3, // Make it slightly wider for better visibility
-    height: '96%', // Stretch from top to bottom
-    borderTopRightRadius: 20, // Match the drawer's top corner
-    borderBottomRightRadius: 20, // Match the drawer's bottom corner
+    position: 'absolute',
+    right: 0,
+    top: 20,
+    width: 3,
+    height: '96%',
+    borderTopRightRadius: 20,
+    borderBottomRightRadius: 20,
   },
 });
-

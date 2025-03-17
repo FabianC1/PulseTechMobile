@@ -4,7 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { DrawerActions } from '@react-navigation/native';
 import { NavigationContainer } from '@react-navigation/native';
-import { Image, ScrollView, TouchableOpacity, View, Animated } from 'react-native';
+import { Image, ScrollView, TouchableOpacity, View, Animated, StyleSheet  } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { CustomDrawer } from './screens/CustomDrawer'; // Import the custom drawer
@@ -52,24 +52,16 @@ const Drawer = createDrawerNavigator();
 // **Scrollable Bottom Tab Bar**
 const ScrollableTabBar = (props: any) => {
   return (
-    <View style={{ position: 'absolute', bottom: 0, width: '100%', backgroundColor: '#202020' }}>
-      {/* Gradient Top Border */}
-      <LinearGradient
-        colors={['#0c62a2', '#8740c1']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={{ height: 3, width: '100%' }} // Thin gradient border
-      />
+    <LinearGradient
+      colors={['#001d24','#141414ff', '#2a004d']} // Gradient colors for the bottom bar
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 0 }}
+      style={styles.bottomNavGradient} // Apply styles
+    >
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: 70, // Keep original height
-          paddingBottom: 10, // Prevents screen peek issue
-        }}
+        contentContainerStyle={styles.scrollContainer}
       >
         {props.state.routes.map((route: any, index: number) => {
           const isFocused = props.state.index === index;
@@ -82,10 +74,10 @@ const ScrollableTabBar = (props: any) => {
           }).start();
 
           return (
-            <View key={route.key} style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View key={route.key} style={styles.iconContainer}>
               <TouchableOpacity
                 onPress={() => props.navigation.navigate(route.name)}
-                style={{ paddingHorizontal: 20 }}
+                style={styles.iconButton}
               >
                 <Animated.Image
                   source={getIcon(route.name)}
@@ -94,23 +86,54 @@ const ScrollableTabBar = (props: any) => {
                     { transform: [{ scale: scaleValue }] },
                   ]}
                 />
-
               </TouchableOpacity>
 
               {/* Add vertical separator except for the last icon */}
               {index < props.state.routes.length - 1 && (
                 <LinearGradient
-                  colors={['#8740c1', '#0c62a2']} // Gradient colors (white to blue)
-                  style={{ width: 2, height: 30, marginHorizontal: 10 }}
+                  colors={['#8c00ff', '#0091ff']}
+                  style={styles.verticalSeparator}
                 />
               )}
             </View>
           );
         })}
       </ScrollView>
-    </View>
+    </LinearGradient>
   );
 };
+
+
+const styles = StyleSheet.create({
+  bottomNavGradient: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    height: 80, // Keep the height consistent
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  scrollContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 70,
+    paddingBottom: 10,
+  },
+  iconContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  iconButton: {
+    paddingHorizontal: 20,
+  },
+  verticalSeparator: {
+    width: 2,
+    height: 30,
+    marginHorizontal: 10,
+  },
+});
+
 
 // **Function to return the correct icon for each tab**
 const getIcon = (name: string) => {
@@ -208,13 +231,6 @@ function DrawerNavigator({ isDarkMode, toggleTheme }: NavigationProps) {
             style={{ flex: 1 }}
           />
         ),
-        headerStyle: {
-          elevation: 6, // Shadow for Android
-          shadowColor: '#000', // Shadow color
-          shadowOffset: { width: 0, height: 4 }, // X: 0, Y: 4 (Drops shadow below)
-          shadowOpacity: 0.8, // Adjust for a soft shadow
-          shadowRadius: 5, // Blur effect
-        },
       }}
     >
       <Drawer.Screen name="Home Page" component={HomeTabs} options={{ headerShown: false }} />
