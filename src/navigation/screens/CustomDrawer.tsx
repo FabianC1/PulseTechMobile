@@ -6,6 +6,14 @@ import LinearGradient from 'react-native-linear-gradient';
 export function CustomDrawer(props: any) {
   return (
     <View style={styles.drawerContainer}>
+      {/* Vertical Gradient Background */}
+      <LinearGradient
+        colors={['#040014de', '#040014de', '#34005f']} // Gradient colors
+        start={{ x: 0, y: 0 }} // Start from the top
+        end={{ x: 0, y: 1 }} // End at the bottom
+        style={[StyleSheet.absoluteFill, { borderTopRightRadius: 20, borderBottomRightRadius: 20 }]}
+      />
+
       {/* Custom Drawer Content */}
       <DrawerContentScrollView {...props} contentContainerStyle={styles.container}>
         <View style={styles.drawerItems}>
@@ -21,7 +29,7 @@ export function CustomDrawer(props: any) {
               {/* Horizontal Separator (Left to Right Gradient) */}
               {index < props.state.routes.length - 1 && (
                 <LinearGradient
-                  colors={['#8400ff', '#0091ff']} // Gradient colors
+                  colors={['#8400ff', '#0091ff']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                   style={styles.separator}
@@ -39,7 +47,7 @@ export function CustomDrawer(props: any) {
 
       {/* Right-side gradient */}
       <LinearGradient
-        colors={['#8740c1', '#0c62a2']} // Gradient colors
+        colors={['#8740c1', '#0c62a2']}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
         style={styles.rightGradient}
@@ -48,6 +56,7 @@ export function CustomDrawer(props: any) {
   );
 }
 
+
 const styles = StyleSheet.create({
   drawerContainer: {
     flex: 1,
@@ -55,7 +64,6 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1, // Keeps the drawer flexible
-    backgroundColor: '#040014de', // Actual drawer background color
     borderTopRightRadius: 20, // Optional: Add rounded corners
     borderBottomRightRadius: 20, // Optional: Add rounded corners
   },
@@ -88,9 +96,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   rightGradient: {
-    width: 3, // Width of the gradient strip
-    height: '100%', // Make it cover the full height
+    position: 'absolute', // Ensure it stays in place
+    right: 0, // Stick to the right edge
+    top: 20, // Align with the top
+    width: 3, // Make it slightly wider for better visibility
+    height: '96%', // Stretch from top to bottom
+    borderTopRightRadius: 20, // Match the drawer's top corner
+    borderBottomRightRadius: 20, // Match the drawer's bottom corner
   },
-  
 });
 

@@ -53,15 +53,10 @@ export function Home() {
           PulseTech is more than an app—it's your health companion, ensuring a better, more informed future.
         </Text>
 
-        <Text style={styles.footer}>PulseTech™ is a trademark of PulseTech, Inc. © 2025. All rights reserved.</Text>
+        <Text style={[styles.footer, { color: theme.colors.text }]}>
+          PulseTech™ is a trademark of PulseTech, Inc. © 2025. All rights reserved.
+        </Text>
 
-
-        <TouchableOpacity
-          style={[styles.button, { backgroundColor: theme.colors.primary }]}
-          onPress={() => navigation.navigate('Settings' as never)}
-        >
-          <Text style={styles.buttonText}>Go to Settings</Text>
-        </TouchableOpacity>
       </ScrollView>
     </LinearGradient>
   );
