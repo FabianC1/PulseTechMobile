@@ -33,7 +33,6 @@ export function PrivacySecurity() {
   return (
     <LinearGradient colors={theme.colors.background} style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <Text style={[styles.pageTitle, { color: theme.colors.text }]}>Privacy & Security</Text>
 
         {loading ? (
           <ActivityIndicator size="large" color="#ffffff" />

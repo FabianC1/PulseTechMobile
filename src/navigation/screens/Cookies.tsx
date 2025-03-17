@@ -83,7 +83,7 @@ export function Cookies() {
   return (
     <LinearGradient colors={theme.colors.background} style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <Text style={[styles.pageTitle, { color: theme.colors.text }]}>Cookie Preferences</Text>
+
 
         {/* Essential Cookies (Always Enabled) */}
         <View style={styles.section}>
