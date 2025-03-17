@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     width: '100%',
-    height: 80, // Keep the height consistent
+    height: 70, // Keep the height consistent
     justifyContent: 'center',
     alignItems: 'center',
   },
