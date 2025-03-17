@@ -1,25 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { 
-  View, Text, ScrollView, StyleSheet, Switch, TouchableOpacity, Animated 
-} from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Switch, TouchableOpacity } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from 'styled-components/native';
 
 export function Cookies() {
   const theme = useTheme();
-
-  // State for each cookie preference
   const [performanceCookies, setPerformanceCookies] = useState(false);
   const [functionalCookies, setFunctionalCookies] = useState(false);
   const [targetingCookies, setTargetingCookies] = useState(false);
-  const [showConfirmation, setShowConfirmation] = useState(false);
-  const [saveButtonEnabled, setSaveButtonEnabled] = useState(false);
+  const [savedState, setSavedState] = useState({ performance: false, functional: false, targeting: false });
 
-  // Animation for confirmation message
-  const fadeAnim = useState(new Animated.Value(0))[0];
-
-  // Load saved cookie preferences when the screen loads
+  // Load saved preferences
   useEffect(() => {
     const loadPreferences = async () => {
       try {
@@ -27,9 +19,16 @@ export function Cookies() {
         const functional = await AsyncStorage.getItem('functionalCookies');
         const targeting = await AsyncStorage.getItem('targetingCookies');
 
-        if (performance !== null) setPerformanceCookies(JSON.parse(performance));
-        if (functional !== null) setFunctionalCookies(JSON.parse(functional));
-        if (targeting !== null) setTargetingCookies(JSON.parse(targeting));
+        const newState = {
+          performance: performance !== null ? JSON.parse(performance) : false,
+          functional: functional !== null ? JSON.parse(functional) : false,
+          targeting: targeting !== null ? JSON.parse(targeting) : false,
+        };
+
+        setPerformanceCookies(newState.performance);
+        setFunctionalCookies(newState.functional);
+        setTargetingCookies(newState.targeting);
+        setSavedState(newState);
       } catch (error) {
         console.error('Error loading cookie preferences:', error);
       }
@@ -38,12 +37,6 @@ export function Cookies() {
     loadPreferences();
   }, []);
 
-  // Toggle switches and enable save button
-  const toggleSetting = (setter: React.Dispatch<React.SetStateAction<boolean>>, value: boolean) => {
-    setter(value);
-    setSaveButtonEnabled(true); // Enable save button when changes are made
-  };
-
   // Save preferences
   const saveSettings = async () => {
     try {
@@ -51,41 +44,19 @@ export function Cookies() {
       await AsyncStorage.setItem('functionalCookies', JSON.stringify(functionalCookies));
       await AsyncStorage.setItem('targetingCookies', JSON.stringify(targetingCookies));
 
-      setSaveButtonEnabled(false); // Disable save button after saving
-      triggerConfirmation();
+      setSavedState({ performance: performanceCookies, functional: functionalCookies, targeting: targetingCookies });
+      console.log('Settings saved!');
     } catch (error) {
-      console.error('Error saving cookie settings:', error);
+      console.error('Error saving settings:', error);
     }
   };
 
-  // Reset preferences to last saved state
-  const cancelSettings = async () => {
-    try {
-      const performance = await AsyncStorage.getItem('performanceCookies');
-      const functional = await AsyncStorage.getItem('functionalCookies');
-      const targeting = await AsyncStorage.getItem('targetingCookies');
-
-      setPerformanceCookies(performance !== null ? JSON.parse(performance) : false);
-      setFunctionalCookies(functional !== null ? JSON.parse(functional) : false);
-      setTargetingCookies(targeting !== null ? JSON.parse(targeting) : false);
-
-      setSaveButtonEnabled(false); // Disable save button after canceling
-      triggerConfirmation();
-    } catch (error) {
-      console.error('Error reverting cookie settings:', error);
-    }
-  };
-
-  // Trigger confirmation popup animation
-  const triggerConfirmation = () => {
-    setShowConfirmation(true);
-    fadeAnim.setValue(1);
-    
-    Animated.timing(fadeAnim, {
-      toValue: 0,
-      duration: 1500,
-      useNativeDriver: true,
-    }).start(() => setShowConfirmation(false));
+  // Cancel and revert to last saved state
+  const cancelSettings = () => {
+    setPerformanceCookies(savedState.performance);
+    setFunctionalCookies(savedState.functional);
+    setTargetingCookies(savedState.targeting);
+    console.log('Changes reverted');
   };
 
   return (
@@ -93,61 +64,61 @@ export function Cookies() {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <Text style={[styles.pageTitle, { color: theme.colors.text }]}>Cookie Preferences</Text>
 
-        {/* Essential Cookies - Always Enabled */}
-        <View style={styles.cookieCard}>
+        {/* Essential Cookies (Always Enabled) */}
+        <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Essential Cookies</Text>
-          <Text style={[styles.content, { color: theme.colors.secondary }]}>
-            These cookies are necessary for the app to function properly and cannot be disabled.
-          </Text>
-          <Switch value={true} disabled={true} trackColor={{ true: '#ccc', false: '#888' }} />
+          <View style={styles.row}>
+            <Text style={[styles.content, { color: theme.colors.secondary }]}>
+              Necessary for app functionality and cannot be disabled.
+            </Text>
+            <Switch value={true} disabled={true} />
+          </View>
         </View>
+
+        <LinearGradient colors={['#0091ff', '#8400ff']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.separator} />
 
         {/* Performance Cookies */}
-        <View style={styles.cookieCard}>
+        <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Performance Cookies</Text>
-          <Text style={[styles.content, { color: theme.colors.secondary }]}>
-            Helps us analyze app performance and user experience.
-          </Text>
-          <Switch
-            value={performanceCookies}
-            onValueChange={(value) => toggleSetting(setPerformanceCookies, value)}
-            trackColor={{ true: '#0084ff', false: '#888' }}
-          />
+          <View style={styles.row}>
+            <Text style={[styles.content, { color: theme.colors.secondary }]}>
+              Helps analyze app performance and user experience.
+            </Text>
+            <Switch value={performanceCookies} onValueChange={() => setPerformanceCookies(!performanceCookies)} />
+          </View>
         </View>
+
+        <LinearGradient colors={['#0091ff', '#8400ff']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.separator} />
 
         {/* Functional Cookies */}
-        <View style={styles.cookieCard}>
+        <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Functional Cookies</Text>
-          <Text style={[styles.content, { color: theme.colors.secondary }]}>
-            Remembers preferences like theme and language settings.
-          </Text>
-          <Switch
-            value={functionalCookies}
-            onValueChange={(value) => toggleSetting(setFunctionalCookies, value)}
-            trackColor={{ true: '#0084ff', false: '#888' }}
-          />
+          <View style={styles.row}>
+            <Text style={[styles.content, { color: theme.colors.secondary }]}>
+              Remembers preferences like theme and language settings.
+            </Text>
+            <Switch value={functionalCookies} onValueChange={() => setFunctionalCookies(!functionalCookies)} />
+          </View>
         </View>
+
+        <LinearGradient colors={['#0091ff', '#8400ff']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.separator} />
 
         {/* Targeting Cookies */}
-        <View style={styles.cookieCard}>
+        <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Targeting Cookies</Text>
-          <Text style={[styles.content, { color: theme.colors.secondary }]}>
-            Tracks browsing habits for personalized ads and content.
-          </Text>
-          <Switch
-            value={targetingCookies}
-            onValueChange={(value) => toggleSetting(setTargetingCookies, value)}
-            trackColor={{ true: '#0084ff', false: '#888' }}
-          />
+          <View style={styles.row}>
+            <Text style={[styles.content, { color: theme.colors.secondary }]}>
+              Tracks browsing habits for personalized content.
+            </Text>
+            <Switch value={targetingCookies} onValueChange={() => setTargetingCookies(!targetingCookies)} />
+          </View>
         </View>
 
-        {/* Save & Cancel Buttons */}
-        <View style={styles.actions}>
-          <TouchableOpacity 
-            style={[styles.saveButton, saveButtonEnabled ? styles.activeButton : styles.disabledButton]} 
-            onPress={saveSettings}
-            disabled={!saveButtonEnabled}
-          >
+        <LinearGradient colors={['#0091ff', '#8400ff']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.separator} />
+
+        {/* Save & Cancel Buttons (Always Visible) */}
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.saveButton} onPress={saveSettings}>
             <Text style={styles.buttonText}>Save Settings</Text>
           </TouchableOpacity>
 
@@ -156,37 +127,45 @@ export function Cookies() {
           </TouchableOpacity>
         </View>
       </ScrollView>
-
-      {/* Confirmation Popup */}
-      {showConfirmation && (
-        <Animated.View style={[styles.confirmationPopup, { opacity: fadeAnim }]}>
-          <Text style={styles.confirmationText}>Settings updated!</Text>
-        </Animated.View>
-      )}
     </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  scrollContainer: { padding: 20, alignItems: 'center' },
-  pageTitle: { fontSize: 24, fontWeight: 'bold', marginBottom: 15, textAlign: 'center' },
-  cookieCard: {
-    width: '100%',
-    padding: 15,
-    backgroundColor: '#222',
-    borderRadius: 10,
-    marginBottom: 20,
+  scrollContainer: { padding: 20 },
+  pageTitle: { fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 15 },
+
+  section: { paddingBottom: 10, paddingTop: 15 },
+  sectionTitle: { fontSize: 18, fontWeight: 'bold', textAlign: 'center', marginBottom: 5 },
+  row: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between', // Spreads out the text and toggle
+    paddingHorizontal: 10,
   },
-  sectionTitle: { fontSize: 20, fontWeight: 'bold', textAlign: 'center', marginBottom: 5 },
-  content: { fontSize: 16, textAlign: 'center', marginBottom: 10 },
-  actions: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 20 },
-  saveButton: { padding: 12, borderRadius: 8, marginHorizontal: 10 },
-  activeButton: { backgroundColor: '#0084ff' },
-  disabledButton: { backgroundColor: '#555555' },
-  cancelButton: { backgroundColor: '#555', padding: 12, borderRadius: 8, marginHorizontal: 10 },
+  content: { fontSize: 16, flex: 1, textAlign: 'left', marginBottom: 10 },
+
+  separator: {
+    height: 2,
+    width: '100%',
+    marginTop: 10,
+  },
+
+  buttonContainer: { flexDirection: 'row', justifyContent: 'center', marginTop: 20 },
+  saveButton: {
+    backgroundColor: '#0084ff',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginHorizontal: 10,
+  },
+  cancelButton: {
+    backgroundColor: '#555',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginHorizontal: 10,
+  },
   buttonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
-  confirmationPopup: { position: 'absolute', bottom: 50, backgroundColor: '#0091ff', padding: 10, borderRadius: 8 },
-  confirmationText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
 });
