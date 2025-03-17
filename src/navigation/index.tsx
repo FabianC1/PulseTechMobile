@@ -141,30 +141,37 @@ function HomeTabs() {
 
   return (
     <Tab.Navigator
-      screenOptions={{
-        tabBarShowLabel: false,
-        headerStyle: { backgroundColor: '#002855' }, // Top bar color
-        headerTintColor: '#ffffff', // White text
-        headerTitleAlign: 'center', // Center the title
-        headerLeft: () => (
-          <TouchableOpacity
-            onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}
-            style={{ marginLeft: 15 }}
-          >
-            <Image source={menuIcon} style={{ width: 25, height: 25 }} />
-          </TouchableOpacity>
-        ),
-        headerRight: () => (
-          <TouchableOpacity
-            onPress={() => navigation.dispatch(DrawerActions.jumpTo('Account Settings'))}
-            style={{ marginRight: 15 }}
-          >
-            <Image source={profileIcon} style={{ width: 30, height: 30, borderRadius: 15 }} />
-          </TouchableOpacity>
-        ),        
-      }}
-      tabBar={props => <ScrollableTabBar {...props} />}
-    >
+    screenOptions={{
+      tabBarShowLabel: false,
+      headerTintColor: '#ffffff', // White text
+      headerTitleAlign: 'center', // Center the title
+      headerBackground: () => (
+        <LinearGradient
+          colors={['#8740c1', '#0c62a2']} // Gradient colors
+          start={{ x: 0, y: 0 }} // Start from the top-left
+          end={{ x: 1, y: 0 }} // End at the top-right
+          style={{ flex: 1 }}
+        />
+      ),
+      headerLeft: () => (
+        <TouchableOpacity
+          onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}
+          style={{ marginLeft: 15 }}
+        >
+          <Image source={menuIcon} style={{ width: 25, height: 25 }} />
+        </TouchableOpacity>
+      ),
+      headerRight: () => (
+        <TouchableOpacity
+          onPress={() => navigation.dispatch(DrawerActions.jumpTo('Account Settings'))}
+          style={{ marginRight: 15 }}
+        >
+          <Image source={profileIcon} style={{ width: 30, height: 30, borderRadius: 15 }} />
+        </TouchableOpacity>
+      ),        
+    }}
+    tabBar={props => <ScrollableTabBar {...props} />}
+  >
       <Tab.Screen name="Home" component={Home} />
       <Tab.Screen name="Dashboard" component={HealthDashboard} />
       <Tab.Screen name="Records" component={MedicalRecords} />
@@ -179,26 +186,42 @@ function HomeTabs() {
 // **Drawer Navigator (With All Menu Screens)**
 function DrawerNavigator({ isDarkMode, toggleTheme }: NavigationProps) {
   return (
-    <Drawer.Navigator
-      drawerContent={(props) => <CustomDrawer {...props} />}
-      screenOptions={{
-        drawerStyle: {
-          backgroundColor: 'transparent', // Ensure no white background
-        },
-      }}
-    >
-      <Drawer.Screen name="Home Page" component={HomeTabs} options={{ headerShown: false }} />
-      <Drawer.Screen name="Terms & Conditions" component={TermsConditions} />
-      <Drawer.Screen name="Privacy & Security" component={PrivacySecurity} />
-      <Drawer.Screen name="Health & Wellness Guidelines" component={HealthGuidelines} />
-      <Drawer.Screen name="Cookies Policy" component={Cookies} />
-      <Drawer.Screen name="Contact Us" component={ContactUs} />
-      <Drawer.Screen name="Help & Support" component={Help} />
-      <Drawer.Screen name="Emergency Contact" component={EmergencyContact} />
-      <Drawer.Screen name="Account Settings">
-        {() => <Settings isDarkMode={isDarkMode} toggleTheme={toggleTheme} />}
-      </Drawer.Screen>
-    </Drawer.Navigator>
+<Drawer.Navigator
+  drawerContent={(props) => <CustomDrawer {...props} />}
+  screenOptions={{
+    drawerStyle: {
+      backgroundColor: 'transparent', // Keep the drawer background clean
+    },
+    headerTintColor: '#ffffff', // White text color
+    headerBackground: () => (
+      <LinearGradient
+      colors={['#8740c1', '#0c62a2']} // Gradient colors
+        start={{ x: 0, y: 0 }} // Start from the top-left
+        end={{ x: 1, y: 0 }} // End at the top-right
+        style={{ flex: 1 }}
+      />
+    ),
+    headerStyle: {
+      elevation: 6, // Shadow for Android
+      shadowColor: '#000', // Shadow color
+      shadowOffset: { width: 0, height: 4 }, // X: 0, Y: 4 (Drops shadow below)
+      shadowOpacity: 0.8, // Adjust for a soft shadow
+      shadowRadius: 5, // Blur effect
+    },
+  }}
+>
+  <Drawer.Screen name="Home Page" component={HomeTabs} options={{ headerShown: false }} />
+  <Drawer.Screen name="Terms & Conditions" component={TermsConditions} />
+  <Drawer.Screen name="Privacy & Security" component={PrivacySecurity} />
+  <Drawer.Screen name="Health & Wellness Guidelines" component={HealthGuidelines} />
+  <Drawer.Screen name="Cookies Policy" component={Cookies} />
+  <Drawer.Screen name="Contact Us" component={ContactUs} />
+  <Drawer.Screen name="Help & Support" component={Help} />
+  <Drawer.Screen name="Emergency Contact" component={EmergencyContact} />
+  <Drawer.Screen name="Account Settings">
+    {() => <Settings isDarkMode={isDarkMode} toggleTheme={toggleTheme} />}
+  </Drawer.Screen>
+</Drawer.Navigator>
   );
 }
 

@@ -39,7 +39,7 @@ export function CustomDrawer(props: any) {
 
       {/* Right-side gradient */}
       <LinearGradient
-        colors={['#ff00aa', '#00ffdd']} // Gradient colors
+        colors={['#8740c1', '#0c62a2']} // Gradient colors
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
         style={styles.rightGradient}
@@ -91,5 +91,6 @@ const styles = StyleSheet.create({
     width: 3, // Width of the gradient strip
     height: '100%', // Make it cover the full height
   },
+  
 });
 
