@@ -237,7 +237,7 @@ function DrawerNavigator({ isDarkMode, toggleTheme }: NavigationProps) {
       <Drawer.Screen name="Terms & Conditions" component={TermsConditions} />
       <Drawer.Screen name="Privacy & Security" component={PrivacySecurity} />
       <Drawer.Screen name="Health & Wellness Guidelines" component={HealthGuidelines} />
-      <Drawer.Screen name="Cookies Policy" component={Cookies} />
+      <Drawer.Screen name="Cookies" component={Cookies} />
       <Drawer.Screen name="Contact Us" component={ContactUs} />
       <Drawer.Screen name="Help & Support" component={Help} />
       <Drawer.Screen name="Emergency Contact" component={EmergencyContact} />
