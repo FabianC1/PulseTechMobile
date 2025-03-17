@@ -53,6 +53,13 @@ const Drawer = createDrawerNavigator();
 const ScrollableTabBar = (props: any) => {
   return (
     <View style={{ position: 'absolute', bottom: 0, width: '100%', backgroundColor: '#202020' }}>
+            {/* Gradient Top Border */}
+            <LinearGradient
+        colors={['#ff00aa', '#00ffdd', '#ff5100']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={{ height: 3, width: '100%' }} // Thin gradient border
+      />
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -173,10 +180,11 @@ function HomeTabs() {
 function DrawerNavigator({ isDarkMode, toggleTheme }: NavigationProps) {
   return (
     <Drawer.Navigator
-      drawerContent={(props) => <CustomDrawer {...props} />} // Use the custom drawer here
+      drawerContent={(props) => <CustomDrawer {...props} />}
       screenOptions={{
-        headerStyle: { backgroundColor: '#002855' },
-        headerTintColor: '#ffffff',
+        drawerStyle: {
+          backgroundColor: 'transparent', // Ensure no white background
+        },
       }}
     >
       <Drawer.Screen name="Home Page" component={HomeTabs} options={{ headerShown: false }} />
