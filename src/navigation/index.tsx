@@ -175,6 +175,9 @@ function HomeTabs() {
         tabBarShowLabel: false,
         headerTintColor: '#ffffff', // White text
         headerTitleAlign: 'center', // Center the title
+        headerStyle: {
+          height: 85, 
+        },
         headerBackground: () => (
           <LinearGradient
             colors={['#8740c1', '#0c62a2']} // Gradient colors
@@ -224,6 +227,10 @@ function DrawerNavigator({ isDarkMode, toggleTheme }: NavigationProps) {
           backgroundColor: 'transparent', // Keep the drawer background clean
         },
         headerTintColor: '#ffffff', // White text color
+        headerTitleAlign: 'center',
+        headerStyle: {
+          height: 85, // Adjust this to make the header smaller (default is around 80)
+        },
         headerBackground: () => (
           <LinearGradient
             colors={['#8740c1', '#0c62a2']} // Gradient colors
