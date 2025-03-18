@@ -163,6 +163,13 @@ const styles = StyleSheet.create({
   messageInput: { height: 120, borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, fontSize: 16, textAlignVertical: 'top', marginBottom: 20 },
   sendButton: { backgroundColor: '#0084ff', paddingVertical: 12, borderRadius: 8, alignItems: 'center' },
   buttonText: { color: '#ffffff', fontSize: 16, fontWeight: 'bold' },
+  errorText: {
+    color: 'red',
+    fontSize: 14,
+    marginBottom: 10,
+    textAlign: 'left',
+  },
+  
 
   // Modal Styles
   modalBackground: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)', justifyContent: 'center', alignItems: 'center' },
