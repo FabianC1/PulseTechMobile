@@ -458,72 +458,97 @@ export function Settings({ isDarkMode, toggleTheme }: SettingsProps) {
   );
 }
 
-// **Styles**
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     paddingHorizontal: 20,
-  },
+    width: "100%", // Ensure full width
+  },  
   title: {
     fontSize: 22,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 20,
+    textAlign: "center",
   },
   button: {
     paddingVertical: 12,
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     borderRadius: 8,
     marginTop: 10,
+    alignItems: "center",
   },
   buttonText: {
-    color: '#ffffff',
+    color: "#ffffff",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   authPrompt: {
     marginTop: 30,
-    alignItems: 'center',
+    alignItems: "center",
   },
   authText: {
     fontSize: 16,
     marginBottom: 15,
-    textAlign: 'center',
+    textAlign: "center",
   },
   buttonContainer: {
-    flexDirection: 'row',
-    gap: 10,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
   },
   authButton: {
+    flex: 1,
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
+    marginHorizontal: 5,
+    alignItems: "center",
   },
   loggedInSection: {
     marginTop: 30,
-    alignItems: 'center',
   },
   settingOption: {
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
     marginTop: 10,
-    width: 200,
-    alignItems: 'center',
+    width: "100%",
+    alignItems: "center",
   },
   scrollContainer: {
-    flexGrow: 1, // Ensures full height for pull-to-refresh
-    alignItems: 'center',
+    flexGrow: 1,
     paddingVertical: 20,
+    paddingHorizontal: 20,
+    width: "100%", // Ensure full width
+  },  
+  profileContainer: {
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  profileImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginBottom: 10,
+  },
+  pictureButtons: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 10, // Ensures space between buttons
+    marginTop: 10,
+  },
+  smallButton: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 6,
+    alignItems: "center",
   },
   input: {
     borderWidth: 1,
     borderColor: "#ccc",
     padding: 10,
     borderRadius: 5,
-    marginVertical: 5,
-    width: "100%",
+    flex: 1,
     backgroundColor: "#fff",
   },
   saveButton: {
@@ -533,6 +558,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginTop: 15,
     alignItems: "center",
+    width: "100%",
   },
   successText: {
     color: "green",
@@ -549,7 +575,6 @@ const styles = StyleSheet.create({
     borderBottomColor: "#ccc",
     width: "100%",
   },
-  
   editButton: {
     color: "#007bff",
     fontSize: 16,
