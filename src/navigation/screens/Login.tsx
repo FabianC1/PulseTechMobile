@@ -26,14 +26,15 @@ export function Login() {
       Alert.alert('Error', 'Please enter both email and password.');
       return;
     }
-
-    const success = await login(email, password);
+  
+    const success = await login(email, password); // Wait for login result
+  
     if (success) {
       navigation.navigate('HealthDashboard'); // Redirect after login
     } else {
       Alert.alert('Login Failed', 'Invalid credentials. Please try again.');
     }
-  };
+  };  
 
   return (
     <LinearGradient colors={theme.colors.background} style={styles.container}>
@@ -112,4 +113,4 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: 10,
   },
-});
+});  

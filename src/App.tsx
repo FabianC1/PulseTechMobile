@@ -3,8 +3,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { ThemeProvider } from 'styled-components/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { lightTheme, darkTheme } from './theme';
-import { DrawerNavigator } from './navigation/index';
 import { AuthProvider } from './navigation/AuthContext';
+import { MainNavigator } from './navigation'; // ✅ Now using MainNavigator!
 
 export default function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -31,7 +31,8 @@ export default function App() {
     <AuthProvider>
       <ThemeProvider theme={isDarkMode ? darkTheme : lightTheme}>
         <NavigationContainer>
-          <DrawerNavigator isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
+          {/* Use MainNavigator instead of DrawerNavigator */}
+          <MainNavigator isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
         </NavigationContainer>
       </ThemeProvider>
     </AuthProvider>

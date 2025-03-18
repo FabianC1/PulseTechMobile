@@ -30,8 +30,22 @@ import { Help } from './screens/Help';
 import { EmergencyContact } from './screens/EmergencyContact';
 
 //Account screens
-import { Login } from './screens/Login';
-import { Signup } from './screens/Signup';
+import { AuthStack } from './AuthStack'; // Import Auth Stack
+
+// **Main Navigator (Handles Both Drawer and AuthStack)**
+export function MainNavigator({ isDarkMode, toggleTheme }: NavigationProps) {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      {/* Main App (Drawer Navigation) */}
+      <Stack.Screen name="MainApp">
+        {() => <DrawerNavigator isDarkMode={isDarkMode} toggleTheme={toggleTheme} />}
+      </Stack.Screen>
+
+      {/* Auth Screens (Login & Signup) */}
+      <Stack.Screen name="Auth" component={AuthStack} />
+    </Stack.Navigator>
+  );
+}
 
 // Icons
 import homeIcon from '../assets/home.png';
@@ -53,14 +67,6 @@ const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
 
-function AuthStack() {
-  return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Login" component={Login} />
-      <Stack.Screen name="Signup" component={Signup} />
-    </Stack.Navigator>
-  );
-}
 // **Scrollable Bottom Tab Bar**
 const ScrollableTabBar = (props: any) => {
   return (
@@ -262,7 +268,6 @@ function DrawerNavigator({ isDarkMode, toggleTheme }: NavigationProps) {
       }}
     >
       <Drawer.Screen name="Home Page" component={HomeTabs} options={{ headerShown: false }} />
-      <Drawer.Screen name="AuthStack" component={AuthStack} options={{ drawerLabel: 'Login / Signup', headerShown: false }} />
       <Drawer.Screen name="Terms & Conditions" component={TermsConditions} />
       <Drawer.Screen name="Privacy & Security" component={PrivacySecurity} />
       <Drawer.Screen name="Health & Wellness Guidelines" component={HealthGuidelines} />

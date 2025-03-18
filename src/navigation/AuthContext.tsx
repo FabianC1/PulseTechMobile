@@ -1,9 +1,9 @@
 import React, { createContext, useState, ReactNode, useContext } from 'react';
 
-// Define the authentication context type
+// Define authentication context type
 interface AuthContextType {
   user: string | null;
-  login: (email: string, password: string) => boolean; // Login function
+  login: (email: string, password: string) => Promise<boolean>; // Make it async
   logout: () => void;
 }
 
@@ -19,20 +19,25 @@ export const useAuth = () => {
   return context;
 };
 
-// AuthProvider component to wrap the app
+// **AuthProvider component to wrap the app**
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<string | null>(null);
 
-  // Mock login function (Replace this with real authentication logic later)
-  const login = (email: string, password: string): boolean => {
-    if (email === 'test@example.com' && password === 'password123') {
-      setUser(email); // Simulate login success
-      return true;
-    }
-    return false; // Login failed
+  // **Mock Login Function (Replace with real API call later)**
+  const login = async (email: string, password: string): Promise<boolean> => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        if (email === 'test@example.com' && password === 'password123') {
+          setUser(email); // Simulate setting logged-in user
+          resolve(true); // Return true to indicate success
+        } else {
+          resolve(false); // Return false for failed login
+        }
+      }, 1000); // Simulate network delay
+    });
   };
 
-  // Logout function
+  // **Logout Function**
   const logout = () => {
     setUser(null);
   };

@@ -7,7 +7,7 @@ import { useAuth } from '../AuthContext';
 
 // Define navigation type
 type RootStackParamList = {
-  AuthStack: { screen: 'Login' | 'Signup' };
+  Auth: { screen: 'Login' | 'Signup' };
 };
 
 interface SettingsProps {
@@ -39,20 +39,20 @@ export function Settings({ isDarkMode, toggleTheme }: SettingsProps) {
       {!user ? (
         <View style={styles.authPrompt}>
           <Text style={[styles.authText, { color: theme.colors.secondary }]}>
-            Log in or sign up to access your settings.
+            Log in or sign up to access this page.
           </Text>
 
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={[styles.authButton, { backgroundColor: theme.colors.primary }]}
-              onPress={() => navigation.navigate('AuthStack', { screen: 'Login' })}
+              onPress={() => navigation.navigate('Auth', { screen: 'Login' })} // ✅ Fixes navigation
             >
               <Text style={styles.buttonText}>Login</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.authButton, { backgroundColor: theme.colors.primary }]} // Make Sign Up button same as Login
-              onPress={() => navigation.navigate('AuthStack', { screen: 'Signup' })}
+              style={[styles.authButton, { backgroundColor: theme.colors.primary }]}
+              onPress={() => navigation.navigate('Auth', { screen: 'Signup' })} // ✅ Fixes navigation
             >
               <Text style={styles.buttonText}>Sign Up</Text>
             </TouchableOpacity>
