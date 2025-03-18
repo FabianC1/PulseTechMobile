@@ -19,8 +19,10 @@ import { useAuth } from '../AuthContext';
 
 // Define navigation type
 type RootStackParamList = {
+  Signup: undefined;
   Login: undefined;
-  HealthDashboard: undefined;
+  MainApp: { screen: string }; // Allows navigating to drawer screens
+  Auth: { screen: string }; // Allows navigating to Auth stack screens
 };
 
 export function Signup() {
@@ -56,7 +58,7 @@ export function Signup() {
     const success = await signup({ username, email, password, role, medicalLicense });
 
     if (success) {
-      navigation.navigate('HealthDashboard'); // Redirect after signup
+      navigation.navigate('MainApp', { screen: 'Account Settings' } as never);
     } else {
       setErrorMessage('Signup failed. Please try again.');
       setModalVisible(true);
