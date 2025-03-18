@@ -192,6 +192,7 @@ const getIconStyle = (name: string, isFocused: boolean) => {
 // **Bottom Tab Navigator**
 function HomeTabs() {
   const navigation = useNavigation(); // Get navigation object to open drawer
+  const { user } = useAuth(); // ✅ Get the user object from contex
 
   return (
     <Tab.Navigator
@@ -220,10 +221,17 @@ function HomeTabs() {
         ),
         headerRight: () => (
           <TouchableOpacity
-            onPress={() => navigation.dispatch(DrawerActions.jumpTo('Account Settings'))}
+            onPress={() => navigation.dispatch(DrawerActions.jumpTo('Account Settings'))} // ✅ Fix
             style={{ marginRight: 15 }}
           >
-            <Image source={profileIcon} style={{ width: 30, height: 30, borderRadius: 15 }} />
+            <Image
+              source={
+                user?.profilePicture
+                  ? { uri: user.profilePicture } // ✅ Show uploaded profile picture
+                  : require('../../assets/ProfileIcon.png')
+              }
+              style={{ width: 30, height: 30, borderRadius: 15 }}
+            />
           </TouchableOpacity>
         ),
       }}
