@@ -185,30 +185,31 @@ export function Settings({ isDarkMode, toggleTheme }: SettingsProps) {
 
   const saveChanges = async () => {
     try {
-      // Exclude profilePicture from being updated
       const updatedData: any = { ...editableUser, email: user?.email };
   
       // Ensure password is optional instead of using 'delete'
       if (!editableUser.password.trim()) {
-        updatedData.password = undefined; // Makes password optional instead of deleting
+        updatedData.password = undefined;
       }
   
       const response = await fetch("http://192.168.0.84:3000/updateProfile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedData), // profilePicture is no longer sent
+        body: JSON.stringify(updatedData),
       });
   
       const data = await response.json();
   
       if (data.message === "User profile updated successfully") {
         setSaveSuccess(true);
-        setTimeout(() => setSaveSuccess(false), 3000); // Hide success message after 3 sec
+        setTimeout(() => setSaveSuccess(false), 3000);
   
-        // Don't update profilePicture because it's not part of the update
-        await AsyncStorage.setItem("user", JSON.stringify({ ...user, ...updatedData }));
+        // ✅ Preserve the existing profile picture
+        await AsyncStorage.setItem(
+          "user",
+          JSON.stringify({ ...user, ...updatedData, profilePicture: user?.profilePicture })
+        );
   
-        // Exit edit mode
         setIsEditing({
           fullName: false,
           username: false,
