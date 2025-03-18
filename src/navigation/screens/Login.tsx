@@ -16,11 +16,15 @@ import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { useTheme } from 'styled-components/native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useAuth } from '../AuthContext';
+import { DrawerActions } from '@react-navigation/native';
+
 
 // Define navigation type
 type RootStackParamList = {
   Signup: undefined;
-  DrawerNavigator: { screen: string }; // ✅ Allow navigation to Drawer screens
+  Login: undefined;
+  MainApp: { screen: string }; // Allows navigating to drawer screens
+  Auth: { screen: string }; // ✅ Allow navigating to Auth stack screens
 };
 
 export function Login() {
@@ -39,20 +43,21 @@ export function Login() {
       Alert.alert('Error', 'Please enter both email and password.');
       return;
     }
-
+  
     if (loading) return; // Prevent multiple presses
     setLoading(true); // Disable button
-
+  
     const success = await login(email, password); // Wait for login result
-
+  
     if (success) {
-      navigation.navigate("DrawerNavigator", { screen: "Account Settings" });
+      navigation.navigate("MainApp", { screen: "Dashboard" });   
     } else {
       Alert.alert('Login Failed', 'Invalid credentials. Please try again.');
     }
-
+  
     setLoading(false); // Re-enable button after login attempt
   };
+  
 
   return (
     <LinearGradient colors={theme.colors.background} style={styles.container}>

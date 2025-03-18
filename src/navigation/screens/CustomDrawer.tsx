@@ -2,8 +2,10 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { DrawerContentScrollView, DrawerItem } from '@react-navigation/drawer';
 import LinearGradient from 'react-native-linear-gradient';
+import { useAuth } from '../AuthContext'; // ✅ Import AuthContext
 
 export function CustomDrawer(props: any) {
+  const { logout } = useAuth(); // ✅ Get logout function
   const activeRouteIndex = props.state.index; // Get active screen index
   const activeRouteName = props.state.routeNames[activeRouteIndex]; // Get active screen name
 
@@ -21,19 +23,16 @@ export function CustomDrawer(props: any) {
       <DrawerContentScrollView {...props} contentContainerStyle={styles.container}>
         <View style={styles.drawerItems}>
           {props.state.routes.map((route: any, index: number) => {
-            const isSelected = route.name === activeRouteName; // Check if active
+            const isSelected = route.name === activeRouteName;
 
             return (
               <View key={route.key}>
-                {/* Drawer Button */}
                 <DrawerItem
                   label={route.name}
                   onPress={() => props.navigation.navigate(route.name)}
-                  style={isSelected ? styles.selectedDrawerButton : undefined} // Apply selection style
+                  style={isSelected ? styles.selectedDrawerButton : undefined}
                   labelStyle={styles.drawerItemText}
                 />
-
-                {/* Horizontal Separator (Left to Right Gradient) */}
                 {index < props.state.routes.length - 1 && (
                   <LinearGradient
                     colors={['#8400ff', '#0091ff']}
@@ -47,8 +46,14 @@ export function CustomDrawer(props: any) {
           })}
         </View>
 
-        {/* Logout Button */}
-        <TouchableOpacity style={styles.logoutButton} onPress={() => console.log('Logging out...')}>
+        {/* ✅ Logout Button */}
+        <TouchableOpacity
+          style={styles.logoutButton}
+          onPress={() => {
+            logout(); // Clears user session
+            props.navigation.navigate('Auth', { screen: 'Login' } as never); // Redirects to Login screen
+          }}
+        >
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
       </DrawerContentScrollView>
@@ -67,7 +72,7 @@ export function CustomDrawer(props: any) {
 const styles = StyleSheet.create({
   drawerContainer: {
     flex: 1,
-    flexDirection: 'row', // Makes the drawer and gradient sit side by side
+    flexDirection: 'row',
   },
   container: {
     flex: 1,
@@ -83,11 +88,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   selectedDrawerButton: {
-    backgroundColor: '#008cffbe', // Change background when selected
-    width: '85%', // Reduce width so it's smaller
-    alignSelf: 'flex-start', // Align it properly
-    right: -10, // Shift slightly to the right
-    borderRadius: 8, // Rounded corners
+    backgroundColor: '#008cffbe',
+    width: '85%',
+    alignSelf: 'flex-start',
+    right: -10,
+    borderRadius: 8,
   },
   separator: {
     height: 2,
