@@ -6,6 +6,7 @@ export const lightTheme = {
     text: '#0A1F44',
     primary: '#1E3A8A',
     secondary: '#000000',
+    logout:'#000000',
   },
 };
 
@@ -15,6 +16,7 @@ export const darkTheme = {
     text: '#FFFFFF',
     primary: '#4A90E2',
     secondary: '#ffffff',
+    logout:'#002855',
   },
 };
 

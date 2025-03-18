@@ -65,7 +65,7 @@ export function Settings({ isDarkMode, toggleTheme }: SettingsProps) {
           </Text>
 
           {/* Logout Button */}
-          <TouchableOpacity style={[styles.settingOption, { backgroundColor: theme.colors.secondary }]} onPress={logout}>
+          <TouchableOpacity style={[styles.settingOption, { backgroundColor: theme.colors.logout }]} onPress={logout}>
             <Text style={styles.buttonText}>Logout</Text>
           </TouchableOpacity>
         </View>
