@@ -82,24 +82,33 @@ export function Settings({ isDarkMode, toggleTheme }: SettingsProps) {
   
     try {
       setLoading(true);
-      const response = await fetch('http://192.168.0.84:3000/removeProfilePicture', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("http://192.168.0.84:3000/removeProfilePicture", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: user.email }),
       });
   
       const data = await response.json();
-      if (data.message === 'Profile picture set to null successfully') {
-        setProfilePicture(null); // ✅ Update local state
-        updateProfilePicture(null); // ✅ Update global state
+  
+      if (data.message === "Profile picture removed successfully") {
+        user.profilePicture = null; //Remove from UI
+        setProfilePicture(null); //Update local state
+        updateProfilePicture(null); //Update global AuthContext
+  
+        //Sync with AsyncStorage (same as Vue.js localStorage)
+        await AsyncStorage.setItem("user", JSON.stringify({ ...user, profilePicture: null }));
+  
+        console.log("Profile picture removed successfully.");
+      } else {
+        alert("There was an error removing your profile picture.");
       }
     } catch (error) {
-      console.error('Error removing profile picture:', error);
+      console.error("Error removing profile picture:", error);
     } finally {
       setLoading(false);
     }
   };
-  
+
 
 
   return (

@@ -197,7 +197,7 @@ function HomeTabs() {
 
   useEffect(() => {
     setProfilePicture(user?.profilePicture || null);
-  }, [user?.profilePicture]); // ✅ Updates profile picture when changed
+  }, [user?.profilePicture]); //Updates profile picture when changed
 
   return (
     <Tab.Navigator
@@ -257,7 +257,7 @@ function DrawerNavigator({ isDarkMode, toggleTheme }: NavigationProps) {
 
   useEffect(() => {
     setProfilePicture(user?.profilePicture || null);
-  }, [user?.profilePicture]); // ✅ Updates profile picture when changed
+  }, [user?.profilePicture]); //Updates profile picture when changed
 
   return (
     <Drawer.Navigator
