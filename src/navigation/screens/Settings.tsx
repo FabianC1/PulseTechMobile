@@ -1,7 +1,15 @@
 import React from 'react';
-import { Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTheme } from 'styled-components/native';
 import LinearGradient from 'react-native-linear-gradient';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { useAuth } from '../AuthContext';
+
+// Define navigation type
+type RootStackParamList = {
+  Login: undefined;
+  Signup: undefined;
+};
 
 interface SettingsProps {
   isDarkMode: boolean;
@@ -9,12 +17,16 @@ interface SettingsProps {
 }
 
 export function Settings({ isDarkMode, toggleTheme }: SettingsProps) {
-  const theme = useTheme(); // Get theme colors
+  const theme = useTheme();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const { user } = useAuth(); // Use the safer `useAuth()` hook
 
   return (
     <LinearGradient colors={theme.colors.background} style={styles.container}>
-      <Text style={[styles.text, { color: theme.colors.text }]}>Settings Screen</Text>
+      {/* Settings Title */}
+      <Text style={[styles.title, { color: theme.colors.text }]}>Settings</Text>
 
+      {/* Theme Toggle (Always Available) */}
       <TouchableOpacity
         onPress={toggleTheme}
         style={[styles.button, { backgroundColor: theme.colors.primary }]}
@@ -23,18 +35,65 @@ export function Settings({ isDarkMode, toggleTheme }: SettingsProps) {
           Switch to {isDarkMode ? 'Light' : 'Dark'} Mode
         </Text>
       </TouchableOpacity>
+
+      {/* If not logged in, show login/signup prompt */}
+      {!user && (
+        <View style={styles.authPrompt}>
+          <Text style={[styles.authText, { color: theme.colors.secondary }]}>
+            Log in or sign up to access your settings.
+          </Text>
+
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={[styles.authButton, { backgroundColor: theme.colors.primary }]}
+              onPress={() => navigation.navigate('Login')}
+            >
+              <Text style={styles.buttonText}>Login</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.authButton, { backgroundColor: theme.colors.primary }]} // Make Sign Up button same as Login
+              onPress={() => navigation.navigate('Signup')}
+            >
+              <Text style={styles.buttonText}>Sign Up</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
+      {/* If logged in, show additional settings */}
+      {user && (
+        <View style={styles.loggedInSection}>
+          <Text style={[styles.authText, { color: theme.colors.text }]}>
+            Welcome, {user}! You can now access your settings.
+          </Text>
+
+          {/* Example Settings Option */}
+          <TouchableOpacity style={[styles.settingOption, { backgroundColor: theme.colors.primary }]}>
+            <Text style={styles.buttonText}>Change Password</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={[styles.settingOption, { backgroundColor: theme.colors.secondary }]}>
+            <Text style={styles.buttonText}>Manage Account</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </LinearGradient>
   );
 }
 
+// **Styles**
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 20,
   },
-  text: {
-    fontSize: 18,
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 20,
   },
   button: {
     paddingVertical: 12,
@@ -46,5 +105,35 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  authPrompt: {
+    marginTop: 30,
+    alignItems: 'center',
+  },
+  authText: {
+    fontSize: 16,
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  authButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+  },
+  loggedInSection: {
+    marginTop: 30,
+    alignItems: 'center',
+  },
+  settingOption: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    marginTop: 10,
+    width: 200,
+    alignItems: 'center',
   },
 });
