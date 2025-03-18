@@ -5,12 +5,12 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   KeyboardAvoidingView,
   ScrollView,
   Platform,
   TouchableWithoutFeedback,
-  Keyboard
+  Keyboard,
+  Modal
 } from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { useTheme } from 'styled-components/native';
@@ -26,7 +26,7 @@ type RootStackParamList = {
 export function Signup() {
   const theme = useTheme();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const { signup } = useAuth(); // Get signup function from AuthContext
+  const { signup } = useAuth();
 
   // State for form inputs
   const [role, setRole] = useState<'patient' | 'doctor'>('patient');
@@ -36,14 +36,20 @@ export function Signup() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [medicalLicense, setMedicalLicense] = useState('');
 
+  // Error Modal State
+  const [modalVisible, setModalVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
   // Handle Signup
   const handleSignup = async () => {
     if (!username || !email || !password || !confirmPassword || (role === 'doctor' && !medicalLicense)) {
-      Alert.alert('Error', 'Please fill in all required fields.');
+      setErrorMessage('Please fill in all required fields.');
+      setModalVisible(true);
       return;
     }
     if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match.');
+      setErrorMessage('Passwords do not match.');
+      setModalVisible(true);
       return;
     }
 
@@ -52,17 +58,31 @@ export function Signup() {
     if (success) {
       navigation.navigate('HealthDashboard'); // Redirect after signup
     } else {
-      Alert.alert('Signup Failed', 'Something went wrong. Please try again.');
+      setErrorMessage('Signup failed. Please try again.');
+      setModalVisible(true);
     }
   };
 
   return (
     <LinearGradient colors={theme.colors.background} style={styles.container}>
+      {/* Custom Error Modal */}
+      <Modal visible={modalVisible} transparent animationType="fade" onRequestClose={() => setModalVisible(false)}>
+        <View style={styles.modalBackground}>
+          <View style={[styles.modalContainer, { backgroundColor: Array.isArray(theme.colors.background) ? theme.colors.background[0] : theme.colors.background }]}>
+            <Text style={[styles.modalTitle, { color: theme.colors.primary }]}>Error</Text>
+            <Text style={[styles.modalMessage, { color: theme.colors.text }]}>{errorMessage}</Text>
+            <TouchableOpacity style={styles.modalButton} onPress={() => setModalVisible(false)}>
+              <Text style={[styles.modalButtonText, { color: theme.colors.background[1] }]}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
       <KeyboardAvoidingView behavior="padding" style={styles.flex} keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 80}>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
             
-            {/* Title and Role Toggle (Fixed Position at Top) */}
+            {/* Title and Role Toggle */}
             <View style={styles.topSection}>
               <Text style={[styles.title, { color: theme.colors.text }]}>Create an Account</Text>
 
@@ -83,7 +103,7 @@ export function Signup() {
               </View>
             </View>
 
-            {/* Inputs (Centered Properly) */}
+            {/* Input Fields */}
             <View style={styles.formContainer}>
               <TextInput
                 style={[styles.input, { borderColor: theme.colors.primary, color: theme.colors.text }]}
@@ -138,7 +158,7 @@ export function Signup() {
               </TouchableOpacity>
             </View>
 
-            {/* Already have an account? (Fixed at Bottom) */}
+            {/* Already have an account? */}
             <View style={styles.bottomSection}>
               <Text style={[styles.authText, { color: theme.colors.secondary }]}>Already have an account?</Text>
               <TouchableOpacity onPress={() => navigation.navigate('Login')} style={[styles.authButton, { backgroundColor: theme.colors.primary }]}>
@@ -171,8 +191,15 @@ const styles = StyleSheet.create({
   button: { paddingVertical: 12, paddingHorizontal: 24, borderRadius: 8, marginTop: 10 },
   buttonText: { color: '#ffffff', fontSize: 16, fontWeight: 'bold' },
 
-  bottomSection: { alignItems: 'center', marginTop: 40 }, // 🔥 Fixed Position for Login Button
+  bottomSection: { alignItems: 'center', marginTop: 40 },
   authText: { fontSize: 16 },
   authButton: { paddingVertical: 12, paddingHorizontal: 24, borderRadius: 8, marginTop: 10 },
-});
 
+  // **Modal Styles**
+  modalBackground: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)', justifyContent: 'center', alignItems: 'center' },
+  modalContainer: { width: '80%', padding: 20, borderRadius: 10, alignItems: 'center' },
+  modalTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 10 },
+  modalMessage: { fontSize: 16, textAlign: 'center', marginBottom: 20 },
+  modalButton: { backgroundColor: '#0084ff', paddingVertical: 10, paddingHorizontal: 30, borderRadius: 8 },
+  modalButtonText: { fontSize: 16, fontWeight: 'bold' },
+});
