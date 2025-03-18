@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import {
+  Modal,
   View,
   Text,
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   KeyboardAvoidingView,
   ScrollView,
   Platform,
@@ -16,15 +16,13 @@ import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { useTheme } from 'styled-components/native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useAuth } from '../AuthContext';
-import { DrawerActions } from '@react-navigation/native';
-
 
 // Define navigation type
 type RootStackParamList = {
   Signup: undefined;
   Login: undefined;
   MainApp: { screen: string }; // Allows navigating to drawer screens
-  Auth: { screen: string }; // ✅ Allow navigating to Auth stack screens
+  Auth: { screen: string }; // Allows navigating to Auth stack screens
 };
 
 export function Login() {
@@ -32,45 +30,58 @@ export function Login() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { login } = useAuth(); // Get login function from AuthContext
 
-  // State for email, password, and loading
+  // State for email, password, loading, and modal
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false); //revents multiple taps
+  const [loading, setLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   // Handle login
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Please enter both email and password.');
+      setErrorMessage('Please enter both email and password.');
+      setModalVisible(true);
       return;
     }
-  
+
     if (loading) return; // Prevent multiple presses
-    setLoading(true); // Disable button
-  
-    const success = await login(email, password); // Wait for login result
-  
+    setLoading(true);
+
+    const success = await login(email, password);
+
     if (success) {
-      navigation.navigate("MainApp", { screen: "Dashboard" });   
+      navigation.navigate('MainApp', { screen: 'Account Settings' } as never);
     } else {
-      Alert.alert('Login Failed', 'Invalid credentials. Please try again.');
+      setErrorMessage('Invalid email or password. Please try again.');
+      setModalVisible(true);
     }
-  
-    setLoading(false); // Re-enable button after login attempt
+
+    setLoading(false);
   };
-  
 
   return (
     <LinearGradient colors={theme.colors.background} style={styles.container}>
+      {/* Custom Error Modal */}
+      <Modal visible={modalVisible} transparent animationType="fade" onRequestClose={() => setModalVisible(false)}>
+        <View style={styles.modalBackground}>
+          <View style={[styles.modalContainer, { backgroundColor: Array.isArray(theme.colors.background) ? theme.colors.background[0] : theme.colors.background }]}>
+            <Text style={[styles.modalTitle, { color: theme.colors.primary }]}>Error</Text>
+            <Text style={[styles.modalMessage, { color: theme.colors.text }]}>{errorMessage}</Text>
+            <TouchableOpacity style={styles.modalButton} onPress={() => setModalVisible(false)}>
+              <Text style={[styles.modalButtonText, { color: theme.colors.background[1] }]}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
       <KeyboardAvoidingView behavior="padding" style={styles.flex} keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 80}>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
-            
-            {/* Title Section (Fixed at Top) */}
             <View style={styles.topSection}>
               <Text style={[styles.title, { color: theme.colors.text }]}>Login</Text>
             </View>
 
-            {/* Input Fields (Centered Properly) */}
             <View style={styles.formContainer}>
               <TextInput
                 style={[styles.input, { borderColor: theme.colors.primary, color: theme.colors.text }]}
@@ -91,17 +102,15 @@ export function Login() {
                 secureTextEntry
               />
 
-              {/* Login Button */}
               <TouchableOpacity
                 onPress={handleLogin}
-                disabled={loading} // ✅ Prevents multiple taps
+                disabled={loading}
                 style={[styles.button, { backgroundColor: loading ? 'gray' : theme.colors.primary }]}
               >
                 <Text style={styles.buttonText}>{loading ? 'Logging in...' : 'Login'}</Text>
               </TouchableOpacity>
             </View>
 
-            {/* Sign Up Link (Fixed at Bottom) */}
             <View style={styles.bottomSection}>
               <Text style={[styles.authText, { color: theme.colors.secondary }]}>Don't have an account?</Text>
               <TouchableOpacity
@@ -111,7 +120,6 @@ export function Login() {
                 <Text style={[styles.buttonText, { color: '#ffffff' }]}>Sign Up</Text>
               </TouchableOpacity>
             </View>
-
           </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
@@ -134,7 +142,41 @@ const styles = StyleSheet.create({
   button: { paddingVertical: 12, paddingHorizontal: 24, borderRadius: 8, marginTop: 10 },
   buttonText: { color: '#ffffff', fontSize: 16, fontWeight: 'bold' },
 
-  bottomSection: { alignItems: 'center', marginTop: 40 }, //Fixed Position for Sign-Up Link
+  bottomSection: { alignItems: 'center', marginTop: 40 },
   authText: { fontSize: 16 },
   authButton: { paddingVertical: 12, paddingHorizontal: 24, borderRadius: 8, marginTop: 10 },
-});  
+
+  // **Modal Styles**
+  modalBackground: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    width: '80%',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  modalMessage: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  modalButton: {
+    backgroundColor: '#0084ff',
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    borderRadius: 8,
+  },
+  modalButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+});
