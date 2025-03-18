@@ -1,9 +1,21 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard
+} from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { useTheme } from 'styled-components/native';
 import LinearGradient from 'react-native-linear-gradient';
-import { useAuth } from '../AuthContext'; // Import useAuth
+import { useAuth } from '../AuthContext';
 
 // Define navigation type
 type RootStackParamList = {
@@ -38,83 +50,76 @@ export function Login() {
 
   return (
     <LinearGradient colors={theme.colors.background} style={styles.container}>
-      <Text style={[styles.title, { color: theme.colors.text }]}>Login</Text>
+      <KeyboardAvoidingView behavior="padding" style={styles.flex} keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 80}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
+            
+            {/* Title Section (Fixed at Top) */}
+            <View style={styles.topSection}>
+              <Text style={[styles.title, { color: theme.colors.text }]}>Login</Text>
+            </View>
 
-      <TextInput
-        style={[styles.input, { borderColor: theme.colors.primary, color: theme.colors.text }]}
-        placeholder="Email"
-        placeholderTextColor={theme.colors.secondary}
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
+            {/* Input Fields (Centered Properly) */}
+            <View style={styles.formContainer}>
+              <TextInput
+                style={[styles.input, { borderColor: theme.colors.primary, color: theme.colors.text }]}
+                placeholder="Email"
+                placeholderTextColor={theme.colors.secondary}
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
 
-      <TextInput
-        style={[styles.input, { borderColor: theme.colors.primary, color: theme.colors.text }]}
-        placeholder="Password"
-        placeholderTextColor={theme.colors.secondary}
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
+              <TextInput
+                style={[styles.input, { borderColor: theme.colors.primary, color: theme.colors.text }]}
+                placeholder="Password"
+                placeholderTextColor={theme.colors.secondary}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+              />
 
-      <TouchableOpacity onPress={handleLogin} style={[styles.button, { backgroundColor: theme.colors.primary }]}>
-        <Text style={styles.buttonText}>Login</Text>
-      </TouchableOpacity>
+              {/* Login Button */}
+              <TouchableOpacity onPress={handleLogin} style={[styles.button, { backgroundColor: theme.colors.primary }]}>
+                <Text style={styles.buttonText}>Login</Text>
+              </TouchableOpacity>
+            </View>
 
-      <Text style={[styles.authText, { color: theme.colors.secondary }]}>Don't have an account?</Text>
+            {/* Sign Up Link (Fixed at Bottom) */}
+            <View style={styles.bottomSection}>
+              <Text style={[styles.authText, { color: theme.colors.secondary }]}>Don't have an account?</Text>
+              <TouchableOpacity
+                onPress={() => navigation.navigate('Signup')}
+                style={[styles.authButton, { backgroundColor: theme.colors.primary }]}
+              >
+                <Text style={[styles.buttonText, { color: '#ffffff' }]}>Sign Up</Text>
+              </TouchableOpacity>
+            </View>
 
-      <TouchableOpacity
-        onPress={() => navigation.navigate('Signup')}
-        style={[styles.authButton, { backgroundColor: theme.colors.primary }]}
-      >
-        <Text style={[styles.buttonText, { color: '#ffffff' }]}>Sign Up</Text>
-      </TouchableOpacity>
-
+          </ScrollView>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
     </LinearGradient>
   );
 }
 
 // **Styles**
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  input: {
-    width: '90%',
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 15,
-  },
-  button: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    marginTop: 10,
-  },
-  buttonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  authText: {
-    marginTop: 15,
-    fontSize: 16,
-  },
-  authButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    marginTop: 10,
-  },
-});  
+  container: { flex: 1 },
+  flex: { flex: 1 },
+  scrollContainer: { flexGrow: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 20 },
+
+  topSection: { alignItems: 'center', marginBottom: 20 },
+  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 10 },
+
+  formContainer: { width: '100%', alignItems: 'center' },
+  input: { width: '90%', borderWidth: 1, borderRadius: 8, padding: 12, marginBottom: 20 },
+
+  button: { paddingVertical: 12, paddingHorizontal: 24, borderRadius: 8, marginTop: 10 },
+  buttonText: { color: '#ffffff', fontSize: 16, fontWeight: 'bold' },
+
+  bottomSection: { alignItems: 'center', marginTop: 40 }, // 🔥 Fixed Position for Sign-Up Link
+  authText: { fontSize: 16 },
+  authButton: { paddingVertical: 12, paddingHorizontal: 24, borderRadius: 8, marginTop: 10 },
+});
