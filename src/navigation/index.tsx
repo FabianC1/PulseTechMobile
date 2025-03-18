@@ -31,6 +31,7 @@ import { EmergencyContact } from './screens/EmergencyContact';
 
 //Account screens
 import { AuthStack } from './AuthStack'; // Import Auth Stack
+import { useAuth } from './AuthContext'; // ✅ Import authentication context
 
 type RootStackParamList = {
   MainApp: { screen: string }; // ✅ Ensures navigation inside MainApp
@@ -199,7 +200,7 @@ function HomeTabs() {
         headerTintColor: '#ffffff', // White text
         headerTitleAlign: 'center', // Center the title
         headerStyle: {
-          height: 85, 
+          height: 85,
         },
         headerBackground: () => (
           <LinearGradient
@@ -242,6 +243,7 @@ function HomeTabs() {
 // **Drawer Navigator (With All Menu Screens)**
 function DrawerNavigator({ isDarkMode, toggleTheme }: NavigationProps) {
   const navigation = useNavigation(); // Get navigation object
+  const { user } = useAuth(); // ✅ Get the user object from contex
   return (
     <Drawer.Navigator
       drawerContent={(props) => <CustomDrawer {...props} />}
@@ -264,12 +266,20 @@ function DrawerNavigator({ isDarkMode, toggleTheme }: NavigationProps) {
         ),
         headerRight: () => (
           <TouchableOpacity
-          onPress={() => navigation.dispatch(DrawerActions.jumpTo('Account Settings'))} // ✅ Fix
+            onPress={() => navigation.dispatch(DrawerActions.jumpTo('Account Settings'))} // ✅ Fix
             style={{ marginRight: 15 }}
           >
-            <Image source={profileIcon} style={{ width: 30, height: 30, borderRadius: 15 }} />
+            <Image
+              source={
+                user?.profilePicture
+                  ? { uri: user.profilePicture } // ✅ Show uploaded profile picture
+                  : require('../../assets/ProfileIcon.png')
+              }
+              style={{ width: 30, height: 30, borderRadius: 15 }}
+            />
           </TouchableOpacity>
-        ),               
+        ),
+
       }}
     >
       <Drawer.Screen name="Home Page" component={HomeTabs} options={{ headerShown: false }} />

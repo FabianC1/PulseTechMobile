@@ -139,21 +139,30 @@ export function Settings({ isDarkMode, toggleTheme }: SettingsProps) {
               <ActivityIndicator size="large" color={theme.colors.primary} />
             ) : (
               <Image
-                source={profilePicture ? { uri: profilePicture } : require('../../assets/ProfileIcon.png')}
+                source={
+                  user?.profilePicture
+                    ? { uri: user.profilePicture } // ✅ Show user's uploaded picture
+                    : require('../../../assets/ProfileIcon.png') // ✅ Default profile icon
+                }
                 style={{ width: 100, height: 100, borderRadius: 50 }}
               />
             )}
 
-            <TouchableOpacity onPress={handleProfilePictureUpload} style={[styles.button, { backgroundColor: theme.colors.primary }]}>
-              <Text style={styles.buttonText}>Change Picture</Text>
-            </TouchableOpacity>
+            {user && (
+              <>
+                <TouchableOpacity onPress={handleProfilePictureUpload} style={[styles.button, { backgroundColor: theme.colors.primary }]}>
+                  <Text style={styles.buttonText}>Change Picture</Text>
+                </TouchableOpacity>
 
-            {profilePicture && (
-              <TouchableOpacity onPress={handleRemoveProfilePicture} style={[styles.button, { backgroundColor: 'red' }]}>
-                <Text style={styles.buttonText}>Remove Picture</Text>
-              </TouchableOpacity>
+                {user.profilePicture && (
+                  <TouchableOpacity onPress={handleRemoveProfilePicture} style={[styles.button, { backgroundColor: 'red' }]}>
+                    <Text style={styles.buttonText}>Remove Picture</Text>
+                  </TouchableOpacity>
+                )}
+              </>
             )}
           </View>
+
 
           {/* Logout Button */}
           <TouchableOpacity style={[styles.settingOption, { backgroundColor: theme.colors.logout }]} onPress={logout}>
