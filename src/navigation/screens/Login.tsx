@@ -20,7 +20,7 @@ import { useAuth } from '../AuthContext';
 // Define navigation type
 type RootStackParamList = {
   Signup: undefined;
-  HealthDashboard: undefined;
+  DrawerNavigator: { screen: string }; // ✅ Allow navigation to Drawer screens
 };
 
 export function Login() {
@@ -28,9 +28,10 @@ export function Login() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { login } = useAuth(); // Get login function from AuthContext
 
-  // State for email and password
+  // State for email, password, and loading
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false); //revents multiple taps
 
   // Handle login
   const handleLogin = async () => {
@@ -39,13 +40,18 @@ export function Login() {
       return;
     }
 
+    if (loading) return; // Prevent multiple presses
+    setLoading(true); // Disable button
+
     const success = await login(email, password); // Wait for login result
 
     if (success) {
-      navigation.navigate('HealthDashboard'); // Redirect after login
+      navigation.navigate("DrawerNavigator", { screen: "Account Settings" });
     } else {
       Alert.alert('Login Failed', 'Invalid credentials. Please try again.');
     }
+
+    setLoading(false); // Re-enable button after login attempt
   };
 
   return (
@@ -81,8 +87,12 @@ export function Login() {
               />
 
               {/* Login Button */}
-              <TouchableOpacity onPress={handleLogin} style={[styles.button, { backgroundColor: theme.colors.primary }]}>
-                <Text style={styles.buttonText}>Login</Text>
+              <TouchableOpacity
+                onPress={handleLogin}
+                disabled={loading} // ✅ Prevents multiple taps
+                style={[styles.button, { backgroundColor: loading ? 'gray' : theme.colors.primary }]}
+              >
+                <Text style={styles.buttonText}>{loading ? 'Logging in...' : 'Login'}</Text>
               </TouchableOpacity>
             </View>
 
@@ -119,7 +129,7 @@ const styles = StyleSheet.create({
   button: { paddingVertical: 12, paddingHorizontal: 24, borderRadius: 8, marginTop: 10 },
   buttonText: { color: '#ffffff', fontSize: 16, fontWeight: 'bold' },
 
-  bottomSection: { alignItems: 'center', marginTop: 40 }, // 🔥 Fixed Position for Sign-Up Link
+  bottomSection: { alignItems: 'center', marginTop: 40 }, //Fixed Position for Sign-Up Link
   authText: { fontSize: 16 },
   authButton: { paddingVertical: 12, paddingHorizontal: 24, borderRadius: 8, marginTop: 10 },
-});
+});  
