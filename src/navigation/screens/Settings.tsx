@@ -61,7 +61,7 @@ export function Settings({ isDarkMode, toggleTheme }: SettingsProps) {
       ) : (
         <View style={styles.loggedInSection}>
           <Text style={[styles.authText, { color: theme.colors.text }]}>
-            Welcome, {user}! You can now access your settings.
+            Welcome, {user.username}! You can now access your settings.
           </Text>
 
           {/* Logout Button */}
