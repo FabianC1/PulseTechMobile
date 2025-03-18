@@ -6,11 +6,11 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   TouchableWithoutFeedback,
-  Keyboard
+  Keyboard,
+  Modal
 } from 'react-native';
 import { useTheme } from 'styled-components/native';
 import LinearGradient from 'react-native-linear-gradient';
@@ -24,45 +24,50 @@ export function ContactUs() {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
 
+  // Modal states
+  const [modalVisible, setModalVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
   // Function to send email
   const sendEmail = () => {
     if (!name || !email || !message) {
-      Alert.alert('Error', 'Please fill out all fields before sending.');
+      setErrorMessage('Please fill out all fields before sending.');
+      setModalVisible(true);
       return;
     }
-  
+
     if (!validateEmail(email)) {
-      Alert.alert('Error', 'Please enter a valid email address.');
+      setErrorMessage('Please enter a valid email address.');
+      setModalVisible(true);
       return;
     }
-  
+
     const subject = 'User Inquiry - PulseTech Support';
     const body = `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`;
     const emailUrl = `mailto:support@pulsetech.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  
-    Linking.openURL(emailUrl).catch(() => {
-      Alert.alert('Error', 'No email app found. Please set up an email client.');
-    });
-  };  
 
+    Linking.openURL(emailUrl).catch(() => {
+      setErrorMessage('No email app found. Please set up an email client.');
+      setModalVisible(true);
+    });
+  };
+
+  // Validate Email Function
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
-  };  
+  };
 
   return (
     <LinearGradient colors={theme.colors.background} style={styles.container}>
       {/* Keyboard Avoiding View */}
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 80} // Adjust based on the platform
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 80}
         style={styles.flex}
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <ScrollView
-            contentContainerStyle={styles.scrollContainer}
-            keyboardShouldPersistTaps="handled"
-          >
+          <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
             <Text style={[styles.title, { color: theme.colors.text }]}>We are here if you need us</Text>
             <LinearGradient colors={['#0091ff', '#8400ff']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.underline} />
 
@@ -85,7 +90,7 @@ export function ContactUs() {
 
             {/* Name Input */}
             <TextInput
-              style={[styles.input, { borderColor: theme.colors.primary, color: theme.colors.text }]} // 🔥 Updated color
+              style={[styles.input, { borderColor: theme.colors.primary, color: theme.colors.text }]}
               placeholder="Your Name"
               placeholderTextColor={theme.colors.secondary}
               value={name}
@@ -107,12 +112,12 @@ export function ContactUs() {
 
             {/* Show error message if email is invalid */}
             {email && !validateEmail(email) && (
-              <Text style={styles.errorText}>Please enter a valid email address.</Text>
+              <Text style={[styles.errorText, { color: 'red' }]}>Please enter a valid email address.</Text>
             )}
 
             {/* Message Input */}
             <TextInput
-              style={[styles.messageInput, { borderColor: theme.colors.primary, color: theme.colors.text }]} // 🔥 Updated color
+              style={[styles.messageInput, { borderColor: theme.colors.primary, color: theme.colors.text }]}
               placeholder="Your Message"
               placeholderTextColor={theme.colors.secondary}
               multiline
@@ -128,6 +133,19 @@ export function ContactUs() {
           </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
+
+      {/* Custom Error Modal */}
+      <Modal visible={modalVisible} transparent animationType="fade" onRequestClose={() => setModalVisible(false)}>
+        <View style={styles.modalBackground}>
+          <View style={[styles.modalContainer, { backgroundColor: theme.colors.background[0] }]}>
+            <Text style={[styles.modalTitle, { color: theme.colors.primary }]}>Error</Text>
+            <Text style={[styles.modalMessage, { color: theme.colors.text }]}>{errorMessage}</Text>
+            <TouchableOpacity style={styles.modalButton} onPress={() => setModalVisible(false)}>
+              <Text style={[styles.modalButtonText, { color: theme.colors.background[1] }]}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </LinearGradient>
   );
 }
@@ -135,40 +153,22 @@ export function ContactUs() {
 // **Styles**
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  flex: { flex: 1 }, // Ensures `KeyboardAvoidingView` fills screen
+  flex: { flex: 1 },
   scrollContainer: { padding: 20, flexGrow: 1 },
   title: { fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 10 },
   underline: { height: 3, width: '90%', borderRadius: 5, marginBottom: 20, alignSelf: 'center' },
   sectionTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 5 },
   text: { fontSize: 16, marginBottom: 15 },
-  input: {
-    height: 50,
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    fontSize: 16,
-    marginBottom: 15,
-  },
-  messageInput: {
-    height: 120,
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    fontSize: 16,
-    textAlignVertical: 'top',
-    marginBottom: 20,
-  },
-  sendButton: {
-    backgroundColor: '#0084ff',
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
+  input: { height: 50, borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, fontSize: 16, marginBottom: 15 },
+  messageInput: { height: 120, borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, fontSize: 16, textAlignVertical: 'top', marginBottom: 20 },
+  sendButton: { backgroundColor: '#0084ff', paddingVertical: 12, borderRadius: 8, alignItems: 'center' },
   buttonText: { color: '#ffffff', fontSize: 16, fontWeight: 'bold' },
-  errorText: {
-    color: 'red',
-    fontSize: 14,
-    marginBottom: 10,
-  },
-});
 
+  // Modal Styles
+  modalBackground: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)', justifyContent: 'center', alignItems: 'center' },
+  modalContainer: { width: '80%', padding: 20, borderRadius: 10, alignItems: 'center' },
+  modalTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 10 },
+  modalMessage: { fontSize: 16, textAlign: 'center', marginBottom: 20 },
+  modalButton: { backgroundColor: '#0084ff', paddingVertical: 10, paddingHorizontal: 30, borderRadius: 8 },
+  modalButtonText: { fontSize: 16, fontWeight: 'bold' },
+});
