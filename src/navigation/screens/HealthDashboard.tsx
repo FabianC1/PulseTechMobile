@@ -7,8 +7,7 @@ import { useAuth } from '../AuthContext';
 
 // Define navigation type
 type RootStackParamList = {
-  Login: undefined;
-  Signup: undefined;
+  Auth: { screen: 'Login' | 'Signup' };
 };
 
 export function HealthDashboard() {
@@ -36,14 +35,14 @@ export function HealthDashboard() {
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={[styles.authButton, { backgroundColor: theme.colors.primary }]}
-              onPress={() => navigation.navigate('Login')}
+              onPress={() => navigation.navigate('Auth', { screen: 'Login' })} 
             >
               <Text style={styles.buttonText}>Login</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={[styles.authButton, { backgroundColor: theme.colors.primary }]}
-              onPress={() => navigation.navigate('Signup')}
+              onPress={() => navigation.navigate('Auth', { screen: 'Signup' })} 
             >
               <Text style={styles.buttonText}>Sign Up</Text>
             </TouchableOpacity>

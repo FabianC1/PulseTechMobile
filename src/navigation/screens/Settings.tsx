@@ -45,14 +45,14 @@ export function Settings({ isDarkMode, toggleTheme }: SettingsProps) {
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={[styles.authButton, { backgroundColor: theme.colors.primary }]}
-              onPress={() => navigation.navigate('Auth', { screen: 'Login' })} // ✅ Fixes navigation
+              onPress={() => navigation.navigate('Auth', { screen: 'Login' })} //Fixes navigation
             >
               <Text style={styles.buttonText}>Login</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={[styles.authButton, { backgroundColor: theme.colors.primary }]}
-              onPress={() => navigation.navigate('Auth', { screen: 'Signup' })} // ✅ Fixes navigation
+              onPress={() => navigation.navigate('Auth', { screen: 'Signup' })} //Fixes navigation
             >
               <Text style={styles.buttonText}>Sign Up</Text>
             </TouchableOpacity>
