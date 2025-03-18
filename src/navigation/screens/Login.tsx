@@ -26,15 +26,15 @@ export function Login() {
       Alert.alert('Error', 'Please enter both email and password.');
       return;
     }
-  
+
     const success = await login(email, password); // Wait for login result
-  
+
     if (success) {
       navigation.navigate('HealthDashboard'); // Redirect after login
     } else {
       Alert.alert('Login Failed', 'Invalid credentials. Please try again.');
     }
-  };  
+  };
 
   return (
     <LinearGradient colors={theme.colors.background} style={styles.container}>
@@ -65,9 +65,13 @@ export function Login() {
 
       <Text style={[styles.authText, { color: theme.colors.secondary }]}>Don't have an account?</Text>
 
-      <TouchableOpacity onPress={() => navigation.navigate('Signup')} style={[styles.authButton, { backgroundColor: theme.colors.primary }]}>
-        <Text style={[styles.buttonText, { color: theme.colors.text }]}>Sign Up</Text>
+      <TouchableOpacity
+        onPress={() => navigation.navigate('Signup')}
+        style={[styles.authButton, { backgroundColor: theme.colors.primary }]}
+      >
+        <Text style={[styles.buttonText, { color: '#ffffff' }]}>Sign Up</Text>
       </TouchableOpacity>
+
     </LinearGradient>
   );
 }
