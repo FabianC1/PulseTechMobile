@@ -4,6 +4,10 @@ import { useTheme } from 'styled-components/native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { useAuth } from '../AuthContext';
+import { useEffect, useState } from 'react';
+import { Image, ActivityIndicator } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+
 
 // Define navigation type
 type RootStackParamList = {
@@ -19,6 +23,70 @@ export function Settings({ isDarkMode, toggleTheme }: SettingsProps) {
   const theme = useTheme();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { user, logout } = useAuth(); // Get authentication state
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (user?.email) {
+      fetchProfilePicture();
+    }
+  }, [user]);
+
+  const fetchProfilePicture = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('http://192.168.0.84:3000/getUserProfile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user?.email }),
+      });
+
+      const data = await response.json();
+      setProfilePicture(data.profilePicture || null);
+    } catch (error) {
+      console.error('Error fetching profile picture:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleProfilePictureUpload = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled && result.assets.length > 0) {
+      const selectedImage = result.assets[0].uri;
+      setProfilePicture(selectedImage);
+
+      // TODO: Send this image to the backend for saving (Not implemented yet)
+      console.log('Selected image:', selectedImage);
+    }
+  };
+
+  const handleRemoveProfilePicture = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('http://192.168.0.84:3000/removeProfilePicture', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user?.email }),
+      });
+
+      const data = await response.json();
+      if (data.message === 'Profile picture removed successfully') {
+        setProfilePicture(null);
+      }
+    } catch (error) {
+      console.error('Error removing profile picture:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   return (
     <LinearGradient colors={theme.colors.background} style={styles.container}>
@@ -60,15 +128,39 @@ export function Settings({ isDarkMode, toggleTheme }: SettingsProps) {
         </View>
       ) : (
         <View style={styles.loggedInSection}>
+          {/* Welcome Text */}
           <Text style={[styles.authText, { color: theme.colors.text }]}>
             Welcome, {user.username}! You can now access your settings.
           </Text>
+
+          {/* Profile Picture Section */}
+          <View style={{ alignItems: 'center', marginBottom: 20 }}>
+            {loading ? (
+              <ActivityIndicator size="large" color={theme.colors.primary} />
+            ) : (
+              <Image
+                source={profilePicture ? { uri: profilePicture } : require('../../assets/ProfileIcon.png')}
+                style={{ width: 100, height: 100, borderRadius: 50 }}
+              />
+            )}
+
+            <TouchableOpacity onPress={handleProfilePictureUpload} style={[styles.button, { backgroundColor: theme.colors.primary }]}>
+              <Text style={styles.buttonText}>Change Picture</Text>
+            </TouchableOpacity>
+
+            {profilePicture && (
+              <TouchableOpacity onPress={handleRemoveProfilePicture} style={[styles.button, { backgroundColor: 'red' }]}>
+                <Text style={styles.buttonText}>Remove Picture</Text>
+              </TouchableOpacity>
+            )}
+          </View>
 
           {/* Logout Button */}
           <TouchableOpacity style={[styles.settingOption, { backgroundColor: theme.colors.logout }]} onPress={logout}>
             <Text style={styles.buttonText}>Logout</Text>
           </TouchableOpacity>
         </View>
+
       )}
     </LinearGradient>
   );
