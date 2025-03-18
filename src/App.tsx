@@ -4,7 +4,7 @@ import { ThemeProvider } from 'styled-components/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { lightTheme, darkTheme } from './theme';
 import { AuthProvider } from './navigation/AuthContext';
-import { MainNavigator } from './navigation'; // ✅ Now using MainNavigator!
+import { MainNavigator } from './navigation';
 
 export default function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);

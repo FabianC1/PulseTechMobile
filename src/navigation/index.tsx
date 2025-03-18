@@ -1,13 +1,14 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { DrawerActions } from '@react-navigation/native';
 import { NavigationContainer } from '@react-navigation/native';
-import { Image, ScrollView, TouchableOpacity, View, Animated, StyleSheet } from 'react-native';
+import { Image, ScrollView, TouchableOpacity, View, Animated, StyleSheet, RefreshControl } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
-import { CustomDrawer } from './screens/CustomDrawer'; // Import the custom drawer
+import { CustomDrawer } from './screens/CustomDrawer'; 
+
 
 // Screens
 import { Settings } from './screens/Settings';
@@ -18,7 +19,6 @@ import { SymptomChecker } from './screens/SymptomChecker';
 import { Appointments } from './screens/Appointments';
 import { Medication } from './screens/Medication';
 import { Messages } from './screens/Messages';
-import { NotFound } from './screens/NotFound';
 
 //Menu screens
 import { TermsConditions } from './screens/TermsConditions';
@@ -30,12 +30,12 @@ import { Help } from './screens/Help';
 import { EmergencyContact } from './screens/EmergencyContact';
 
 //Account screens
-import { AuthStack } from './AuthStack'; // Import Auth Stack
-import { useAuth } from './AuthContext'; // ✅ Import authentication context
+import { AuthStack } from './AuthStack';
+import { useAuth } from './AuthContext';
 
 type RootStackParamList = {
-  MainApp: { screen: string }; // ✅ Ensures navigation inside MainApp
-  AccountSettings: undefined;  // ✅ Register Account Settings
+  MainApp: { screen: string }; 
+  AccountSettings: undefined; 
 };
 
 // **Main Navigator (Handles Both Drawer and AuthStack)**
@@ -191,23 +191,28 @@ const getIconStyle = (name: string, isFocused: boolean) => {
 
 // **Bottom Tab Navigator**
 function HomeTabs() {
-  const navigation = useNavigation(); // Get navigation object to open drawer
-  const { user } = useAuth(); // ✅ Get the user object from contex
+  const navigation = useNavigation();
+  const { user } = useAuth();
+  const [profilePicture, setProfilePicture] = useState(user?.profilePicture || null);
+
+  useEffect(() => {
+    setProfilePicture(user?.profilePicture || null);
+  }, [user?.profilePicture]); // ✅ Updates profile picture when changed
 
   return (
     <Tab.Navigator
       screenOptions={{
         tabBarShowLabel: false,
-        headerTintColor: '#ffffff', // White text
-        headerTitleAlign: 'center', // Center the title
+        headerTintColor: '#ffffff',
+        headerTitleAlign: 'center',
         headerStyle: {
           height: 85,
         },
         headerBackground: () => (
           <LinearGradient
-            colors={['#8740c1', '#0c62a2']} // Gradient colors
-            start={{ x: 0, y: 0 }} // Start from the top-left
-            end={{ x: 1, y: 0 }} // End at the top-right
+            colors={['#8740c1', '#0c62a2']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
             style={{ flex: 1 }}
           />
         ),
@@ -221,15 +226,11 @@ function HomeTabs() {
         ),
         headerRight: () => (
           <TouchableOpacity
-            onPress={() => navigation.dispatch(DrawerActions.jumpTo('Account Settings'))} // ✅ Fix
+            onPress={() => navigation.dispatch(DrawerActions.jumpTo('Account Settings'))}
             style={{ marginRight: 15 }}
           >
             <Image
-              source={
-                user?.profilePicture
-                  ? { uri: user.profilePicture } // ✅ Show uploaded profile picture
-                  : require('../../assets/ProfileIcon.png')
-              }
+              source={profilePicture ? { uri: profilePicture } : require('../../assets/ProfileIcon.png')}
               style={{ width: 30, height: 30, borderRadius: 15 }}
             />
           </TouchableOpacity>
@@ -248,46 +249,47 @@ function HomeTabs() {
   );
 }
 
-// **Drawer Navigator (With All Menu Screens)**
+
 function DrawerNavigator({ isDarkMode, toggleTheme }: NavigationProps) {
-  const navigation = useNavigation(); // Get navigation object
-  const { user } = useAuth(); // ✅ Get the user object from contex
+  const navigation = useNavigation();
+  const { user } = useAuth();
+  const [profilePicture, setProfilePicture] = useState(user?.profilePicture || null);
+
+  useEffect(() => {
+    setProfilePicture(user?.profilePicture || null);
+  }, [user?.profilePicture]); // ✅ Updates profile picture when changed
+
   return (
     <Drawer.Navigator
       drawerContent={(props) => <CustomDrawer {...props} />}
       screenOptions={{
         drawerStyle: {
-          backgroundColor: 'transparent', // Keep the drawer background clean
+          backgroundColor: 'transparent',
         },
-        headerTintColor: '#ffffff', // White text color
+        headerTintColor: '#ffffff',
         headerTitleAlign: 'center',
         headerStyle: {
-          height: 85, // Adjust this to make the header smaller (default is around 80)
+          height: 85,
         },
         headerBackground: () => (
           <LinearGradient
-            colors={['#8740c1', '#0c62a2']} // Gradient colors
-            start={{ x: 0, y: 0 }} // Start from the top-left
-            end={{ x: 1, y: 0 }} // End at the top-right
+            colors={['#8740c1', '#0c62a2']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
             style={{ flex: 1 }}
           />
         ),
         headerRight: () => (
           <TouchableOpacity
-            onPress={() => navigation.dispatch(DrawerActions.jumpTo('Account Settings'))} // ✅ Fix
+            onPress={() => navigation.dispatch(DrawerActions.jumpTo('Account Settings'))}
             style={{ marginRight: 15 }}
           >
             <Image
-              source={
-                user?.profilePicture
-                  ? { uri: user.profilePicture } // ✅ Show uploaded profile picture
-                  : require('../../assets/ProfileIcon.png')
-              }
+              source={profilePicture ? { uri: profilePicture } : require('../../assets/ProfileIcon.png')}
               style={{ width: 30, height: 30, borderRadius: 15 }}
             />
           </TouchableOpacity>
         ),
-
       }}
     >
       <Drawer.Screen name="Home Page" component={HomeTabs} options={{ headerShown: false }} />
@@ -304,6 +306,7 @@ function DrawerNavigator({ isDarkMode, toggleTheme }: NavigationProps) {
     </Drawer.Navigator>
   );
 }
+
 
 // **Main Navigation with Stack**
 export function Navigation({ isDarkMode, toggleTheme }: NavigationProps) {

@@ -16,6 +16,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   signup: (userData: any) => Promise<boolean>;
+  updateProfilePicture: (newProfilePicture: string | null) => Promise<void>;
 }
 
 // Create AuthContext
@@ -33,6 +34,21 @@ export const useAuth = () => {
 // AuthProvider Component
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+
+  const updateProfilePicture = async (newProfilePicture: string | null) => {
+    if (!user) return;
+  
+    // ✅ Update user object
+    const updatedUser = { ...user, profilePicture: newProfilePicture };
+    setUser(updatedUser); // ✅ Update global state
+  
+    try {
+      await AsyncStorage.setItem('user', JSON.stringify(updatedUser)); // ✅ Save to local storage
+    } catch (error) {
+      console.error('Error saving profile picture to AsyncStorage:', error);
+    }
+  };  
+  
 
   // Load user from AsyncStorage on app startup
   useEffect(() => {
@@ -112,7 +128,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, signup }}>
+    <AuthContext.Provider value={{ user, login, logout, signup, updateProfilePicture }}>
       {children}
     </AuthContext.Provider>
   );
