@@ -101,24 +101,56 @@ export function Settings({ isDarkMode, toggleTheme }: SettingsProps) {
     }
   };
 
-  const { updateProfilePicture } = useAuth(); // ✅ Get function from context
+  const { updateProfilePicture } = useAuth();
 
   const handleProfilePictureUpload = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ImagePicker.MediaTypeOptions.Images, 
       allowsEditing: true,
       aspect: [1, 1],
       quality: 1,
-    });
-
+    });    
+  
     if (!result.canceled && result.assets.length > 0) {
       const selectedImage = result.assets[0].uri;
-
-      setProfilePicture(selectedImage); // ✅ Update local state
-      updateProfilePicture(selectedImage); // ✅ Update global state
+  
+      try {
+        setLoading(true);
+  
+        // Convert image URI to Blob
+        const response = await fetch(selectedImage);
+        const blob = await response.blob();
+  
+        // Prepare FormData
+        const formData = new FormData();
+        formData.append("email", user?.email ?? ""); // Ensure string
+        formData.append("profilePicture", blob, "profile.jpg");
+  
+        // Upload request
+        const uploadResponse = await fetch("http://192.168.0.84:3000/updateProfilePicture", {
+          method: "POST",
+          body: formData, // ✅ Do NOT manually set `Content-Type`
+        });
+  
+        const data = await uploadResponse.json();
+  
+        if (data.success) {
+          setProfilePicture(selectedImage); // ✅ Update UI
+          updateProfilePicture(selectedImage); // ✅ Update global AuthContext
+          await AsyncStorage.setItem("user", JSON.stringify({ ...user, profilePicture: selectedImage })); // ✅ Persist update
+          console.log("Profile picture updated successfully.");
+        } else {
+          alert("Failed to upload profile picture.");
+        }
+      } catch (error) {
+        console.error("Error uploading profile picture:", error);
+      } finally {
+        setLoading(false);
+      }
     }
   };
-
+  
+  
   const handleRemoveProfilePicture = async () => {
     if (!user) return;
 
@@ -153,31 +185,29 @@ export function Settings({ isDarkMode, toggleTheme }: SettingsProps) {
 
   const saveChanges = async () => {
     try {
+      // Exclude profilePicture from being updated
       const updatedData: any = { ...editableUser, email: user?.email };
-
-      // Remove password if unchanged
+  
+      // Ensure password is optional instead of using 'delete'
       if (!editableUser.password.trim()) {
-        delete updatedData.password;
+        updatedData.password = undefined; // Makes password optional instead of deleting
       }
-
+  
       const response = await fetch("http://192.168.0.84:3000/updateProfile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedData),
+        body: JSON.stringify(updatedData), // profilePicture is no longer sent
       });
-
+  
       const data = await response.json();
-
+  
       if (data.message === "User profile updated successfully") {
         setSaveSuccess(true);
         setTimeout(() => setSaveSuccess(false), 3000); // Hide success message after 3 sec
-
-        // Update global auth context
-        updateProfilePicture(updatedData.profilePicture || null);
-
-        // Update local AsyncStorage
+  
+        // Don't update profilePicture because it's not part of the update
         await AsyncStorage.setItem("user", JSON.stringify({ ...user, ...updatedData }));
-
+  
         // Exit edit mode
         setIsEditing({
           fullName: false,
@@ -190,7 +220,7 @@ export function Settings({ isDarkMode, toggleTheme }: SettingsProps) {
           phoneNumber: false,
           gender: false,
         });
-
+  
         setShowSaveButton(false);
       } else {
         alert("No changes were made.");
@@ -200,7 +230,7 @@ export function Settings({ isDarkMode, toggleTheme }: SettingsProps) {
       alert("An error occurred while saving your changes.");
     }
   };
-
+  
 
   return (
     <LinearGradient colors={theme.colors.background} style={styles.container}>
@@ -530,7 +560,6 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     paddingHorizontal: 15,
     width: "100%", // Ensure full width
-    minHeight: "120%",  // ✅ Increases height for extra space
   },
   profileContainer: {
     alignItems: "center",
