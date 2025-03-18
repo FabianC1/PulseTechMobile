@@ -7,8 +7,7 @@ import { useAuth } from '../AuthContext';
 
 // Define navigation type
 type RootStackParamList = {
-  Login: undefined;
-  Signup: undefined;
+  AuthStack: { screen: 'Login' | 'Signup' };
 };
 
 interface SettingsProps {
@@ -19,7 +18,7 @@ interface SettingsProps {
 export function Settings({ isDarkMode, toggleTheme }: SettingsProps) {
   const theme = useTheme();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const { user } = useAuth(); // Use the safer `useAuth()` hook
+  const { user, logout } = useAuth(); // Get authentication state
 
   return (
     <LinearGradient colors={theme.colors.background} style={styles.container}>
@@ -37,7 +36,7 @@ export function Settings({ isDarkMode, toggleTheme }: SettingsProps) {
       </TouchableOpacity>
 
       {/* If not logged in, show login/signup prompt */}
-      {!user && (
+      {!user ? (
         <View style={styles.authPrompt}>
           <Text style={[styles.authText, { color: theme.colors.secondary }]}>
             Log in or sign up to access your settings.
@@ -46,35 +45,28 @@ export function Settings({ isDarkMode, toggleTheme }: SettingsProps) {
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={[styles.authButton, { backgroundColor: theme.colors.primary }]}
-              onPress={() => navigation.navigate('Login')}
+              onPress={() => navigation.navigate('AuthStack', { screen: 'Login' })}
             >
               <Text style={styles.buttonText}>Login</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={[styles.authButton, { backgroundColor: theme.colors.primary }]} // Make Sign Up button same as Login
-              onPress={() => navigation.navigate('Signup')}
+              onPress={() => navigation.navigate('AuthStack', { screen: 'Signup' })}
             >
               <Text style={styles.buttonText}>Sign Up</Text>
             </TouchableOpacity>
           </View>
         </View>
-      )}
-
-      {/* If logged in, show additional settings */}
-      {user && (
+      ) : (
         <View style={styles.loggedInSection}>
           <Text style={[styles.authText, { color: theme.colors.text }]}>
             Welcome, {user}! You can now access your settings.
           </Text>
 
-          {/* Example Settings Option */}
-          <TouchableOpacity style={[styles.settingOption, { backgroundColor: theme.colors.primary }]}>
-            <Text style={styles.buttonText}>Change Password</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={[styles.settingOption, { backgroundColor: theme.colors.secondary }]}>
-            <Text style={styles.buttonText}>Manage Account</Text>
+          {/* Logout Button */}
+          <TouchableOpacity style={[styles.settingOption, { backgroundColor: theme.colors.secondary }]} onPress={logout}>
+            <Text style={styles.buttonText}>Logout</Text>
           </TouchableOpacity>
         </View>
       )}

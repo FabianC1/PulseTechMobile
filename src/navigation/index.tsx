@@ -29,6 +29,10 @@ import { ContactUs } from './screens/ContactUs';
 import { Help } from './screens/Help';
 import { EmergencyContact } from './screens/EmergencyContact';
 
+//Account screens
+import { Login } from './screens/Login';
+import { Signup } from './screens/Signup';
+
 // Icons
 import homeIcon from '../assets/home.png';
 const menuIcon = require('../../assets/menu.png');
@@ -49,6 +53,14 @@ const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
 
+function AuthStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Login" component={Login} />
+      <Stack.Screen name="Signup" component={Signup} />
+    </Stack.Navigator>
+  );
+}
 // **Scrollable Bottom Tab Bar**
 const ScrollableTabBar = (props: any) => {
   return (
@@ -250,6 +262,7 @@ function DrawerNavigator({ isDarkMode, toggleTheme }: NavigationProps) {
       }}
     >
       <Drawer.Screen name="Home Page" component={HomeTabs} options={{ headerShown: false }} />
+      <Drawer.Screen name="AuthStack" component={AuthStack} options={{ drawerLabel: 'Login / Signup', headerShown: false }} />
       <Drawer.Screen name="Terms & Conditions" component={TermsConditions} />
       <Drawer.Screen name="Privacy & Security" component={PrivacySecurity} />
       <Drawer.Screen name="Health & Wellness Guidelines" component={HealthGuidelines} />
