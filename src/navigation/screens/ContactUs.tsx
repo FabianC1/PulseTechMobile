@@ -30,15 +30,25 @@ export function ContactUs() {
       Alert.alert('Error', 'Please fill out all fields before sending.');
       return;
     }
-
+  
+    if (!validateEmail(email)) {
+      Alert.alert('Error', 'Please enter a valid email address.');
+      return;
+    }
+  
     const subject = 'User Inquiry - PulseTech Support';
     const body = `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`;
     const emailUrl = `mailto:support@pulsetech.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-
+  
     Linking.openURL(emailUrl).catch(() => {
       Alert.alert('Error', 'No email app found. Please set up an email client.');
     });
-  };
+  };  
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };  
 
   return (
     <LinearGradient colors={theme.colors.background} style={styles.container}>
@@ -84,13 +94,21 @@ export function ContactUs() {
 
             {/* Email Input */}
             <TextInput
-              style={[styles.input, { borderColor: theme.colors.primary, color: theme.colors.text }]} // 🔥 Updated color
+              style={[
+                styles.input,
+                { borderColor: email && !validateEmail(email) ? 'red' : theme.colors.primary, color: theme.colors.text }
+              ]}
               placeholder="Your Email"
               placeholderTextColor={theme.colors.secondary}
               keyboardType="email-address"
               value={email}
               onChangeText={setEmail}
             />
+
+            {/* Show error message if email is invalid */}
+            {email && !validateEmail(email) && (
+              <Text style={styles.errorText}>Please enter a valid email address.</Text>
+            )}
 
             {/* Message Input */}
             <TextInput
@@ -147,5 +165,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonText: { color: '#ffffff', fontSize: 16, fontWeight: 'bold' },
+  errorText: {
+    color: 'red',
+    fontSize: 14,
+    marginBottom: 10,
+  },
 });
 
