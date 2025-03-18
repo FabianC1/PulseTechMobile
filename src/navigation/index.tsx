@@ -32,6 +32,11 @@ import { EmergencyContact } from './screens/EmergencyContact';
 //Account screens
 import { AuthStack } from './AuthStack'; // Import Auth Stack
 
+type RootStackParamList = {
+  MainApp: { screen: string }; // ✅ Ensures navigation inside MainApp
+  AccountSettings: undefined;  // ✅ Register Account Settings
+};
+
 // **Main Navigator (Handles Both Drawer and AuthStack)**
 export function MainNavigator({ isDarkMode, toggleTheme }: NavigationProps) {
   return (
@@ -259,12 +264,12 @@ function DrawerNavigator({ isDarkMode, toggleTheme }: NavigationProps) {
         ),
         headerRight: () => (
           <TouchableOpacity
-            onPress={() => navigation.dispatch(DrawerActions.jumpTo('Account Settings'))}
+          onPress={() => navigation.dispatch(DrawerActions.jumpTo('Account Settings'))} // ✅ Fix
             style={{ marginRight: 15 }}
           >
             <Image source={profileIcon} style={{ width: 30, height: 30, borderRadius: 15 }} />
           </TouchableOpacity>
-        ),
+        ),               
       }}
     >
       <Drawer.Screen name="Home Page" component={HomeTabs} options={{ headerShown: false }} />
