@@ -50,21 +50,33 @@ export function HealthDashboard() {
         //  Process & validate heart rate data
         if (data.heartRateLogs) {
           const validHeartRateData = data.heartRateLogs
-            .map((entry: any) => Number(entry.value))
+            .map((entry: { value: string }) => Number(entry.value)) // Explicitly set entry type
             .filter((value: number) => !isNaN(value));
 
           setHeartRateData(validHeartRateData);
         }
 
-        //Process & sort medication stats
+        //  Process & sort medication stats properly
         if (data.medicationStats && data.medicationStats.dates) {
+          // Create an array of objects pairing dates with taken & missed values
+          const medicationEntries = data.medicationStats.dates.map(
+            (date: string, index: number) => ({
+              date: new Date(date).getTime(), // Convert to timestamp
+              taken: data.medicationStats.taken[index] || 0, // Ensure a valid number
+              missed: data.medicationStats.missed[index] || 0, // Ensure a valid number
+            })
+          );
+
+          //  Sort by date (oldest → newest)
+          medicationEntries.sort((a: { date: number }, b: { date: number }) => a.date - b.date);
+
+          //  Convert back to separate arrays
           const sortedMedicationStats = {
-            ...data.medicationStats,
-            //  Sort dates in ascending order (Oldest → Newest)
-            dates: data.medicationStats.dates
-              .map((date: string) => new Date(date).getTime()) // Convert to timestamps
-              .sort((a: number, b: number) => a - b) // Sort timestamps
-              .map((timestamp: number) => new Date(timestamp).toISOString().split("T")[0]), // Convert back to YYYY-MM-DD
+            dates: medicationEntries.map((entry: { date: number }) =>
+              new Date(entry.date).toISOString().split("T")[0]
+            ), // YYYY-MM-DD
+            taken: medicationEntries.map((entry: { taken: number }) => entry.taken),
+            missed: medicationEntries.map((entry: { missed: number }) => entry.missed),
           };
 
           console.log("Sorted Medication Data:", sortedMedicationStats); //  Log sorted data
@@ -78,6 +90,8 @@ export function HealthDashboard() {
       setLoading(false);
     }
   };
+
+
 
 
   // Now this function can use fetchHealthDashboard
@@ -238,27 +252,29 @@ export function HealthDashboard() {
           {/* Medication Taken Chart */}
           <View style={styles.chartContainer}>
             <Text style={[styles.chartTitle, { color: theme.colors.text }]}>
-              Medication Taken
+              Medication Taken (Last 5 Days)
             </Text>
 
             {medicationStats.dates.length > 0 ? (
               <BarChart
                 data={{
                   labels: medicationStats.dates
-                    .map(date => new Date(date).getTime()) // Convert to timestamps for sorting
-                    .sort((a, b) => a - b) // Sort dates properly
+                    .map(date => new Date(date).getTime()) // Convert to timestamps
+                    .sort((a, b) => a - b) // Sort in ascending order
+                    .slice(-5) //  Keep only the last 5 dates
                     .map(timestamp => new Date(timestamp).getDate().toString()), // Convert back to day numbers
 
                   datasets: [
                     {
                       data: medicationStats.taken
-                        .map((val, index) => ({ date: medicationStats.dates[index], value: val })) // Pair dates with taken values
-                        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()) // Sort taken values based on date
+                        .map((val, index) => ({ date: medicationStats.dates[index], value: val })) // Pair values with dates
+                        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()) // Sort by date
+                        .slice(-5) //  Keep only the last 5 values
                         .map(entry => entry.value || 0), // Extract values
                     },
                   ],
                 }}
-                width={Dimensions.get("window").width - 40}
+                width={Dimensions.get("window").width - 30} //  Reduced width slightly to create left margin
                 height={220}
                 yAxisLabel=""
                 yAxisSuffix=" doses"
@@ -266,18 +282,18 @@ export function HealthDashboard() {
                   backgroundGradientFrom: theme.colors.background[0],
                   backgroundGradientTo: theme.colors.background[1],
                   decimalPlaces: 0,
-                  color: () => theme.colors.text, // ✅ Ensures text is themed
-                  labelColor: () => theme.colors.text, // ✅ Themed labels
-                  fillShadowGradient: "#228B22", // ✅ Green bars for Taken
-                  fillShadowGradientOpacity: 1, // ✅ Ensure solid color
+                  color: () => theme.colors.text, //  Themed text
+                  labelColor: () => theme.colors.text, //  Themed labels
+                  fillShadowGradient: "#228B22", //  Green bars for Taken
+                  fillShadowGradientOpacity: 1, //  Solid color bars
                   barPercentage: 0.5,
                   propsForLabels: { fontSize: 14 },
                   propsForBackgroundLines: {
-                    stroke: theme.colors.text, // ✅ Themed grid lines
+                    stroke: theme.colors.text, //  Themed grid lines
                     strokeWidth: 0.5,
                   },
                 }}
-                style={{ marginVertical: 8, borderRadius: 10 }}
+                style={{ marginVertical: 8, borderRadius: 10, marginLeft: 10 }} //  Added left margin here
                 showValuesOnTopOfBars
                 fromZero
                 withHorizontalLabels
@@ -291,33 +307,32 @@ export function HealthDashboard() {
           </View>
 
 
-
-          {/* Medication Missed Chart (EXACT DUPLICATE) */}
+          {/* Medication Missed Chart */}
           <View style={styles.chartContainer}>
             <Text style={[styles.chartTitle, { color: theme.colors.text }]}>
-              Medication Missed
+              Medication Missed (Last 5 Days)
             </Text>
 
             {medicationStats.dates.length > 0 ? (
               <BarChart
                 data={{
                   labels: medicationStats.dates
-                    .map(date => new Date(date).getTime()) // Convert to timestamps for sorting
-                    .sort((a, b) => a - b) // Sort dates properly
+                    .map(date => new Date(date).getTime()) // Convert to timestamps
+                    .sort((a, b) => a - b) // Sort in ascending order
+                    .slice(-5) //  Keep only the last 5 dates
                     .map(timestamp => new Date(timestamp).getDate().toString()), // Convert back to day numbers
 
                   datasets: [
                     {
                       data: medicationStats.missed
-                        .map((val, index) => ({ date: medicationStats.dates[index], value: val })) // Pair dates with missed values
-                        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()) // Sort missed values based on date
+                        .map((val, index) => ({ date: medicationStats.dates[index], value: val })) // Pair values with dates
+                        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()) // Sort by date
+                        .slice(-5) //  Keep only the last 5 values
                         .map(entry => entry.value || 0), // Extract values
-
-                      color: (opacity = 1) => `rgba(255, 0, 0, ${opacity})`, // Red for Missed
                     },
                   ],
                 }}
-                width={Dimensions.get("window").width - 40}
+                width={Dimensions.get("window").width - 30} //  Reduced width slightly for left margin
                 height={220}
                 yAxisLabel=""
                 yAxisSuffix=" doses"
@@ -325,12 +340,18 @@ export function HealthDashboard() {
                   backgroundGradientFrom: theme.colors.background[0],
                   backgroundGradientTo: theme.colors.background[1],
                   decimalPlaces: 0,
-                  color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-                  labelColor: (opacity = 1) => theme.colors.text,
+                  color: () => theme.colors.text, //  Themed text color
+                  labelColor: () => theme.colors.text, //  Themed labels
+                  fillShadowGradient: "#FF4C4C", //  Red bars for Missed
+                  fillShadowGradientOpacity: 1, //  Solid color bars
                   barPercentage: 0.5,
                   propsForLabels: { fontSize: 14 },
+                  propsForBackgroundLines: {
+                    stroke: theme.colors.text, //  Themed grid lines
+                    strokeWidth: 0.5,
+                  },
                 }}
-                style={{ marginVertical: 8, borderRadius: 10 }}
+                style={{ marginVertical: 8, borderRadius: 10, marginLeft: 10 }} //  Added left margin
                 showValuesOnTopOfBars
                 fromZero
                 withHorizontalLabels
@@ -342,6 +363,7 @@ export function HealthDashboard() {
               </Text>
             )}
           </View>
+
 
 
 
