@@ -52,7 +52,7 @@ export function MedicalRecords() {
       setRefreshing(true);
 
       const response = await fetch(
-        `"http://192.168.0.84:3000/get-medical-records?email=${encodeURIComponent(user.email)}`,
+        `http://192.168.0.84:3000/get-medical-records?email=${encodeURIComponent(user.email)}`,
         {
           method: "GET",
           headers: { "Content-Type": "application/json" },
@@ -61,17 +61,20 @@ export function MedicalRecords() {
 
       const data = await response.json();
 
+      console.log("🔹 Full API Response:", data);
+
       if (!response.ok) {
-        console.error("Error fetching medical records:", data.message);
+        console.error("❌ Error fetching medical records:", data.message);
         setRefreshing(false);
         return;
       }
 
-      console.log("Fetched medical records:", data);
       setMedicalRecords(data);
+      console.log("✅ Successfully set medical records:", data);
+
       setRefreshing(false);
     } catch (error) {
-      console.error("Error fetching medical records:", error);
+      console.error("❌ Error fetching medical records:", error);
       setRefreshing(false);
     }
   };
@@ -94,7 +97,7 @@ export function MedicalRecords() {
           bloodType: editedInfo.bloodType,
           emergencyContact: editedInfo.emergencyContact,
         }),
-      });      
+      });
 
       const data = await response.json();
 
@@ -107,8 +110,8 @@ export function MedicalRecords() {
 
       // 🔹 Update the UI instantly
       setMedicalRecords((prev) => ({
-        ...((prev ?? {}) as Record<string, any>), // Ensure prev is an object
-        ...editedInfo,
+        ...prev,
+        ...data, // Ensure all fetched fields are applied
       }));
 
       setIsEditing(false);
@@ -246,20 +249,25 @@ export function MedicalRecords() {
                   ) : (
                     <>
                       <Text style={{ fontSize: 16, color: theme.colors.text }}>
-                        <Text style={{ fontWeight: 'bold' }}>Full Name:</Text> {user.fullName}
+                        <Text style={{ fontWeight: 'bold' }}>Full Name:</Text> {medicalRecords?.fullName || 'N/A'}
                       </Text>
+
                       <Text style={{ fontSize: 16, color: theme.colors.text }}>
-                        <Text style={{ fontWeight: 'bold' }}>DOB:</Text> {user.dateOfBirth}
+                        <Text style={{ fontWeight: 'bold' }}>DOB:</Text> {medicalRecords?.dateOfBirth || 'N/A'}
                       </Text>
+
                       <Text style={{ fontSize: 16, color: theme.colors.text }}>
-                        <Text style={{ fontWeight: 'bold' }}>Gender:</Text> {user.gender}
+                        <Text style={{ fontWeight: 'bold' }}>Gender:</Text> {medicalRecords?.gender || 'N/A'}
                       </Text>
+
                       <Text style={{ fontSize: 16, color: theme.colors.text }}>
-                        <Text style={{ fontWeight: 'bold' }}>Blood Type:</Text> {user.bloodType}
+                        <Text style={{ fontWeight: 'bold' }}>Blood Type:</Text> {medicalRecords?.bloodType || 'N/A'}
                       </Text>
+
                       <Text style={{ fontSize: 16, color: theme.colors.text }}>
-                        <Text style={{ fontWeight: 'bold' }}>Emergency Contact:</Text> {user.emergencyContact}
+                        <Text style={{ fontWeight: 'bold' }}>Emergency Contact:</Text> {medicalRecords?.emergencyContact || 'N/A'}
                       </Text>
+
 
                       {/* Edit button */}
                       <TouchableOpacity onPress={toggleEdit} style={styles.editButton}>
@@ -296,7 +304,7 @@ export function MedicalRecords() {
 
 
 
-              
+
               {isEditing && (
                 <TouchableOpacity
                   onPress={saveMedicalRecords}
