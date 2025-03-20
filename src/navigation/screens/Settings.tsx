@@ -204,7 +204,7 @@ export function Settings({ isDarkMode, toggleTheme }: SettingsProps) {
         setSaveSuccess(true);
         setTimeout(() => setSaveSuccess(false), 3000);
   
-        // ✅ Preserve the existing profile picture
+        //Preserve the existing profile picture
         await AsyncStorage.setItem(
           "user",
           JSON.stringify({ ...user, ...updatedData, profilePicture: user?.profilePicture })
@@ -221,7 +221,7 @@ export function Settings({ isDarkMode, toggleTheme }: SettingsProps) {
           phoneNumber: false,
           gender: false,
         });
-  
+
         setShowSaveButton(false);
       } else {
         alert("No changes were made.");
