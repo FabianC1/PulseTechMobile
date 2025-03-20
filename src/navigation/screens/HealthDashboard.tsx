@@ -39,23 +39,23 @@ export function HealthDashboard() {
       setLoading(true);
       const response = await fetch(`http://192.168.0.84:3000/get-health-dashboard?email=${user?.email}`);
       const data = await response.json();
-  
+
       console.log("Full API Response:", data); //  Log full API response
-  
+
       if (data.message !== "No Updates") {
         setRecentAppointments(data.recentAppointments || []);
         setUpcomingAppointments(data.upcomingAppointments || []);
         setHealthAlerts(data.healthAlerts || []);
-  
+
         //  Process & validate heart rate data
         if (data.heartRateLogs) {
           const validHeartRateData = data.heartRateLogs
             .map((entry: any) => Number(entry.value))
             .filter((value: number) => !isNaN(value));
-  
+
           setHeartRateData(validHeartRateData);
         }
-  
+
         //Process & sort medication stats
         if (data.medicationStats && data.medicationStats.dates) {
           const sortedMedicationStats = {
@@ -66,9 +66,9 @@ export function HealthDashboard() {
               .sort((a: number, b: number) => a - b) // Sort timestamps
               .map((timestamp: number) => new Date(timestamp).toISOString().split("T")[0]), // Convert back to YYYY-MM-DD
           };
-  
+
           console.log("Sorted Medication Data:", sortedMedicationStats); //  Log sorted data
-  
+
           setMedicationStats(sortedMedicationStats);
         }
       }
@@ -78,7 +78,7 @@ export function HealthDashboard() {
       setLoading(false);
     }
   };
-  
+
 
   // Now this function can use fetchHealthDashboard
   const onRefresh = async () => {
@@ -235,11 +235,10 @@ export function HealthDashboard() {
             )}
           </View>
 
-
-          {/* Medication Adherence Chart */}
+          {/* Medication Taken Chart */}
           <View style={styles.chartContainer}>
             <Text style={[styles.chartTitle, { color: theme.colors.text }]}>
-              Medication Adherence
+              Medication Taken
             </Text>
 
             {medicationStats.dates.length > 0 ? (
@@ -256,9 +255,58 @@ export function HealthDashboard() {
                         .map((val, index) => ({ date: medicationStats.dates[index], value: val })) // Pair dates with taken values
                         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()) // Sort taken values based on date
                         .map(entry => entry.value || 0), // Extract values
-
-                      color: (opacity = 1) => `rgba(34, 139, 34, ${opacity})`, // Green for Taken
                     },
+                  ],
+                }}
+                width={Dimensions.get("window").width - 40}
+                height={220}
+                yAxisLabel=""
+                yAxisSuffix=" doses"
+                chartConfig={{
+                  backgroundGradientFrom: theme.colors.background[0],
+                  backgroundGradientTo: theme.colors.background[1],
+                  decimalPlaces: 0,
+                  color: () => theme.colors.text, // ✅ Ensures text is themed
+                  labelColor: () => theme.colors.text, // ✅ Themed labels
+                  fillShadowGradient: "#228B22", // ✅ Green bars for Taken
+                  fillShadowGradientOpacity: 1, // ✅ Ensure solid color
+                  barPercentage: 0.5,
+                  propsForLabels: { fontSize: 14 },
+                  propsForBackgroundLines: {
+                    stroke: theme.colors.text, // ✅ Themed grid lines
+                    strokeWidth: 0.5,
+                  },
+                }}
+                style={{ marginVertical: 8, borderRadius: 10 }}
+                showValuesOnTopOfBars
+                fromZero
+                withHorizontalLabels
+                withInnerLines
+              />
+            ) : (
+              <Text style={[styles.noDataText, { color: theme.colors.text }]}>
+                No medication data available.
+              </Text>
+            )}
+          </View>
+
+
+
+          {/* Medication Missed Chart (EXACT DUPLICATE) */}
+          <View style={styles.chartContainer}>
+            <Text style={[styles.chartTitle, { color: theme.colors.text }]}>
+              Medication Missed
+            </Text>
+
+            {medicationStats.dates.length > 0 ? (
+              <BarChart
+                data={{
+                  labels: medicationStats.dates
+                    .map(date => new Date(date).getTime()) // Convert to timestamps for sorting
+                    .sort((a, b) => a - b) // Sort dates properly
+                    .map(timestamp => new Date(timestamp).getDate().toString()), // Convert back to day numbers
+
+                  datasets: [
                     {
                       data: medicationStats.missed
                         .map((val, index) => ({ date: medicationStats.dates[index], value: val })) // Pair dates with missed values
@@ -279,7 +327,7 @@ export function HealthDashboard() {
                   decimalPlaces: 0,
                   color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
                   labelColor: (opacity = 1) => theme.colors.text,
-                  barPercentage: 0.5, // Adjust to fit both Taken and Missed bars
+                  barPercentage: 0.5,
                   propsForLabels: { fontSize: 14 },
                 }}
                 style={{ marginVertical: 8, borderRadius: 10 }}
@@ -294,6 +342,8 @@ export function HealthDashboard() {
               </Text>
             )}
           </View>
+
+
 
           {/* Heart Rate Chart */}
           {loading ? (
