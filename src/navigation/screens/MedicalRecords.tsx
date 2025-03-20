@@ -61,7 +61,6 @@ export function MedicalRecords() {
 
       const data = await response.json();
 
-      console.log("🔹 Full API Response:", data);
 
       if (!response.ok) {
         console.error("❌ Error fetching medical records:", data.message);
@@ -70,7 +69,6 @@ export function MedicalRecords() {
       }
 
       setMedicalRecords(data);
-      console.log("✅ Successfully set medical records:", data);
 
       setRefreshing(false);
     } catch (error) {
@@ -106,7 +104,7 @@ export function MedicalRecords() {
         return;
       }
 
-      console.log("Medical records updated successfully:", data.message);
+
 
       // 🔹 Update the UI instantly
       setMedicalRecords((prev) => ({
