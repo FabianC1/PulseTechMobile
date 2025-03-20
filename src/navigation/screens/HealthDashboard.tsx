@@ -146,7 +146,9 @@ export function HealthDashboard() {
 
           {/* Recent Appointments */}
           <View style={styles.appointmentsSection}>
-            <Text style={styles.sectionTitle}>Recent Appointments</Text>
+            <Text style={[styles.sectionTitle, { color: theme.colors.text, textAlign: "center" }]}>
+              Recent Appointments
+            </Text>
             {recentAppointments.length > 0 ? (
               recentAppointments.map((appt, index) => (
                 <LinearGradient
@@ -156,21 +158,29 @@ export function HealthDashboard() {
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                 >
-                  <Text style={styles.appointmentDate}>{appt.date}</Text>
-                  <Text style={styles.appointmentName}>
+                  <Text style={[styles.appointmentDate, { color: theme.colors.text, textAlign: "center" }]}>
+                    {appt.date}
+                  </Text>
+                  <Text style={[styles.appointmentName, { color: theme.colors.text, textAlign: "center" }]}>
                     {user.role === "patient" ? appt.doctorName : appt.patientName}
                   </Text>
-                  <Text style={styles.appointmentReason}>{appt.reason}</Text>
+                  <Text style={[styles.appointmentReason, { color: theme.colors.text, textAlign: "center" }]}>
+                    {appt.reason}
+                  </Text>
                 </LinearGradient>
               ))
             ) : (
-              <Text style={styles.noAppointmentsText}>No recent appointments.</Text>
+              <Text style={[styles.noAppointmentsText, { color: theme.colors.text, textAlign: "center" }]}>
+                No recent appointments.
+              </Text>
             )}
           </View>
 
           {/* Upcoming Appointments */}
           <View style={styles.appointmentsSection}>
-            <Text style={styles.sectionTitle}>Upcoming Appointments</Text>
+            <Text style={[styles.sectionTitle, { color: theme.colors.text, textAlign: "center" }]}>
+              Upcoming Appointments
+            </Text>
             {upcomingAppointments.length > 0 ? (
               upcomingAppointments.map((appt, index) => (
                 <LinearGradient
@@ -180,17 +190,25 @@ export function HealthDashboard() {
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                 >
-                  <Text style={styles.appointmentDate}>{appt.date}</Text>
-                  <Text style={styles.appointmentName}>
+                  <Text style={[styles.appointmentDate, { color: theme.colors.text, textAlign: "center" }]}>
+                    {appt.date}
+                  </Text>
+                  <Text style={[styles.appointmentName, { color: theme.colors.text, textAlign: "center" }]}>
                     {user.role === "patient" ? appt.doctorName : appt.patientName}
                   </Text>
-                  <Text style={styles.appointmentReason}>{appt.reason}</Text>
+                  <Text style={[styles.appointmentReason, { color: theme.colors.text, textAlign: "center" }]}>
+                    {appt.reason}
+                  </Text>
                 </LinearGradient>
               ))
             ) : (
-              <Text style={styles.noAppointmentsText}>No upcoming appointments.</Text>
+              <Text style={[styles.noAppointmentsText, { color: theme.colors.text, textAlign: "center" }]}>
+                No upcoming appointments.
+              </Text>
             )}
           </View>
+
+
 
 
 
