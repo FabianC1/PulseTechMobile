@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, RefreshControl, Image } from 'react-native';
 import { useTheme } from 'styled-components/native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
@@ -17,70 +17,104 @@ type RootStackParamList = {
 export function HealthDashboard() {
   const theme = useTheme();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const { user } = useAuth(); // Get authentication state
+  const { user } = useAuth(); 
 
   const [heartRateData, setHeartRateData] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false); // Refreshing state
 
-  useEffect(() => {
-    const fetchHealthDashboard = async () => {
-      try {
-        setLoading(true); // ✅ Start loading indicator
-  
-        const response = await fetch(`http://192.168.0.84:3000/get-health-dashboard?email=${user?.email}`);
-        const data = await response.json();
-  
-        console.log("Full API Response:", data); // 🔍 Debugging
-  
-        if (data.message !== "No Updates" && data.heartRateLogs) {
-          // ✅ Extract numbers from objects
-          const validHeartRateData = data.heartRateLogs
-            .map((entry: any) => Number(entry.value)) // Convert "78" → 78
-            .filter((value: number) => !isNaN(value)); // Remove invalid numbers
-  
-          console.log("Processed Heart Rate Data:", validHeartRateData); // 🔍 Debugging
-          setHeartRateData(validHeartRateData);
-        }
-      } catch (error) {
-        console.error("Error fetching health dashboard data:", error);
-      } finally {
-        setLoading(false); // ✅ Stop loading after data fetch (even if error)
+  // Move fetchHealthDashboard OUTSIDE useEffect
+  const fetchHealthDashboard = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`http://192.168.0.84:3000/get-health-dashboard?email=${user?.email}`);
+      const data = await response.json();
+
+      console.log("Full API Response:", data);
+
+      if (data.message !== "No Updates" && data.heartRateLogs) {
+        const validHeartRateData = data.heartRateLogs
+          .map((entry: any) => Number(entry.value)) 
+          .filter((value: number) => !isNaN(value)); 
+
+        console.log("Processed Heart Rate Data:", validHeartRateData);
+        setHeartRateData(validHeartRateData);
       }
-    };
-  
+    } catch (error) {
+      console.error("Error fetching health dashboard data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Now this function can use fetchHealthDashboard
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchHealthDashboard();
+    setRefreshing(false);
+  };
+
+  // Call fetchHealthDashboard when the component mounts
+  useEffect(() => {
     if (user) {
       fetchHealthDashboard();
     }
-  }, [user]);    
-
+  }, [user]);
+  
   return (
     <LinearGradient colors={theme.colors.background} style={styles.container}>
       {user ? (
-        <ScrollView contentContainerStyle={{ alignItems: 'center', paddingBottom: 20 }}>
+        <ScrollView
+          contentContainerStyle={{flexGrow: 1, paddingBottom: 100 }}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          showsVerticalScrollIndicator={false}
+        >
 
-          <Text style={[styles.title, { color: theme.colors.text }]}>
-            Welcome to your Health Dashboard!
-          </Text>
+          {/* Profile Section */}
+          <View style={styles.profileSection}>
+            <View style={styles.profileContainer}>
+              <Image
+                source={user.profilePicture ? { uri: user.profilePicture } : require('../../../assets/ProfileIcon.png')}
+                style={styles.profilePic}
+              />
+              <Text style={[styles.profileName, { color: theme.colors.text }]}>
+                {user.fullName}
+              </Text>
+            </View>
 
-          {/* Loading Indicator */}
+            {/* Quick Actions Grid */}
+            <View style={styles.quickActions}>
+              <TouchableOpacity style={styles.actionButton} onPress={() => navigation.navigate('Records' as never)}>
+                <Text style={styles.buttonText}>Log Symptom</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.actionButton} onPress={() => navigation.navigate('Appointments' as never)}>
+                <Text style={styles.buttonText}>Request Appointment</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.actionButton} onPress={() => navigation.navigate('Records' as never)}>
+                <Text style={styles.buttonText}>View Medical Records</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.actionButton} onPress={() => navigation.navigate('Symptom' as never)}>
+                <Text style={styles.buttonText}>Get Self-Diagnosis</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.actionButton} onPress={() => navigation.navigate('Medication' as never)}>
+                <Text style={styles.buttonText}>Check Medication</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.actionButton} onPress={() => navigation.navigate('Messages' as never)}>
+                <Text style={styles.buttonText}>Message Doctor</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Heart Rate Chart */}
           {loading ? (
             <ActivityIndicator size="large" color={theme.colors.primary} />
           ) : (
             <>
-              {/* Heart Rate Chart */}
               <Text style={[styles.chartTitle, { color: theme.colors.text }]}>Heart Rate</Text>
               <LineChart
                 data={{
-                  labels: heartRateData
-                    .filter((entry: number) => !isNaN(entry) && entry !== undefined && entry !== null) // ✅ Ensure only valid numbers
-                    .map((_: number, index: number) => `${index + 1}`),
-                  datasets: [
-                    {
-                      data: heartRateData.map((entry: number) =>
-                        isNaN(entry) || entry === undefined || entry === null ? 0 : entry // ✅ Replace invalid values with 0
-                      ),
-                    },
-                  ],
+                  labels: heartRateData.map((_, index) => `${index + 1}`),
+                  datasets: [{ data: heartRateData }],
                 }}
                 width={Dimensions.get("window").width - 40}
                 height={220}
@@ -97,11 +131,10 @@ export function HealthDashboard() {
                 bezier
                 style={{ marginVertical: 8, borderRadius: 10 }}
               />
-
             </>
           )}
-
         </ScrollView>
+
       ) : (
         // If not logged in, show login/signup prompt
         <View style={styles.authPrompt}>
@@ -175,4 +208,45 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     textAlign: 'center',
   },
+  profileSection: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+
+  profileContainer: {
+    alignItems: 'center',
+  },
+
+  profilePic: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    marginBottom: 10,
+  },
+
+  profileName: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+
+  quickActions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    width: '100%',
+    rowGap: 20, 
+    columnGap: 20,
+  },
+  
+  actionButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    backgroundColor: '#0091ff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '45%', 
+  },  
+
 });
