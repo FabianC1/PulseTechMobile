@@ -52,7 +52,7 @@ export function MedicalRecords() {
       setRefreshing(true);
 
       const response = await fetch(
-        `http://localhost:3000/get-medical-records?email=${encodeURIComponent(user.email)}`,
+        `"http://192.168.0.84:3000/get-medical-records?email=${encodeURIComponent(user.email)}`,
         {
           method: "GET",
           headers: { "Content-Type": "application/json" },
@@ -83,11 +83,9 @@ export function MedicalRecords() {
     }
 
     try {
-      const response = await fetch("http://localhost:3000/save-medical-records", {
+      const response = await fetch("http://192.168.0.84:3000/save-medical-records", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: user.email,
           fullName: editedInfo.fullName,
@@ -96,7 +94,7 @@ export function MedicalRecords() {
           bloodType: editedInfo.bloodType,
           emergencyContact: editedInfo.emergencyContact,
         }),
-      });
+      });      
 
       const data = await response.json();
 
