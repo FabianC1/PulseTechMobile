@@ -17,9 +17,10 @@ type RootStackParamList = {
 export function HealthDashboard() {
   const theme = useTheme();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const { user } = useAuth(); 
+  const { user } = useAuth();
 
   const [heartRateData, setHeartRateData] = useState<number[]>([]);
+  const [healthAlerts, setHealthAlerts] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false); // Refreshing state
 
@@ -34,11 +35,16 @@ export function HealthDashboard() {
 
       if (data.message !== "No Updates" && data.heartRateLogs) {
         const validHeartRateData = data.heartRateLogs
-          .map((entry: any) => Number(entry.value)) 
-          .filter((value: number) => !isNaN(value)); 
+          .map((entry: any) => Number(entry.value))
+          .filter((value: number) => !isNaN(value));
 
         console.log("Processed Heart Rate Data:", validHeartRateData);
         setHeartRateData(validHeartRateData);
+      }
+      if (data.message !== "No Updates") {
+        if (data.healthAlerts) {
+          setHealthAlerts(data.healthAlerts);
+        }
       }
     } catch (error) {
       console.error("Error fetching health dashboard data:", error);
@@ -60,12 +66,12 @@ export function HealthDashboard() {
       fetchHealthDashboard();
     }
   }, [user]);
-  
+
   return (
     <LinearGradient colors={theme.colors.background} style={styles.container}>
       {user ? (
         <ScrollView
-          contentContainerStyle={{flexGrow: 1, paddingBottom: 100 }}
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: 100 }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
           showsVerticalScrollIndicator={false}
         >
@@ -104,6 +110,28 @@ export function HealthDashboard() {
               </TouchableOpacity>
             </View>
           </View>
+
+          {/* Health Alerts Section */}
+          <View style={styles.alertsSection}>
+            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+              Health Alerts
+            </Text>
+
+            {healthAlerts.length > 0 ? (
+              healthAlerts.map((alert, index) => (
+                <View key={index} style={styles.alertBox}>
+                  <Text style={[styles.alertText, { color: theme.colors.text }]}>
+                    {alert}
+                  </Text>
+                </View>
+              ))
+            ) : (
+              <Text style={[styles.noAlertsText, { color: theme.colors.text }]}>
+                No health alerts at this time.
+              </Text>
+            )}
+          </View>
+
 
           {/* Heart Rate Chart */}
           {loading ? (
@@ -214,6 +242,7 @@ const styles = StyleSheet.create({
   },
 
   profileContainer: {
+    marginTop: 10,
     alignItems: 'center',
   },
 
@@ -228,6 +257,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     textAlign: 'center',
+    marginBottom: 20,
   },
 
   quickActions: {
@@ -235,10 +265,10 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'center',
     width: '100%',
-    rowGap: 20, 
+    rowGap: 20,
     columnGap: 20,
   },
-  
+
   actionButton: {
     paddingVertical: 12,
     paddingHorizontal: 16,
@@ -246,7 +276,37 @@ const styles = StyleSheet.create({
     backgroundColor: '#0091ff',
     alignItems: 'center',
     justifyContent: 'center',
-    width: '45%', 
+    width: '45%',
+  },
+  alertsSection: {
+    width: "90%",
+    marginVertical: 20,
+    alignSelf: "center",
+    alignItems: "center",
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  
+  alertBox: {
+    backgroundColor: "#FF00005E",
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 10,
+    width: "100%",
+    alignItems: "center",
+  },
+  
+  alertText: {
+    fontSize: 14,
+    textAlign: "center",
+  },
+  noAlertsText: {
+    fontSize: 14,
+    fontStyle: "italic",
+    textAlign: "center",
   },  
 
 });
