@@ -458,7 +458,7 @@ export function HealthDashboard() {
                 width={Dimensions.get("window").width - 40}
                 height={220}
                 yAxisLabel=""
-                yAxisSuffix=" steps"
+                yAxisSuffix=""
                 chartConfig={{
                   backgroundGradientFrom: theme.colors.background[0],
                   backgroundGradientTo: theme.colors.background[1],
