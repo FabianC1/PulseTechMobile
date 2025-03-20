@@ -21,8 +21,17 @@ export function HealthDashboard() {
 
   const [heartRateData, setHeartRateData] = useState<number[]>([]);
   const [healthAlerts, setHealthAlerts] = useState<string[]>([]);
+  const [recentAppointments, setRecentAppointments] = useState<Appointment[]>([]);
+  const [upcomingAppointments, setUpcomingAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false); // Refreshing state
+
+  type Appointment = {
+    date: string;
+    doctorName: string;
+    patientName: string;
+    reason: string;
+  };
 
   // Move fetchHealthDashboard OUTSIDE useEffect
   const fetchHealthDashboard = async () => {
@@ -34,6 +43,9 @@ export function HealthDashboard() {
       console.log("Full API Response:", data);
 
       if (data.message !== "No Updates" && data.heartRateLogs) {
+        // Process Appointments
+        setRecentAppointments(data.recentAppointments || []);
+        setUpcomingAppointments(data.upcomingAppointments || []);
         const validHeartRateData = data.heartRateLogs
           .map((entry: any) => Number(entry.value))
           .filter((value: number) => !isNaN(value));
@@ -131,6 +143,57 @@ export function HealthDashboard() {
               </Text>
             )}
           </View>
+
+          {/* Recent Appointments */}
+          <View style={styles.appointmentsSection}>
+            <Text style={styles.sectionTitle}>Recent Appointments</Text>
+            {recentAppointments.length > 0 ? (
+              recentAppointments.map((appt, index) => (
+                <LinearGradient
+                  key={index}
+                  colors={[theme.colors.appointments, theme.colors.appointments2]}
+                  style={styles.appointmentItem}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                >
+                  <Text style={styles.appointmentDate}>{appt.date}</Text>
+                  <Text style={styles.appointmentName}>
+                    {user.role === "patient" ? appt.doctorName : appt.patientName}
+                  </Text>
+                  <Text style={styles.appointmentReason}>{appt.reason}</Text>
+                </LinearGradient>
+              ))
+            ) : (
+              <Text style={styles.noAppointmentsText}>No recent appointments.</Text>
+            )}
+          </View>
+
+          {/* Upcoming Appointments */}
+          <View style={styles.appointmentsSection}>
+            <Text style={styles.sectionTitle}>Upcoming Appointments</Text>
+            {upcomingAppointments.length > 0 ? (
+              upcomingAppointments.map((appt, index) => (
+                <LinearGradient
+                  key={index}
+                  colors={[theme.colors.appointments, theme.colors.appointments2]}
+                  style={styles.appointmentItem}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                >
+                  <Text style={styles.appointmentDate}>{appt.date}</Text>
+                  <Text style={styles.appointmentName}>
+                    {user.role === "patient" ? appt.doctorName : appt.patientName}
+                  </Text>
+                  <Text style={styles.appointmentReason}>{appt.reason}</Text>
+                </LinearGradient>
+              ))
+            ) : (
+              <Text style={styles.noAppointmentsText}>No upcoming appointments.</Text>
+            )}
+          </View>
+
+
+
 
 
           {/* Heart Rate Chart */}
@@ -289,7 +352,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 10,
   },
-  
+
   alertBox: {
     backgroundColor: "#FF00005E",
     padding: 10,
@@ -298,7 +361,7 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
   },
-  
+
   alertText: {
     fontSize: 14,
     textAlign: "center",
@@ -307,6 +370,44 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontStyle: "italic",
     textAlign: "center",
-  },  
+  },
+  appointmentsSection: {
+    width: "90%",
+    marginVertical: 20,
+    alignSelf: "center",
+    borderRadius: 10, // Smooth rounded corners
+  },
+
+  appointmentItem: {
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 10,
+    alignItems: "center",
+    width: "100%",
+  },
+
+  appointmentDate: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#0080ff",
+  },
+
+  appointmentName: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginTop: 5,
+  },
+
+  appointmentReason: {
+    fontSize: 14,
+    color: "#ffffff",
+    marginTop: 3,
+  },
+
+  noAppointmentsText: {
+    fontSize: 14,
+    fontStyle: "italic",
+    textAlign: "center",
+  },
 
 });
