@@ -34,34 +34,43 @@ export function HealthDashboard() {
     reason: string;
   };
 
-  // Move fetchHealthDashboard OUTSIDE useEffect
   const fetchHealthDashboard = async () => {
     try {
       setLoading(true);
       const response = await fetch(`http://192.168.0.84:3000/get-health-dashboard?email=${user?.email}`);
       const data = await response.json();
-
-      console.log("Full API Response:", data);
-
-      if (data.message !== "No Updates" && data.heartRateLogs) {
-        // Process Appointments
+  
+      console.log("Full API Response:", data); //  Log full API response
+  
+      if (data.message !== "No Updates") {
         setRecentAppointments(data.recentAppointments || []);
         setUpcomingAppointments(data.upcomingAppointments || []);
         setHealthAlerts(data.healthAlerts || []);
-        const validHeartRateData = data.heartRateLogs
-          .map((entry: any) => Number(entry.value))
-          .filter((value: number) => !isNaN(value));
-
-        console.log("Processed Heart Rate Data:", validHeartRateData);
-        setHeartRateData(validHeartRateData);
-      }
-      if (data.message !== "No Updates") {
-        if (data.healthAlerts) {
-          setHealthAlerts(data.healthAlerts);
+  
+        //  Process & validate heart rate data
+        if (data.heartRateLogs) {
+          const validHeartRateData = data.heartRateLogs
+            .map((entry: any) => Number(entry.value))
+            .filter((value: number) => !isNaN(value));
+  
+          setHeartRateData(validHeartRateData);
         }
-      }
-      if (data.medicationStats) {
-        setMedicationStats(data.medicationStats);
+  
+        //Process & sort medication stats
+        if (data.medicationStats && data.medicationStats.dates) {
+          const sortedMedicationStats = {
+            ...data.medicationStats,
+            //  Sort dates in ascending order (Oldest → Newest)
+            dates: data.medicationStats.dates
+              .map((date: string) => new Date(date).getTime()) // Convert to timestamps
+              .sort((a: number, b: number) => a - b) // Sort timestamps
+              .map((timestamp: number) => new Date(timestamp).toISOString().split("T")[0]), // Convert back to YYYY-MM-DD
+          };
+  
+          console.log("Sorted Medication Data:", sortedMedicationStats); //  Log sorted data
+  
+          setMedicationStats(sortedMedicationStats);
+        }
       }
     } catch (error) {
       console.error("Error fetching health dashboard data:", error);
@@ -69,6 +78,7 @@ export function HealthDashboard() {
       setLoading(false);
     }
   };
+  
 
   // Now this function can use fetchHealthDashboard
   const onRefresh = async () => {
@@ -163,13 +173,19 @@ export function HealthDashboard() {
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                 >
-                  <Text style={[styles.appointmentDate, { color: theme.colors.text, textAlign: "center" }]}>
-                    {appt.date}
-                  </Text>
-                  <Text style={[styles.appointmentName, { color: theme.colors.text, textAlign: "center" }]}>
-                    {user.role === "patient" ? appt.doctorName : appt.patientName}
-                  </Text>
-                  <Text style={[styles.appointmentReason, { color: theme.colors.text, textAlign: "center" }]}>
+                  {/* Top Row - Date Left, Doctor/Patient Name Right */}
+                  <View style={styles.appointmentRow}>
+                    <Text style={[styles.appointmentDate, { color: theme.colors.text }]}>
+                      {appt.date}
+                    </Text>
+
+                    <Text style={[styles.appointmentDoctor, { color: theme.colors.text }]}>
+                      {user.role === "patient" ? appt.doctorName : appt.patientName}
+                    </Text>
+                  </View>
+
+                  {/* Centered Appointment Reason Below */}
+                  <Text style={[styles.appointmentName, { color: theme.colors.text }]}>
                     {appt.reason}
                   </Text>
                 </LinearGradient>
@@ -195,13 +211,19 @@ export function HealthDashboard() {
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                 >
-                  <Text style={[styles.appointmentDate, { color: theme.colors.text, textAlign: "center" }]}>
-                    {appt.date}
-                  </Text>
-                  <Text style={[styles.appointmentName, { color: theme.colors.text, textAlign: "center" }]}>
-                    {user.role === "patient" ? appt.doctorName : appt.patientName}
-                  </Text>
-                  <Text style={[styles.appointmentReason, { color: theme.colors.text, textAlign: "center" }]}>
+                  {/* Top Row - Date Left, Doctor/Patient Name Right */}
+                  <View style={styles.appointmentRow}>
+                    <Text style={[styles.appointmentDate, { color: theme.colors.text }]}>
+                      {appt.date}
+                    </Text>
+
+                    <Text style={[styles.appointmentDoctor, { color: theme.colors.text }]}>
+                      {user.role === "patient" ? appt.doctorName : appt.patientName}
+                    </Text>
+                  </View>
+
+                  {/* Centered Appointment Reason Below */}
+                  <Text style={[styles.appointmentName, { color: theme.colors.text }]}>
                     {appt.reason}
                   </Text>
                 </LinearGradient>
@@ -214,23 +236,42 @@ export function HealthDashboard() {
           </View>
 
 
-
           {/* Medication Adherence Chart */}
           <View style={styles.chartContainer}>
-            <Text style={[styles.chartTitle, { color: theme.colors.text }]}>Medication Adherence</Text>
+            <Text style={[styles.chartTitle, { color: theme.colors.text }]}>
+              Medication Adherence
+            </Text>
 
             {medicationStats.dates.length > 0 ? (
               <BarChart
                 data={{
-                  labels: medicationStats.dates.slice(-7).map(date => new Date(date).getDate().toString()), // ✅ Show only day
+                  labels: medicationStats.dates
+                    .map(date => new Date(date).getTime()) // Convert to timestamps for sorting
+                    .sort((a, b) => a - b) // Sort dates properly
+                    .map(timestamp => new Date(timestamp).getDate().toString()), // Convert back to day numbers
+
                   datasets: [
-                    { data: medicationStats.taken.slice(-7), color: (opacity = 1) => `rgba(34, 139, 34, ${opacity})` },
-                    { data: medicationStats.missed.slice(-7), color: (opacity = 1) => `rgba(255, 0, 0, ${opacity})` },
+                    {
+                      data: medicationStats.taken
+                        .map((val, index) => ({ date: medicationStats.dates[index], value: val })) // Pair dates with taken values
+                        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()) // Sort taken values based on date
+                        .map(entry => entry.value || 0), // Extract values
+
+                      color: (opacity = 1) => `rgba(34, 139, 34, ${opacity})`, // Green for Taken
+                    },
+                    {
+                      data: medicationStats.missed
+                        .map((val, index) => ({ date: medicationStats.dates[index], value: val })) // Pair dates with missed values
+                        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()) // Sort missed values based on date
+                        .map(entry => entry.value || 0), // Extract values
+
+                      color: (opacity = 1) => `rgba(255, 0, 0, ${opacity})`, // Red for Missed
+                    },
                   ],
                 }}
                 width={Dimensions.get("window").width - 40}
                 height={220}
-                yAxisLabel="" // ✅ Fix: Explicitly define this, even if empty
+                yAxisLabel=""
                 yAxisSuffix=" doses"
                 chartConfig={{
                   backgroundGradientFrom: theme.colors.background[0],
@@ -238,15 +279,22 @@ export function HealthDashboard() {
                   decimalPlaces: 0,
                   color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
                   labelColor: (opacity = 1) => theme.colors.text,
-                  style: { borderRadius: 10 },
+                  barPercentage: 0.5, // Adjust to fit both Taken and Missed bars
+                  propsForLabels: { fontSize: 14 },
                 }}
                 style={{ marginVertical: 8, borderRadius: 10 }}
+                showValuesOnTopOfBars
+                fromZero
+                withHorizontalLabels
+                withInnerLines
               />
             ) : (
-              <Text style={[styles.noDataText, { color: theme.colors.text }]}>No medication data available.</Text>
+              <Text style={[styles.noDataText, { color: theme.colors.text }]}>
+                No medication data available.
+              </Text>
             )}
           </View>
-          
+
           {/* Heart Rate Chart */}
           {loading ? (
             <ActivityIndicator size="large" color={theme.colors.primary} />
@@ -255,8 +303,8 @@ export function HealthDashboard() {
               <Text style={[styles.chartTitle, { color: theme.colors.text }]}>Heart Rate</Text>
               <LineChart
                 data={{
-                  labels: heartRateData.map((_, index) => `${index + 1}`),
-                  datasets: [{ data: heartRateData }],
+                  labels: heartRateData.slice(0, 15).map((_, index) => `${index + 1}`),
+                  datasets: [{ data: heartRateData.slice(0, 15) }],
                 }}
                 width={Dimensions.get("window").width - 40}
                 height={220}
@@ -433,6 +481,12 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
     marginBottom: 10,
+    width: "100%",
+  },
+
+  appointmentRow: {
+    flexDirection: "row",
+    justifyContent: "space-between", // Date on left, Doctor/Patient on right
     alignItems: "center",
     width: "100%",
   },
@@ -443,16 +497,17 @@ const styles = StyleSheet.create({
     color: "#0080ff",
   },
 
+  appointmentDoctor: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#ffffff",
+  },
+
   appointmentName: {
     fontSize: 16,
     fontWeight: "bold",
-    marginTop: 5,
-  },
-
-  appointmentReason: {
-    fontSize: 14,
-    color: "#ffffff",
-    marginTop: 3,
+    textAlign: "center",
+    marginTop: 5, // Adds space below the row
   },
 
   noAppointmentsText: {
