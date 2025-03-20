@@ -20,6 +20,7 @@ export function HealthDashboard() {
   const { user } = useAuth();
 
   const [heartRateData, setHeartRateData] = useState<number[]>([]);
+  const [heartRateDates, setHeartRateDates] = useState<string[]>([]);
   const [medicationStats, setMedicationStats] = useState<{ dates: string[], taken: number[], missed: number[] }>({ dates: [], taken: [], missed: [] });
   const [healthAlerts, setHealthAlerts] = useState<string[]>([]);
   const [recentAppointments, setRecentAppointments] = useState<Appointment[]>([]);
@@ -51,14 +52,33 @@ export function HealthDashboard() {
         setUpcomingAppointments(data.upcomingAppointments || []);
         setHealthAlerts(data.healthAlerts || []);
 
-        // Process & validate heart rate data
+        // Process & extract latest heart rate per day
         if (data.heartRateLogs) {
-          const validHeartRateData = data.heartRateLogs
-            .map((entry: { value: string }) => Number(entry.value))
-            .filter((value: number) => !isNaN(value));
-
-          setHeartRateData(validHeartRateData);
-        }
+          const heartRateLogs: { time: string; value: string }[] = data.heartRateLogs; // Explicitly typed
+        
+          const heartRateEntries: { date: string; value: number }[] = heartRateLogs
+            .map((entry) => ({
+              date: new Date(entry.time).toISOString().split("T")[0], // Keep full date
+              value: Number(entry.value),
+            }))
+            .filter((entry) => !isNaN(entry.value)); // Remove invalid numbers
+        
+          // Sort by date (oldest → newest)
+          heartRateEntries.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        
+          // Keep **all values** (instead of just one per day)
+          const last10Entries = heartRateEntries.slice(-10); // Get last 10 values
+        
+          // Extract values and dates
+          const sortedDates = last10Entries.map((entry) => entry.date);
+          const sortedValues = last10Entries.map((entry) => entry.value);
+        
+          console.log("Heart Rate Dates:", sortedDates); // Debugging
+          console.log("Heart Rate Values:", sortedValues); // Debugging
+        
+          setHeartRateData(sortedValues);
+          setHeartRateDates(sortedDates);
+        }        
 
         // Process & sort medication stats properly
         if (data.medicationStats && data.medicationStats.dates) {
@@ -418,7 +438,10 @@ export function HealthDashboard() {
               <Text style={[styles.chartTitle, { color: theme.colors.text }]}>Heart Rate</Text>
               <LineChart
                 data={{
-                  labels: heartRateData.slice(0, 15).map((_, index) => `${index + 1}`),
+                  labels: heartRateDates.slice(-10).map(date => {
+                    const parsedDate = new Date(date);
+                    return isNaN(parsedDate.getTime()) ? "" : parsedDate.getDate().toString();
+                  }),                                 
                   datasets: [{ data: heartRateData.slice(0, 15) }],
                 }}
                 width={Dimensions.get("window").width - 40}
@@ -452,7 +475,7 @@ export function HealthDashboard() {
                   labels: stepTrackingDates.slice(-7).map(date => {
                     const parts = date.split("-");
                     return `${parts[1]}/${parts[2]}`; // Converts "2025-03-08" → "03/08"
-                  }),                  
+                  }),
                   datasets: [{ data: stepCountData.slice(-7) }],
                 }}
                 width={Dimensions.get("window").width - 40}
