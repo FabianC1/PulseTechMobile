@@ -24,6 +24,8 @@ export function HealthDashboard() {
   const [healthAlerts, setHealthAlerts] = useState<string[]>([]);
   const [recentAppointments, setRecentAppointments] = useState<Appointment[]>([]);
   const [upcomingAppointments, setUpcomingAppointments] = useState<Appointment[]>([]);
+  const [stepCountData, setStepCountData] = useState<number[]>([]);
+  const [sleepTrackingData, setSleepTrackingData] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false); // Refreshing state
 
@@ -39,49 +41,88 @@ export function HealthDashboard() {
       setLoading(true);
       const response = await fetch(`http://192.168.0.84:3000/get-health-dashboard?email=${user?.email}`);
       const data = await response.json();
-
-      console.log("Full API Response:", data); //  Log full API response
-
+  
+      console.log("Full API Response:", data); // Log full API response
+  
       if (data.message !== "No Updates") {
         setRecentAppointments(data.recentAppointments || []);
         setUpcomingAppointments(data.upcomingAppointments || []);
         setHealthAlerts(data.healthAlerts || []);
-
-        //  Process & validate heart rate data
+  
+        // Process & validate heart rate data
         if (data.heartRateLogs) {
           const validHeartRateData = data.heartRateLogs
-            .map((entry: { value: string }) => Number(entry.value)) // Explicitly set entry type
+            .map((entry: { value: string }) => Number(entry.value))
             .filter((value: number) => !isNaN(value));
-
+  
           setHeartRateData(validHeartRateData);
         }
-
-        //  Process & sort medication stats properly
+  
+        // Process & sort medication stats properly
         if (data.medicationStats && data.medicationStats.dates) {
-          // Create an array of objects pairing dates with taken & missed values
-          const medicationEntries = data.medicationStats.dates.map(
-            (date: string, index: number) => ({
-              date: new Date(date).getTime(), // Convert to timestamp
-              taken: data.medicationStats.taken[index] || 0, // Ensure a valid number
-              missed: data.medicationStats.missed[index] || 0, // Ensure a valid number
-            })
-          );
-
-          //  Sort by date (oldest → newest)
-          medicationEntries.sort((a: { date: number }, b: { date: number }) => a.date - b.date);
-
-          //  Convert back to separate arrays
+          const medicationEntries: { date: number; taken: number; missed: number }[] =
+            data.medicationStats.dates.map((date: string, index: number) => ({
+              date: new Date(date).getTime(),
+              taken: data.medicationStats.taken[index] || 0,
+              missed: data.medicationStats.missed[index] || 0,
+            }));
+  
+          medicationEntries.sort((a, b) => a.date - b.date);
+  
           const sortedMedicationStats = {
-            dates: medicationEntries.map((entry: { date: number }) =>
-              new Date(entry.date).toISOString().split("T")[0]
-            ), // YYYY-MM-DD
-            taken: medicationEntries.map((entry: { taken: number }) => entry.taken),
-            missed: medicationEntries.map((entry: { missed: number }) => entry.missed),
+            dates: medicationEntries.map((entry) => new Date(entry.date).toISOString().split("T")[0]),
+            taken: medicationEntries.map((entry) => entry.taken),
+            missed: medicationEntries.map((entry) => entry.missed),
           };
-
-          console.log("Sorted Medication Data:", sortedMedicationStats); //  Log sorted data
-
+  
+          console.log("Sorted Medication Data:", sortedMedicationStats);
           setMedicationStats(sortedMedicationStats);
+        }
+  
+        // Process & extract latest step count per day
+        if (data.stepCountLogs) {
+          const stepEntries: { date: number; value: number }[] = Object.values(
+            data.stepCountLogs.reduce(
+              (acc: Record<string, { date: number; value: number }>, entry: { time: string; value: string }) => {
+                const day = new Date(entry.time).toISOString().split("T")[0];
+                const numericValue = Number(entry.value);
+  
+                if (!isNaN(numericValue)) {
+                  if (!acc[day] || new Date(entry.time).getTime() > acc[day].date) {
+                    acc[day] = { date: new Date(entry.time).getTime(), value: numericValue };
+                  }
+                }
+                return acc;
+              },
+              {} as Record<string, { date: number; value: number }>
+            )
+          );
+  
+          stepEntries.sort((a, b) => a.date - b.date);
+          setStepCountData(stepEntries.map((entry) => entry.value));
+        }
+  
+        // Process & extract latest sleep tracking per day
+        if (data.sleepTrackingLogs) {
+          const sleepEntries: { date: number; value: number }[] = Object.values(
+            data.sleepTrackingLogs.reduce(
+              (acc: Record<string, { date: number; value: number }>, entry: { time: string; value: string }) => {
+                const day = new Date(entry.time).toISOString().split("T")[0];
+                const numericValue = Number(entry.value);
+  
+                if (!isNaN(numericValue)) {
+                  if (!acc[day] || new Date(entry.time).getTime() > acc[day].date) {
+                    acc[day] = { date: new Date(entry.time).getTime(), value: numericValue };
+                  }
+                }
+                return acc;
+              },
+              {} as Record<string, { date: number; value: number }>
+            )
+          );
+  
+          sleepEntries.sort((a, b) => a.date - b.date);
+          setSleepTrackingData(sleepEntries.map((entry) => entry.value));
         }
       }
     } catch (error) {
@@ -393,6 +434,84 @@ export function HealthDashboard() {
               />
             </>
           )}
+
+
+          {/* Wearable Data - Step Count */}
+          <View style={styles.chartContainer}>
+            <Text style={[styles.chartTitle, { color: theme.colors.text }]}>
+              Step Count (Last 15 Days)
+            </Text>
+
+            {stepCountData.length > 0 ? (
+              <View> {/* Wrap everything inside a single View to fix JSX error */}
+                <LineChart
+                  data={{
+                    labels: stepCountData.slice(-15).map((_, index) => `${index + 1}`), // Last 15 days
+                    datasets: [{ data: stepCountData.slice(-15) }],
+                  }}
+                  width={Dimensions.get("window").width - 40} // Ensure it fits the screen
+                  height={220}
+                  yAxisLabel="" // Remove repeated "steps"
+                  yAxisSuffix="" // Keep it empty to avoid redundancy
+                  formatYLabel={(value) => `${Math.round(Number(value))}`} // Ensure clean numbers
+                  chartConfig={{
+                    backgroundGradientFrom: theme.colors.background[0],
+                    backgroundGradientTo: theme.colors.background[1],
+                    decimalPlaces: 0,
+                    color: (opacity = 1) => `rgba(0, 150, 255, ${opacity})`, // Blue line for Step Count
+                    labelColor: () => theme.colors.text, // Themed labels
+                    style: { borderRadius: 10 },
+                    propsForDots: { r: "4", strokeWidth: "2", stroke: theme.colors.primary }, // Styled dots
+                  }}
+                  bezier
+                  style={{ marginVertical: 8, borderRadius: 10 }}
+                />
+              </View>
+            ) : (
+              <Text style={[styles.noDataText, { color: theme.colors.text }]}>
+                No step count data available.
+              </Text>
+            )}
+          </View>
+
+
+          {/* Wearable Data - Sleep Tracking */}
+          <View style={styles.chartContainer}>
+            <Text style={[styles.chartTitle, { color: theme.colors.text }]}>
+              Sleep Tracking (Last 15 Days)
+            </Text>
+
+            {sleepTrackingData.length > 0 ? (
+              <LineChart
+                data={{
+                  labels: sleepTrackingData.slice(-15).map((_, index) => `${index + 1}`), // Last 15 days
+                  datasets: [{ data: sleepTrackingData.slice(-15) }],
+                }}
+                width={Dimensions.get("window").width - 40} // Ensure it fits the screen
+                height={220}
+                yAxisSuffix=" hrs" // Displays hours
+                chartConfig={{
+                  backgroundGradientFrom: theme.colors.background[0],
+                  backgroundGradientTo: theme.colors.background[1],
+                  decimalPlaces: 1, // Show decimals for accuracy
+                  color: (opacity = 1) => `rgba(138, 43, 226, ${opacity})`, // Purple line for Sleep Tracking
+                  labelColor: () => theme.colors.text, // Themed labels
+                  style: { borderRadius: 10 },
+                  propsForDots: { r: "4", strokeWidth: "2", stroke: theme.colors.primary }, // Styled dots
+                }}
+                bezier
+                style={{ marginVertical: 8, borderRadius: 10 }}
+              />
+            ) : (
+              <Text style={[styles.noDataText, { color: theme.colors.text }]}>
+                No sleep tracking data available.
+              </Text>
+            )}
+          </View>
+
+
+
+
         </ScrollView>
 
       ) : (
