@@ -45,7 +45,6 @@ export function HealthDashboard() {
       const response = await fetch(`http://192.168.0.84:3000/get-health-dashboard?email=${user?.email}`);
       const data = await response.json();
 
-      console.log("Full API Response:", data); // Log full API response
 
       if (data.message !== "No Updates") {
         setRecentAppointments(data.recentAppointments || []);
@@ -73,9 +72,6 @@ export function HealthDashboard() {
           const sortedDates = last10Entries.map((entry) => entry.date);
           const sortedValues = last10Entries.map((entry) => entry.value);
         
-          console.log("Heart Rate Dates:", sortedDates); // Debugging
-          console.log("Heart Rate Values:", sortedValues); // Debugging
-        
           setHeartRateData(sortedValues);
           setHeartRateDates(sortedDates);
         }        
@@ -97,7 +93,6 @@ export function HealthDashboard() {
             missed: medicationEntries.map((entry) => entry.missed),
           };
 
-          console.log("Sorted Medication Data:", sortedMedicationStats);
           setMedicationStats(sortedMedicationStats);
         }
 
