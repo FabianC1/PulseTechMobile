@@ -16,6 +16,7 @@ import { useTheme } from 'styled-components/native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { useAuth } from '../AuthContext';
+import { useEffect } from 'react';
 
 // Define navigation type
 type RootStackParamList = {
@@ -36,6 +37,44 @@ export function MedicalRecords() {
     bloodType: user?.bloodType || '',
     emergencyContact: user?.emergencyContact || '',
   });
+
+  // State for storing medical records
+  const [medicalRecords, setMedicalRecords] = useState(null);
+
+  // Function to fetch medical records
+  const fetchMedicalRecords = async () => {
+    try {
+      if (!user?.email) {
+        console.error("User email is missing. Cannot fetch medical records.");
+        return;
+      }
+
+      setRefreshing(true);
+
+      const response = await fetch(
+        `http://localhost:3000/get-medical-records?email=${encodeURIComponent(user.email)}`,
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error("Error fetching medical records:", data.message);
+        setRefreshing(false);
+        return;
+      }
+
+      console.log("Fetched medical records:", data);
+      setMedicalRecords(data);
+      setRefreshing(false);
+    } catch (error) {
+      console.error("Error fetching medical records:", error);
+      setRefreshing(false);
+    }
+  };
 
   // Other states
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
@@ -65,13 +104,14 @@ export function MedicalRecords() {
 
   const [refreshing, setRefreshing] = useState(false);
 
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
+  // Fetch medical records when the component mounts
+  useEffect(() => {
+    fetchMedicalRecords();
+  }, []);
 
-    // Simulate data fetching (replace with real API call)
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1500);
+  // Pull-to-refresh functionality
+  const onRefresh = useCallback(() => {
+    fetchMedicalRecords();
   }, []);
 
   const [expandAll, setExpandAll] = useState(false);
@@ -115,7 +155,7 @@ export function MedicalRecords() {
         <LinearGradient colors={theme.colors.background} style={{ flex: 1 }}>
           {user ? (
             <ScrollView
-              contentContainerStyle={{ flexGrow: 1, padding: 20 }}
+              contentContainerStyle={{ flexGrow: 1, padding: 20, paddingBottom: 100  }}
               showsVerticalScrollIndicator={true}
               refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
 
