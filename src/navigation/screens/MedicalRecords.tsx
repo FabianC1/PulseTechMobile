@@ -39,7 +39,7 @@ export function MedicalRecords() {
   });
 
   // State for storing medical records
-  const [medicalRecords, setMedicalRecords] = useState(null);
+  const [medicalRecords, setMedicalRecords] = useState<Record<string, any>>({});
 
   // Function to fetch medical records
   const fetchMedicalRecords = async () => {
@@ -109,7 +109,7 @@ export function MedicalRecords() {
 
       // 🔹 Update the UI instantly
       setMedicalRecords((prev) => ({
-        ...prev,
+        ...((prev ?? {}) as Record<string, any>), // Ensure prev is an object
         ...editedInfo,
       }));
 
