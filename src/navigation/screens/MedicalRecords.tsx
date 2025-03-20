@@ -17,6 +17,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { useAuth } from '../AuthContext';
 import { useEffect } from 'react';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 // Define navigation type
 type RootStackParamList = {
@@ -82,7 +83,7 @@ export function MedicalRecords() {
       console.error("User email is missing. Cannot save medical records.");
       return;
     }
-  
+
     try {
       const response = await fetch("http://192.168.0.84:3000/save-medical-records", {
         method: "POST",
@@ -98,16 +99,16 @@ export function MedicalRecords() {
           emergencyContact: editedInfo.emergencyContact || medicalRecords?.emergencyContact || '',
         }),
       });
-  
+
       const data = await response.json();
-  
+
       if (!response.ok) {
         console.error("Error saving medical records:", data.message);
         return;
       }
-  
+
       console.log("✅ Medical records updated successfully:", data.message);
-  
+
       setMedicalRecords((prev) => ({
         ...prev,
         fullName: editedInfo.fullName || prev?.fullName || '',
@@ -116,13 +117,13 @@ export function MedicalRecords() {
         bloodType: editedInfo.bloodType || prev?.bloodType || '',
         emergencyContact: editedInfo.emergencyContact || prev?.emergencyContact || '',
       }));
-  
+
       setIsEditing(false);
     } catch (error) {
       console.error("Error saving medical records:", error);
     }
   };
-  
+
 
   // Other states
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
@@ -143,7 +144,7 @@ export function MedicalRecords() {
       emergencyContact: medicalRecords?.emergencyContact || '',
     });
     setIsEditing(true);
-  };  
+  };
 
   // Function to cancel edits
   const cancelEdit = () => {
@@ -209,10 +210,13 @@ export function MedicalRecords() {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <LinearGradient colors={theme.colors.background} style={{ flex: 1 }}>
           {user ? (
-            <ScrollView
-              contentContainerStyle={{ flexGrow: 1, padding: 20, paddingBottom: 100 }}
+            <KeyboardAwareScrollView 
+              contentContainerStyle={{ flexGrow: 1, padding: 20, paddingBottom: 150 }}
               showsVerticalScrollIndicator={true}
-              refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
+              refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+              keyboardShouldPersistTaps="handled"
+              extraScrollHeight={100} // 
+            >
 
               <Text style={{ fontSize: 22, fontWeight: 'bold', textAlign: 'center', color: theme.colors.text, marginBottom: 20 }}>
                 View and manage your medical records
@@ -325,8 +329,7 @@ export function MedicalRecords() {
                 </TouchableOpacity>
               )}
 
-
-            </ScrollView>
+            </KeyboardAwareScrollView>
           ) : (
             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
               <Text style={{ fontSize: 16, textAlign: 'center', color: theme.colors.text }}>You need to log in or sign up</Text>
@@ -467,7 +470,7 @@ const styles = StyleSheet.create({
   cancelButton: {
     marginTop: 10,
     padding: 10,
-    backgroundColor: '#dc3545',
+    backgroundColor: '#ae03e2f8',
     borderRadius: 8,
     alignItems: 'center',
   },
