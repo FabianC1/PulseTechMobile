@@ -4,7 +4,7 @@ import { useTheme } from 'styled-components/native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { useAuth } from '../AuthContext';
-import { LineChart } from 'react-native-chart-kit';
+import { LineChart, BarChart } from 'react-native-chart-kit';
 import { Dimensions } from 'react-native';
 import { useEffect, useState } from 'react';
 import { ScrollView, ActivityIndicator } from 'react-native';
@@ -20,6 +20,7 @@ export function HealthDashboard() {
   const { user } = useAuth();
 
   const [heartRateData, setHeartRateData] = useState<number[]>([]);
+  const [medicationStats, setMedicationStats] = useState<{ dates: string[], taken: number[], missed: number[] }>({ dates: [], taken: [], missed: [] });
   const [healthAlerts, setHealthAlerts] = useState<string[]>([]);
   const [recentAppointments, setRecentAppointments] = useState<Appointment[]>([]);
   const [upcomingAppointments, setUpcomingAppointments] = useState<Appointment[]>([]);
@@ -46,6 +47,7 @@ export function HealthDashboard() {
         // Process Appointments
         setRecentAppointments(data.recentAppointments || []);
         setUpcomingAppointments(data.upcomingAppointments || []);
+        setHealthAlerts(data.healthAlerts || []);
         const validHeartRateData = data.heartRateLogs
           .map((entry: any) => Number(entry.value))
           .filter((value: number) => !isNaN(value));
@@ -57,6 +59,9 @@ export function HealthDashboard() {
         if (data.healthAlerts) {
           setHealthAlerts(data.healthAlerts);
         }
+      }
+      if (data.medicationStats) {
+        setMedicationStats(data.medicationStats);
       }
     } catch (error) {
       console.error("Error fetching health dashboard data:", error);
@@ -210,10 +215,38 @@ export function HealthDashboard() {
 
 
 
+          {/* Medication Adherence Chart */}
+          <View style={styles.chartContainer}>
+            <Text style={[styles.chartTitle, { color: theme.colors.text }]}>Medication Adherence</Text>
 
-
-
-
+            {medicationStats.dates.length > 0 ? (
+              <BarChart
+                data={{
+                  labels: medicationStats.dates.slice(-7).map(date => new Date(date).getDate().toString()), // ✅ Show only day
+                  datasets: [
+                    { data: medicationStats.taken.slice(-7), color: (opacity = 1) => `rgba(34, 139, 34, ${opacity})` },
+                    { data: medicationStats.missed.slice(-7), color: (opacity = 1) => `rgba(255, 0, 0, ${opacity})` },
+                  ],
+                }}
+                width={Dimensions.get("window").width - 40}
+                height={220}
+                yAxisLabel="" // ✅ Fix: Explicitly define this, even if empty
+                yAxisSuffix=" doses"
+                chartConfig={{
+                  backgroundGradientFrom: theme.colors.background[0],
+                  backgroundGradientTo: theme.colors.background[1],
+                  decimalPlaces: 0,
+                  color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                  labelColor: (opacity = 1) => theme.colors.text,
+                  style: { borderRadius: 10 },
+                }}
+                style={{ marginVertical: 8, borderRadius: 10 }}
+              />
+            ) : (
+              <Text style={[styles.noDataText, { color: theme.colors.text }]}>No medication data available.</Text>
+            )}
+          </View>
+          
           {/* Heart Rate Chart */}
           {loading ? (
             <ActivityIndicator size="large" color={theme.colors.primary} />
@@ -423,6 +456,15 @@ const styles = StyleSheet.create({
   },
 
   noAppointmentsText: {
+    fontSize: 14,
+    fontStyle: "italic",
+    textAlign: "center",
+  },
+  chartContainer: {
+    alignItems: "center",
+    marginVertical: 20,
+  },
+  noDataText: {
     fontSize: 14,
     fontStyle: "italic",
     textAlign: "center",
