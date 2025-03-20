@@ -82,41 +82,47 @@ export function MedicalRecords() {
       console.error("User email is missing. Cannot save medical records.");
       return;
     }
-
+  
     try {
       const response = await fetch("http://192.168.0.84:3000/save-medical-records", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           email: user.email,
-          fullName: editedInfo.fullName,
-          dateOfBirth: editedInfo.dateOfBirth,
-          gender: editedInfo.gender,
-          bloodType: editedInfo.bloodType,
-          emergencyContact: editedInfo.emergencyContact,
+          fullName: editedInfo.fullName || medicalRecords?.fullName || '',
+          dateOfBirth: editedInfo.dateOfBirth || medicalRecords?.dateOfBirth || '',
+          gender: editedInfo.gender || medicalRecords?.gender || '',
+          bloodType: editedInfo.bloodType || medicalRecords?.bloodType || '',
+          emergencyContact: editedInfo.emergencyContact || medicalRecords?.emergencyContact || '',
         }),
       });
-
+  
       const data = await response.json();
-
+  
       if (!response.ok) {
         console.error("Error saving medical records:", data.message);
         return;
       }
-
-
-
-      // 🔹 Update the UI instantly
+  
+      console.log("✅ Medical records updated successfully:", data.message);
+  
       setMedicalRecords((prev) => ({
         ...prev,
-        ...data, // Ensure all fetched fields are applied
+        fullName: editedInfo.fullName || prev?.fullName || '',
+        dateOfBirth: editedInfo.dateOfBirth || prev?.dateOfBirth || '',
+        gender: editedInfo.gender || prev?.gender || '',
+        bloodType: editedInfo.bloodType || prev?.bloodType || '',
+        emergencyContact: editedInfo.emergencyContact || prev?.emergencyContact || '',
       }));
-
+  
       setIsEditing(false);
     } catch (error) {
       console.error("Error saving medical records:", error);
     }
   };
+  
 
   // Other states
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
@@ -129,8 +135,15 @@ export function MedicalRecords() {
 
   // Function to enable edit mode
   const startEditing = () => {
+    setEditedInfo({
+      fullName: medicalRecords?.fullName || '',
+      dateOfBirth: medicalRecords?.dateOfBirth || '',
+      gender: medicalRecords?.gender || '',
+      bloodType: medicalRecords?.bloodType || '',
+      emergencyContact: medicalRecords?.emergencyContact || '',
+    });
     setIsEditing(true);
-  };
+  };  
 
   // Function to cancel edits
   const cancelEdit = () => {
@@ -268,7 +281,7 @@ export function MedicalRecords() {
 
 
                       {/* Edit button */}
-                      <TouchableOpacity onPress={toggleEdit} style={styles.editButton}>
+                      <TouchableOpacity onPress={startEditing} style={styles.editButton}>
                         <Text style={styles.buttonText}>Edit</Text>
                       </TouchableOpacity>
                     </>
