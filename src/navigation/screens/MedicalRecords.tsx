@@ -1,5 +1,12 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  RefreshControl,
+} from 'react-native';
 import { useTheme } from 'styled-components/native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
@@ -12,30 +19,39 @@ type RootStackParamList = {
 
 export function MedicalRecords() {
 
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1500);
+  }, []);
+
 
   const theme = useTheme();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { user } = useAuth(); // Get authentication state
   const [expandAll, setExpandAll] = useState(false);
 
-// State to track which sections are expanded
-const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+  // State to track which sections are expanded
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
 
-// Expand All / Collapse All function (now correctly accessing expandedSections)
-const toggleAllSections = () => {
-  const newExpandState = !expandAll;
-  setExpandAll(newExpandState);
+  // Expand All / Collapse All function (now correctly accessing expandedSections)
+  const toggleAllSections = () => {
+    const newExpandState = !expandAll;
+    setExpandAll(newExpandState);
 
-  // Expand/collapse all sections correctly
-  const updatedSections: Record<string, boolean> = {
-    personalInfo: newExpandState,
-    medicalHistory: newExpandState,
-    medications: newExpandState,
-    emergency: newExpandState,
+    // Expand/collapse all sections correctly
+    const updatedSections: Record<string, boolean> = {
+      personalInfo: newExpandState,
+      medicalHistory: newExpandState,
+      medications: newExpandState,
+      emergency: newExpandState,
+    };
+
+    setExpandedSections(updatedSections);
   };
-
-  setExpandedSections(updatedSections);
-};
 
   // Function to toggle sections
   const toggleSection = (section: string) => {
@@ -43,117 +59,62 @@ const toggleAllSections = () => {
   };
 
   return (
-    <LinearGradient colors={theme.colors.background} style={styles.container}>
-      {/* If user is logged in, show medical records */}
+    <LinearGradient colors={theme.colors.background} style={{ flex: 1 }}>
       {user ? (
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
-          <Text style={[styles.title, { color: theme.colors.text }]}>
+        <ScrollView
+          contentContainerStyle={{ padding: 20 }}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        >
+          <Text style={{ fontSize: 22, fontWeight: 'bold', textAlign: 'center', color: theme.colors.text, marginBottom: 20 }}>
             View and manage your medical records
           </Text>
 
           {/* Expand All / Collapse All Button */}
-          <TouchableOpacity style={styles.expandAllButton} onPress={toggleAllSections}>
-            <Text style={[styles.expandAllText, { color: theme.colors.text }]}>
+          <TouchableOpacity onPress={toggleAllSections} style={{ padding: 12, alignSelf: 'center', borderRadius: 8, marginBottom: 15, backgroundColor: 'rgba(255, 255, 255, 0.2)' }}>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color: theme.colors.text }}>
               {expandAll ? 'Collapse All' : 'Expand All'}
             </Text>
           </TouchableOpacity>
 
-
           {/* Personal Information Section */}
-          <TouchableOpacity style={styles.sectionHeader} onPress={() => toggleSection('personalInfo')}>
-            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Personal Information</Text>
-            <Text style={[styles.arrow, { color: theme.colors.text }]}>
-              {expandedSections['personalInfo'] ? '▲' : '▼'}
-            </Text>
-          </TouchableOpacity>
-          {expandedSections['personalInfo'] && (
-            <View style={styles.sectionContent}>
-              <Text style={[styles.sectionText, { color: theme.colors.text }]}>
-                <Text style={styles.bold}>Full Name:</Text> {user.fullName}
-              </Text>
-              <Text style={[styles.sectionText, { color: theme.colors.text }]}>
-                <Text style={styles.bold}>DOB:</Text> {user.dateOfBirth}
-              </Text>
-              <Text style={[styles.sectionText, { color: theme.colors.text }]}>
-                <Text style={styles.bold}>Gender:</Text> {user.gender}
-              </Text>
-            </View>
-          )}
-
-          {/* Medical History Section */}
-          <TouchableOpacity style={styles.sectionHeader} onPress={() => toggleSection('medicalHistory')}>
-            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Medical History</Text>
-            <Text style={[styles.arrow, { color: theme.colors.text }]}>
-              {expandedSections['medicalHistory'] ? '▲' : '▼'}
-            </Text>
-          </TouchableOpacity>
-          {expandedSections['medicalHistory'] && (
-            <View style={styles.sectionContent}>
-              <Text style={[styles.sectionText, { color: theme.colors.text }]}>
-                {user.medicalHistory || 'No medical history recorded'}
-              </Text>
-            </View>
-          )}
-
-          {/* Medications Section */}
-          <TouchableOpacity style={styles.sectionHeader} onPress={() => toggleSection('medications')}>
-            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Medications</Text>
-            <Text style={[styles.arrow, { color: theme.colors.text }]}>
-              {expandedSections['medications'] ? '▲' : '▼'}
-            </Text>
-          </TouchableOpacity>
-          {expandedSections['medications'] && (
-            <View style={styles.sectionContent}>
-              {user.medications && user.medications.length > 0 ? (
-                user.medications.map((medication: any, index: number) => (
-                  <Text key={index} style={[styles.sectionText, { color: theme.colors.text }]}>
-                    <Text style={styles.bold}>{medication.name}:</Text> {medication.dosage}, {medication.frequency}
+          <View style={{ borderRadius: 12, padding: 2, marginBottom: 20 }}>
+            <LinearGradient colors={['#8a5fff', '#0077ffea']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 12, padding: 2 }}>
+              <View style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: 10 }}>
+                <TouchableOpacity onPress={() => toggleSection('personalInfo')} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 16 }}>
+                  <Text style={{ fontSize: 18, fontWeight: 'bold', color: theme.colors.text }}>Personal Information</Text>
+                  <Text style={{ fontSize: 18, color: theme.colors.text }}>
+                    {expandedSections['personalInfo'] ? '▲' : '▼'}
                   </Text>
-                ))
-              ) : (
-                <Text style={[styles.sectionText, { color: theme.colors.text }]}>No medications recorded.</Text>
-              )}
-            </View>
-          )}
+                </TouchableOpacity>
+              </View>
+            </LinearGradient>
+          </View>
 
-          {/* Emergency Contacts */}
-          <TouchableOpacity style={styles.sectionHeader} onPress={() => toggleSection('emergency')}>
-            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Emergency Contacts</Text>
-            <Text style={[styles.arrow, { color: theme.colors.text }]}>
-              {expandedSections['emergency'] ? '▲' : '▼'}
-            </Text>
-          </TouchableOpacity>
-          {expandedSections['emergency'] && (
-            <View style={styles.sectionContent}>
-              <Text style={[styles.sectionText, { color: theme.colors.text }]}>
-                <Text style={styles.bold}>Contact:</Text> {user.emergencyContact}
+          {expandedSections['personalInfo'] && (
+            <View style={{ backgroundColor: 'rgba(255, 255, 255, 0.15)', padding: 12, borderRadius: 10, marginBottom: 20 }}>
+              <Text style={{ fontSize: 16, color: theme.colors.text }}>
+                <Text style={{ fontWeight: 'bold' }}>Full Name:</Text> {user.fullName}
               </Text>
             </View>
           )}
+
+          {/* More Sections Here... */}
+
         </ScrollView>
       ) : (
-        // If not logged in, show login/signup prompt
-        <View style={styles.authPrompt}>
-          <Text style={[styles.authText, { color: theme.colors.text }]}>
-            You need to log in or sign up
-          </Text>
-          <Text style={[styles.authText, { color: theme.colors.secondary }]}>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={{ fontSize: 16, textAlign: 'center', color: theme.colors.text }}>You need to log in or sign up</Text>
+          <Text style={{ fontSize: 16, textAlign: 'center', color: theme.colors.secondary, marginBottom: 10 }}>
             To access your medical records, please log in or create an account.
           </Text>
 
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={[styles.authButton, { backgroundColor: theme.colors.primary }]}
-              onPress={() => navigation.navigate('Auth', { screen: 'Login' })}
-            >
-              <Text style={styles.buttonText}>Login</Text>
+          <View style={{ flexDirection: 'row', gap: 10, marginTop: 15 }}>
+            <TouchableOpacity onPress={() => navigation.navigate('Auth', { screen: 'Login' })} style={{ paddingVertical: 12, paddingHorizontal: 24, borderRadius: 8, backgroundColor: theme.colors.primary }}>
+              <Text style={{ color: '#ffffff', fontSize: 16, fontWeight: 'bold' }}>Login</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[styles.authButton, { backgroundColor: theme.colors.primary }]}
-              onPress={() => navigation.navigate('Auth', { screen: 'Signup' })}
-            >
-              <Text style={styles.buttonText}>Sign Up</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Auth', { screen: 'Signup' })} style={{ paddingVertical: 12, paddingHorizontal: 24, borderRadius: 8, backgroundColor: theme.colors.primary }}>
+              <Text style={{ color: '#ffffff', fontSize: 16, fontWeight: 'bold' }}>Sign Up</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -162,7 +123,6 @@ const toggleAllSections = () => {
   );
 }
 
-// **Styles**
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -184,10 +144,12 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 10,
-    marginBottom: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)', // Fallback color
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  sectionContent: {
+    backgroundColor: 'rgba(255, 255, 255, 0.15)', // Normal background for content
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 20, // Extra spacing after content as well
   },
   sectionTitle: {
     fontSize: 18,
@@ -195,16 +157,6 @@ const styles = StyleSheet.create({
   },
   arrow: {
     fontSize: 18,
-  },
-  sectionContent: {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
   },
   sectionText: {
     fontSize: 16,
@@ -250,5 +202,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-
+  gradientWrapper: {
+    borderRadius: 12, // Smooth corners for border
+    padding: 2, // Creates space for border effect
+    marginBottom: 20, // Increased spacing between each section
+  },
+  gradientBorder: {
+    borderRadius: 12, // Smooth edges for border
+    padding: 2, // Creates the illusion of a border
+  },
+  innerSection: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 10,
+  },
 });
