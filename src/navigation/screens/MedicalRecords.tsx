@@ -76,6 +76,49 @@ export function MedicalRecords() {
     }
   };
 
+  const saveMedicalRecords = async () => {
+    if (!user?.email) {
+      console.error("User email is missing. Cannot save medical records.");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:3000/save-medical-records", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: user.email,
+          fullName: editedInfo.fullName,
+          dateOfBirth: editedInfo.dateOfBirth,
+          gender: editedInfo.gender,
+          bloodType: editedInfo.bloodType,
+          emergencyContact: editedInfo.emergencyContact,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error("Error saving medical records:", data.message);
+        return;
+      }
+
+      console.log("Medical records updated successfully:", data.message);
+
+      // 🔹 Update the UI instantly
+      setMedicalRecords((prev) => ({
+        ...prev,
+        ...editedInfo,
+      }));
+
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Error saving medical records:", error);
+    }
+  };
+
   // Other states
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
   const [isEditing, setIsEditing] = useState(false); // Tracks whether user is editing
@@ -155,7 +198,7 @@ export function MedicalRecords() {
         <LinearGradient colors={theme.colors.background} style={{ flex: 1 }}>
           {user ? (
             <ScrollView
-              contentContainerStyle={{ flexGrow: 1, padding: 20, paddingBottom: 100  }}
+              contentContainerStyle={{ flexGrow: 1, padding: 20, paddingBottom: 100 }}
               showsVerticalScrollIndicator={true}
               refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
 
@@ -229,12 +272,6 @@ export function MedicalRecords() {
                 </View>
               )}
 
-              {isEditing && (
-                <TouchableOpacity onPress={saveChanges} style={styles.saveButton}>
-                  <Text style={styles.buttonText}>Save</Text>
-                </TouchableOpacity>
-              )}
-
               {/* Dummy Section */}
               <View style={{ borderRadius: 12, padding: 2, marginBottom: 20 }}>
                 <LinearGradient colors={['#ff7e5f', '#fd3a69']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 12, padding: 2 }}>
@@ -258,6 +295,19 @@ export function MedicalRecords() {
 
 
               {/* More Sections Here... */}
+
+
+
+              
+              {isEditing && (
+                <TouchableOpacity
+                  onPress={saveMedicalRecords}
+                  style={[styles.saveButton, { backgroundColor: theme.colors.saveButton }]}
+                >
+                  <Text style={[styles.buttonText, { color: theme.colors.text }]}>Save</Text>
+                </TouchableOpacity>
+              )}
+
 
             </ScrollView>
           ) : (

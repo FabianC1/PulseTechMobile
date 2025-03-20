@@ -10,6 +10,7 @@ export const lightTheme = {
     logout:'#000000',
     appointments: '#6d17f77e',
     appointments2: '#8d8d8d70',
+    saveButton: '#758FFF',
   },
 };
 
@@ -22,6 +23,7 @@ export const darkTheme = {
     logout:'#002855',
     appointments: '#7407db9a',
     appointments2: '#ffffff6e',
+    saveButton: '#4A90E2',
   },
 };
 
