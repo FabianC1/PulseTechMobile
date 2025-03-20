@@ -306,7 +306,6 @@ export function HealthDashboard() {
             )}
           </View>
 
-
           {/* Medication Missed Chart */}
           <View style={styles.chartContainer}>
             <Text style={[styles.chartTitle, { color: theme.colors.text }]}>
@@ -319,7 +318,7 @@ export function HealthDashboard() {
                   labels: medicationStats.dates
                     .map(date => new Date(date).getTime()) // Convert to timestamps
                     .sort((a, b) => a - b) // Sort in ascending order
-                    .slice(-5) //  Keep only the last 5 dates
+                    .slice(-5) // Keep only the last 5 dates
                     .map(timestamp => new Date(timestamp).getDate().toString()), // Convert back to day numbers
 
                   datasets: [
@@ -327,12 +326,12 @@ export function HealthDashboard() {
                       data: medicationStats.missed
                         .map((val, index) => ({ date: medicationStats.dates[index], value: val })) // Pair values with dates
                         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()) // Sort by date
-                        .slice(-5) //  Keep only the last 5 values
+                        .slice(-5) // Keep only the last 5 values
                         .map(entry => entry.value || 0), // Extract values
                     },
                   ],
                 }}
-                width={Dimensions.get("window").width - 30} //  Reduced width slightly for left margin
+                width={Dimensions.get("window").width - 30} // Reduced width slightly to create left margin
                 height={220}
                 yAxisLabel=""
                 yAxisSuffix=" doses"
@@ -340,18 +339,18 @@ export function HealthDashboard() {
                   backgroundGradientFrom: theme.colors.background[0],
                   backgroundGradientTo: theme.colors.background[1],
                   decimalPlaces: 0,
-                  color: () => theme.colors.text, //  Themed text color
-                  labelColor: () => theme.colors.text, //  Themed labels
-                  fillShadowGradient: "#FF4C4C", //  Red bars for Missed
-                  fillShadowGradientOpacity: 1, //  Solid color bars
+                  color: () => theme.colors.text, // Themed text color
+                  labelColor: () => theme.colors.text, // Themed labels
+                  fillShadowGradient: "#FF4C4C", // Red bars for Missed
+                  fillShadowGradientOpacity: 1, // Solid color bars
                   barPercentage: 0.5,
                   propsForLabels: { fontSize: 14 },
                   propsForBackgroundLines: {
-                    stroke: theme.colors.text, //  Themed grid lines
+                    stroke: theme.colors.text, // Themed grid lines
                     strokeWidth: 0.5,
                   },
                 }}
-                style={{ marginVertical: 8, borderRadius: 10, marginLeft: 10 }} //  Added left margin
+                style={{ marginVertical: 8, borderRadius: 10, marginLeft: 10 }} // Added left margin
                 showValuesOnTopOfBars
                 fromZero
                 withHorizontalLabels
@@ -363,7 +362,6 @@ export function HealthDashboard() {
               </Text>
             )}
           </View>
-
 
 
 
@@ -587,14 +585,20 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     textAlign: "center",
   },
-  chartContainer: {
-    alignItems: "center",
-    marginVertical: 20,
-  },
   noDataText: {
     fontSize: 14,
     fontStyle: "italic",
     textAlign: "center",
   },
-
+  chartContainer: {
+    alignItems: "center",
+    marginVertical: 20,
+  },
+  chartWrapper: {
+    borderRadius: 10,
+  },
+  chartStyle: {
+    marginVertical: 8,
+    borderRadius: 10,
+  },
 });
