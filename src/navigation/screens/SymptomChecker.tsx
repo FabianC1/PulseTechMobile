@@ -82,12 +82,17 @@ export function SymptomChecker() {
               <Text style={[styles.introText, { color: theme.colors.text }]}>
                 Get diagnosed by a trained AI using your symptoms
               </Text>
-              <TouchableOpacity
-                onPress={startDiagnosis}
-                style={[styles.button, { backgroundColor: theme.colors.primary }]}
+              <LinearGradient
+                colors={['#8a5fff', '#0077ffea']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.gradientButton}
               >
-                <Text style={{ color: '#fff', fontWeight: 'bold' }}>Start Diagnosis</Text>
-              </TouchableOpacity>
+                <TouchableOpacity onPress={startDiagnosis} style={styles.touchable}>
+                  <Text style={styles.buttonText}>Start Diagnosis</Text>
+                </TouchableOpacity>
+              </LinearGradient>
+
             </>
           ) : (
             <View style={styles.diagnosisContainer}>
@@ -101,15 +106,17 @@ export function SymptomChecker() {
                 placeholderTextColor="#aaa"
                 style={[styles.input, { color: theme.colors.text, borderColor: '#aaa' }]}
               />
-              <TouchableOpacity
-                onPress={sendInput}
-                disabled={loading}
-                style={[styles.button, { backgroundColor: theme.colors.primary }]}
+              <LinearGradient
+                colors={['#8a5fff', '#0077ffea']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.gradientButton}
               >
-                <Text style={{ color: '#fff', fontWeight: 'bold' }}>
-                  {loading ? '...' : 'Send'}
-                </Text>
-              </TouchableOpacity>
+                <TouchableOpacity onPress={sendInput} disabled={loading} style={styles.touchable}>
+                  <Text style={styles.buttonText}>{loading ? '...' : 'Send'}</Text>
+                </TouchableOpacity>
+              </LinearGradient>
+
             </View>
           )}
         </ScrollView>
@@ -153,4 +160,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'center',
   },
+  gradientButton: {
+    borderRadius: 8,
+    marginTop: 10,
+    alignSelf: 'center',
+    width: '80%',
+  },
+  touchable: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  
 });
