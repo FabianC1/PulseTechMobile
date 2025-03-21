@@ -42,7 +42,7 @@ export function SymptomChecker() {
       const res = await fetch('http://192.168.0.84:3000/answer-question', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userInput }),
+        body: JSON.stringify({ userInput: userInput.toLowerCase() }),
       });
       const data = await res.json();
       setResponse(data.message || 'No response');
@@ -176,5 +176,4 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
-  
 });
