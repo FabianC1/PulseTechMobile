@@ -116,6 +116,12 @@ export function SymptomChecker() {
         {titleLines.length > 0 && (
           <>
             <Text style={[styles.sectionHeader, { color: theme.colors.primary }]}>Diagnosis</Text>
+            <LinearGradient
+              colors={['#8a5fff', '#0077ffea']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.sectionUnderline}
+            />
             {titleLines.map((line, idx) => (
               <Text key={`title-${idx}`} style={[styles.sectionText, { color: theme.colors.text }]}>{line}</Text>
             ))}
@@ -125,6 +131,12 @@ export function SymptomChecker() {
         {descriptionLines.length > 0 && (
           <>
             <Text style={[styles.sectionHeader, { color: theme.colors.primary }]}>Description</Text>
+            <LinearGradient
+              colors={['#8a5fff', '#0077ffea']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.sectionUnderline}
+            />
             {descriptionLines.map((line, idx) => (
               <Text key={`desc-${idx}`} style={[styles.sectionText, { color: theme.colors.text }]}>{line}</Text>
             ))}
@@ -134,6 +146,12 @@ export function SymptomChecker() {
         {precautionLines.length > 0 && (
           <>
             <Text style={[styles.sectionHeader, { color: theme.colors.primary }]}>Precautions</Text>
+            <LinearGradient
+              colors={['#8a5fff', '#0077ffea']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.sectionUnderline}
+            />
             {precautionLines.map((line, idx) => (
               <Text key={`prec-${idx}`} style={[styles.sectionText, { color: theme.colors.text }]}>{line}</Text>
             ))}
@@ -296,4 +314,11 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     textAlign: 'center',
   },
+  sectionUnderline: {
+    height: 3,
+    borderRadius: 2,
+    width: '40%',
+    alignSelf: 'center',
+    marginBottom: 12,
+  },  
 });
