@@ -7,17 +7,26 @@ interface User {
   username: string;
   email: string;
   role: 'patient' | 'doctor';
+  profilePicture?: string | null; // ✅ Allows null
+  fullName?: string;
+  dateOfBirth?: string;
+  gender?: string;
+  bloodType?: string;
+  emergencyContact?: string;
   [key: string]: any; // Allow additional fields
 }
+
 
 // Define context type
 interface AuthContextType {
   user: User | null;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;  // ✅ Add this
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   signup: (userData: any) => Promise<boolean>;
   updateProfilePicture: (newProfilePicture: string | null) => Promise<void>;
 }
+
 
 // Create AuthContext
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -32,25 +41,25 @@ export const useAuth = () => {
 };
 
 // AuthProvider Component
+// AuthProvider Component
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
 
+  // ✅ Function to update profile picture
   const updateProfilePicture = async (newProfilePicture: string | null) => {
     if (!user) return;
-  
-    // ✅ Update user object
+
     const updatedUser = { ...user, profilePicture: newProfilePicture };
-    setUser(updatedUser); // ✅ Update global state
-  
+    setUser(updatedUser);
+
     try {
-      await AsyncStorage.setItem('user', JSON.stringify(updatedUser)); // ✅ Save to local storage
+      await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
     } catch (error) {
       console.error('Error saving profile picture to AsyncStorage:', error);
     }
-  };  
-  
+  };
 
-  // Load user from AsyncStorage on app startup
+  // ✅ Load user from AsyncStorage on app startup
   useEffect(() => {
     const loadUser = async () => {
       try {
@@ -65,7 +74,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     loadUser();
   }, []);
 
-  // **Login Function**
+  // ✅ Login Function
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       const response = await fetch("http://192.168.0.84:3000/login", {
@@ -77,7 +86,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const data = await response.json();
 
       if (data.message === 'Login successful') {
-        const { password, ...userData } = data.user; // Exclude password
+        const { password, ...userData } = data.user;
         await AsyncStorage.setItem('user', JSON.stringify(userData));
         setUser(userData);
         return true;
@@ -92,7 +101,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // **Signup Function**
+  // ✅ Signup Function
   const signup = async (userData: any): Promise<boolean> => {
     try {
       const response = await fetch("http://192.168.0.84:3000/register", {
@@ -117,7 +126,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // **Logout Function**
+  // ✅ Logout Function
   const logout = async () => {
     try {
       await AsyncStorage.removeItem('user');
@@ -127,8 +136,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // ✅ Return with full context including setUser
   return (
-    <AuthContext.Provider value={{ user, login, logout, signup, updateProfilePicture }}>
+    <AuthContext.Provider value={{ user, setUser, login, logout, signup, updateProfilePicture }}>
       {children}
     </AuthContext.Provider>
   );

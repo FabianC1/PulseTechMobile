@@ -28,7 +28,7 @@ type RootStackParamList = {
 export function MedicalRecords() {
   const theme = useTheme();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const { user } = useAuth(); // Get authentication state
+  const { user, setUser } = useAuth();
 
   // State for tracking edits
   const [editedInfo, setEditedInfo] = useState({
@@ -78,46 +78,50 @@ export function MedicalRecords() {
     }
   };
 
+
   const saveMedicalRecords = async () => {
     if (!user?.email) {
       console.error("User email is missing. Cannot save medical records.");
       return;
     }
-
+  
     try {
+      const updatedMedicalRecords = {
+        ...medicalRecords, // Preserve all existing data
+        email: user.email, // ✅ Ensure email is included
+        fullName: editedInfo.fullName || medicalRecords?.fullName || '',
+        dateOfBirth: editedInfo.dateOfBirth || medicalRecords?.dateOfBirth || '',
+        gender: editedInfo.gender || medicalRecords?.gender || '',
+        bloodType: editedInfo.bloodType || medicalRecords?.bloodType || '',
+        emergencyContact: editedInfo.emergencyContact || medicalRecords?.emergencyContact || '',
+      };
+  
       const response = await fetch("http://192.168.0.84:3000/save-medical-records", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          email: user.email,
-          fullName: editedInfo.fullName || medicalRecords?.fullName || '',
-          dateOfBirth: editedInfo.dateOfBirth || medicalRecords?.dateOfBirth || '',
-          gender: editedInfo.gender || medicalRecords?.gender || '',
-          bloodType: editedInfo.bloodType || medicalRecords?.bloodType || '',
-          emergencyContact: editedInfo.emergencyContact || medicalRecords?.emergencyContact || '',
-        }),
+        body: JSON.stringify(updatedMedicalRecords),
       });
-
+  
       const data = await response.json();
-
+  
       if (!response.ok) {
         console.error("Error saving medical records:", data.message);
         return;
       }
-
+  
       console.log("✅ Medical records updated successfully:", data.message);
-
-      setMedicalRecords((prev) => ({
-        ...prev,
-        fullName: editedInfo.fullName || prev?.fullName || '',
-        dateOfBirth: editedInfo.dateOfBirth || prev?.dateOfBirth || '',
-        gender: editedInfo.gender || prev?.gender || '',
-        bloodType: editedInfo.bloodType || prev?.bloodType || '',
-        emergencyContact: editedInfo.emergencyContact || prev?.emergencyContact || '',
+  
+      // 🔹 Update `medicalRecords`
+      setMedicalRecords(updatedMedicalRecords);
+  
+      // 🔹 Update `user` so Settings Page sees the changes
+      setUser((prev) => ({
+        ...prev!,
+        ...updatedMedicalRecords,
       }));
-
+  
       setIsEditing(false);
     } catch (error) {
       console.error("Error saving medical records:", error);
