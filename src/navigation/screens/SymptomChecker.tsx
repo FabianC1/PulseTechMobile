@@ -48,7 +48,6 @@ export function SymptomChecker() {
       const data = await res.json();
       setResponse(data.message || 'No response');
 
-      // Check if the response expects yes/no input
       const lowerResp = (data.message || '').toLowerCase();
       if (
         lowerResp.includes('are you experiencing') ||
@@ -59,7 +58,6 @@ export function SymptomChecker() {
       } else {
         setShowQuickButtons(false);
       }
-
     } catch (err) {
       console.error('Send error:', err);
       setResponse('Something went wrong.');
@@ -69,12 +67,12 @@ export function SymptomChecker() {
     setUserInput('');
   };
 
-
   const handleQuickResponse = async (answer: 'yes' | 'no') => {
     setUserInput(answer);
-    await sendInput();
+    setTimeout(() => {
+      sendInput();
+    }, 0);
   };
-  
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -84,6 +82,66 @@ export function SymptomChecker() {
     await startDiagnosis();
     setRefreshing(false);
   }, []);
+
+  const renderDiagnosisSection = () => {
+    const lines = response.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+
+    const titleLines: string[] = [];
+    const descriptionLines: string[] = [];
+    const precautionLines: string[] = [];
+
+    let section = 'title';
+
+    lines.forEach(line => {
+      if (line.toLowerCase().startsWith('take following measures')) {
+        section = 'precaution';
+      } else if (
+        section === 'title' &&
+        (line.includes('Diagnosis Accuracy') ||
+          line.toLowerCase().includes('you may have') ||
+          line.toLowerCase().includes('book consultation'))
+      ) {
+        titleLines.push(line);
+      } else if (section === 'title') {
+        descriptionLines.push(line);
+      } else if (section === 'precaution') {
+        precautionLines.push(line);
+      } else {
+        descriptionLines.push(line);
+      }
+    });
+
+    return (
+      <View>
+        {titleLines.length > 0 && (
+          <>
+            <Text style={[styles.sectionHeader, { color: theme.colors.primary }]}>Diagnosis</Text>
+            {titleLines.map((line, idx) => (
+              <Text key={`title-${idx}`} style={[styles.sectionText, { color: theme.colors.text }]}>{line}</Text>
+            ))}
+          </>
+        )}
+
+        {descriptionLines.length > 0 && (
+          <>
+            <Text style={[styles.sectionHeader, { color: theme.colors.primary }]}>Description</Text>
+            {descriptionLines.map((line, idx) => (
+              <Text key={`desc-${idx}`} style={[styles.sectionText, { color: theme.colors.text }]}>{line}</Text>
+            ))}
+          </>
+        )}
+
+        {precautionLines.length > 0 && (
+          <>
+            <Text style={[styles.sectionHeader, { color: theme.colors.primary }]}>Precautions</Text>
+            {precautionLines.map((line, idx) => (
+              <Text key={`prec-${idx}`} style={[styles.sectionText, { color: theme.colors.text }]}>{line}</Text>
+            ))}
+          </>
+        )}
+      </View>
+    );
+  };
 
   return (
     <LinearGradient colors={theme.colors.background} style={styles.container}>
@@ -117,15 +175,23 @@ export function SymptomChecker() {
             </>
           ) : (
             <View style={styles.diagnosisContainer}>
-              <Text style={[styles.message, { color: theme.colors.text }]}>
-                {response}
-              </Text>
+              {!response.toLowerCase().includes('diagnosis accuracy') ? (
+                <Text style={[styles.message, { color: theme.colors.text }]}>
+                  {response}
+                </Text>
+              ) : (
+                renderDiagnosisSection()
+              )}
+
               <TextInput
                 value={userInput}
                 onChangeText={setUserInput}
                 placeholder="Type your symptom"
-                placeholderTextColor="#aaa"
-                style={[styles.input, { color: theme.colors.text, borderColor: '#aaa' }]}
+                placeholderTextColor={theme.colors.text + '88'}
+                style={[
+                  styles.input,
+                  { color: theme.colors.text, borderColor: theme.colors.text },
+                ]}
               />
               <LinearGradient
                 colors={['#8a5fff', '#0077ffea']}
@@ -133,11 +199,11 @@ export function SymptomChecker() {
                 end={{ x: 1, y: 0 }}
                 style={styles.gradientButton}
               >
-                <TouchableOpacity onPress={() => sendInput()} disabled={loading} style={styles.touchable}>
+                <TouchableOpacity onPress={sendInput} disabled={loading} style={styles.touchable}>
                   <Text style={styles.buttonText}>{loading ? '...' : 'Send'}</Text>
                 </TouchableOpacity>
               </LinearGradient>
-  
+
               {showQuickButtons && (
                 <View style={styles.quickButtonsContainer}>
                   <TouchableOpacity onPress={() => handleQuickResponse('yes')} style={styles.quickButton}>
@@ -154,7 +220,6 @@ export function SymptomChecker() {
       </KeyboardAvoidingView>
     </LinearGradient>
   );
-  
 }
 
 const styles = StyleSheet.create({
@@ -209,7 +274,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   quickButton: {
-    backgroundColor: '#555',
+    backgroundColor: '#444',
     paddingVertical: 10,
     paddingHorizontal: 30,
     borderRadius: 8,
@@ -218,5 +283,17 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  sectionHeader: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 10,
+    marginTop: 20,
+  },
+  sectionText: {
+    fontSize: 15,
+    marginBottom: 6,
+    textAlign: 'center',
   },
 });
