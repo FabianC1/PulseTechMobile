@@ -101,27 +101,34 @@ export function MedicalRecords() {
     }
 
     try {
-      await fetchMedicalRecords();
-
       const updatedMedicalRecords = {
         ...medicalRecords,
         email: user.email, // required for backend to match
         userEmail: user.email,
+
         fullName: editedInfo.fullName || medicalRecords?.fullName || '',
         dateOfBirth: editedInfo.dateOfBirth || medicalRecords?.dateOfBirth || '',
         gender: editedInfo.gender || medicalRecords?.gender || '',
         bloodType: editedInfo.bloodType || medicalRecords?.bloodType || '',
         emergencyContact: editedInfo.emergencyContact || medicalRecords?.emergencyContact || '',
-        medications: medicalRecords?.medications || [],
-        healthLogs: medicalRecords?.healthLogs || '',
-        labResults: medicalRecords?.labResults || '',
-        doctorVisits: medicalRecords?.doctorVisits || '',
-        heartRate: medicalRecords?.heartRate || [],
-        stepCount: medicalRecords?.stepCount || [],
-        sleepTracking: medicalRecords?.sleepTracking || [],
-        bloodOxygen: medicalRecords?.bloodOxygen || [],
-        organDonorStatus: medicalRecords?.organDonorStatus || '',
-        medicalDirectives: medicalRecords?.medicalDirectives || '',
+
+        medicalHistory: editedInfo.medicalHistory || medicalRecords?.medicalHistory || '',
+        vaccinations: editedInfo.vaccinations || medicalRecords?.vaccinations || '',
+        smokingStatus: editedInfo.smokingStatus || medicalRecords?.smokingStatus || '',
+        alcoholConsumption: editedInfo.alcoholConsumption || medicalRecords?.alcoholConsumption || '',
+        exerciseRoutine: editedInfo.exerciseRoutine || medicalRecords?.exerciseRoutine || '',
+        sleepPatterns: editedInfo.sleepPatterns || medicalRecords?.sleepPatterns || '',
+        healthLogs: editedInfo.healthLogs || medicalRecords?.healthLogs || '',
+        labResults: editedInfo.labResults || medicalRecords?.labResults || '',
+        doctorVisits: editedInfo.doctorVisits || medicalRecords?.doctorVisits || '',
+        heartRate: editedInfo.heartRate || medicalRecords?.heartRate || '',
+        stepCount: editedInfo.stepCount || medicalRecords?.stepCount || '',
+        sleepTracking: editedInfo.sleepTracking || medicalRecords?.sleepTracking || '',
+        bloodOxygen: editedInfo.bloodOxygen || medicalRecords?.bloodOxygen || '',
+        organDonorStatus: editedInfo.organDonorStatus || medicalRecords?.organDonorStatus || '',
+        medicalDirectives: editedInfo.medicalDirectives || medicalRecords?.medicalDirectives || '',
+
+        medications: medicalRecords?.medications || [], // untouched
       };
 
       const response = await fetch("http://192.168.0.84:3000/save-medical-records", {
@@ -240,7 +247,7 @@ export function MedicalRecords() {
   const toggleAllSections = () => {
     const allExpanded = Object.values(expandedSections).every((isOpen) => isOpen);
     const newExpandState = !allExpanded;
-  
+
     setExpandAll(newExpandState);
     setExpandedSections({
       personalInfo: newExpandState,
