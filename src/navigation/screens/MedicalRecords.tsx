@@ -88,6 +88,7 @@ export function MedicalRecords() {
     try {
       const updatedMedicalRecords = {
         ...medicalRecords,
+        ...medicalRecords,
         email: user.email, // ✅ required for backend to match
         userEmail: user.email, // ✅ keep this too, for saving into DB
         fullName: editedInfo.fullName || medicalRecords?.fullName || '',
@@ -122,7 +123,7 @@ export function MedicalRecords() {
         return;
       }
   
-      console.log("Medical records updated successfully:", data.message);
+      console.log("✅ Medical records updated successfully:", data.message);
   
       setMedicalRecords(updatedMedicalRecords);
   
@@ -149,15 +150,20 @@ export function MedicalRecords() {
 
   // Function to enable edit mode
   const startEditing = () => {
-    setEditedInfo({
-      fullName: medicalRecords?.fullName || '',
-      dateOfBirth: medicalRecords?.dateOfBirth || '',
-      gender: medicalRecords?.gender || '',
-      bloodType: medicalRecords?.bloodType || '',
-      emergencyContact: medicalRecords?.emergencyContact || '',
-    });
-    setIsEditing(true);
-  };
+    fetchMedicalRecords(); // Refresh first
+  
+    setTimeout(() => {
+      setEditedInfo({
+        fullName: medicalRecords?.fullName || '',
+        dateOfBirth: medicalRecords?.dateOfBirth || '',
+        gender: medicalRecords?.gender || '',
+        bloodType: medicalRecords?.bloodType || '',
+        emergencyContact: medicalRecords?.emergencyContact || '',
+      });
+  
+      setIsEditing(true);
+    }, 300); // Give it a moment to populate state (if needed)
+  };  
 
   // Function to cancel edits
   const cancelEdit = () => {
