@@ -222,10 +222,17 @@ export function SymptomChecker() {
 
                   {showQuickButtons && (
                     <View style={styles.quickButtonsContainer}>
-                      <TouchableOpacity onPress={() => handleQuickResponse('yes')} style={styles.quickButton}>
+                      <TouchableOpacity
+                        onPress={() => handleQuickResponse('yes')}
+                        style={[styles.quickButton, { backgroundColor: theme.colors.quickActions }]}
+                      >
                         <Text style={styles.quickButtonText}>Yes</Text>
                       </TouchableOpacity>
-                      <TouchableOpacity onPress={() => handleQuickResponse('no')} style={styles.quickButton}>
+
+                      <TouchableOpacity
+                        onPress={() => handleQuickResponse('no')}
+                        style={[styles.quickButton, { backgroundColor: theme.colors.quickActions }]}
+                      >
                         <Text style={styles.quickButtonText}>No</Text>
                       </TouchableOpacity>
                     </View>

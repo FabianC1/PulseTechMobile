@@ -11,9 +11,10 @@ export const lightTheme = {
     appointments: '#6d17f77e',
     appointments2: '#8d8d8d70',
     saveButton: '#758FFF',
-    // Add these:
+
     placeholder: "#ff0000",
     border: "#9c0000",
+    quickActions: '#1E3A8A',
   },
 };
 
@@ -27,9 +28,10 @@ export const darkTheme = {
     appointments: '#7407db9a',
     appointments2: '#ffffff6e',
     saveButton: '#4A90E2',
-    // Add these:
+
     placeholder: "#ff0000",
     border: "#a10000",
+    quickActions: '#4A90E2',
   },
 };
 
