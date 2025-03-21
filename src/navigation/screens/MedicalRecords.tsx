@@ -38,6 +38,7 @@ export function MedicalRecords() {
     gender: user?.gender || '',
     bloodType: user?.bloodType || '',
     emergencyContact: user?.emergencyContact || '',
+    medicalHistory: user?.medicalHistory || '',
   });
 
   // State for storing medical records
@@ -84,14 +85,14 @@ export function MedicalRecords() {
       console.error("User email is missing. Cannot save medical records.");
       return;
     }
-  
+
     try {
       await fetchMedicalRecords();
 
       const updatedMedicalRecords = {
         ...medicalRecords,
-        email: user.email, // ✅ required for backend to match
-        userEmail: user.email, // ✅ keep this too, for saving into DB
+        email: user.email, // required for backend to match
+        userEmail: user.email,
         fullName: editedInfo.fullName || medicalRecords?.fullName || '',
         dateOfBirth: editedInfo.dateOfBirth || medicalRecords?.dateOfBirth || '',
         gender: editedInfo.gender || medicalRecords?.gender || '',
@@ -108,7 +109,7 @@ export function MedicalRecords() {
         organDonorStatus: medicalRecords?.organDonorStatus || '',
         medicalDirectives: medicalRecords?.medicalDirectives || '',
       };
-  
+
       const response = await fetch("http://192.168.0.84:3000/save-medical-records", {
         method: "POST",
         headers: {
@@ -116,29 +117,29 @@ export function MedicalRecords() {
         },
         body: JSON.stringify(updatedMedicalRecords),
       });
-  
+
       const data = await response.json();
-  
+
       if (!response.ok) {
         console.error("Error saving medical records:", data.message);
         return;
       }
-  
+
       console.log("✅ Medical records updated successfully:", data.message);
-  
+
       setMedicalRecords(updatedMedicalRecords);
-  
+
       setUser((prev) => ({
         ...prev!,
         ...updatedMedicalRecords,
       }));
-  
+
       setIsEditing(false);
     } catch (error) {
       console.error("Error saving medical records:", error);
     }
   };
-  
+
 
   // Other states
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
@@ -152,7 +153,7 @@ export function MedicalRecords() {
   // Function to enable edit mode
   const startEditing = () => {
     fetchMedicalRecords(); // Refresh first
-  
+
     setTimeout(() => {
       setEditedInfo({
         fullName: medicalRecords?.fullName || '',
@@ -160,11 +161,12 @@ export function MedicalRecords() {
         gender: medicalRecords?.gender || '',
         bloodType: medicalRecords?.bloodType || '',
         emergencyContact: medicalRecords?.emergencyContact || '',
+        medicalHistory: medicalRecords?.medicalHistory || '',
       });
-  
+
       setIsEditing(true);
     }, 300); // Give it a moment to populate state (if needed)
-  };  
+  };
 
   // Function to cancel edits
   const cancelEdit = () => {
@@ -174,6 +176,7 @@ export function MedicalRecords() {
       gender: user?.gender || '',
       bloodType: user?.bloodType || '',
       emergencyContact: user?.emergencyContact || '',
+      medicalHistory: user?.medicalHistory || '',
     });
     setIsEditing(false);
   };
@@ -312,6 +315,59 @@ export function MedicalRecords() {
                   )}
                 </View>
               )}
+
+
+
+
+              {/* Medical History Section */}
+              <View style={{ borderRadius: 12, padding: 2, marginBottom: 20 }}>
+                <LinearGradient colors={['#8a5fff', '#0077ffea']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 12, padding: 2 }}>
+                  <View style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: 10 }}>
+                    <TouchableOpacity onPress={() => toggleSection('medicalHistory')} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 16 }}>
+                      <Text style={{ fontSize: 18, fontWeight: 'bold', color: theme.colors.text }}>Medical History</Text>
+                      <Text style={{ fontSize: 18, color: theme.colors.text }}>
+                        {expandedSections['medicalHistory'] ? '▲' : '▼'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </LinearGradient>
+              </View>
+
+              {/* Content inside Medical History section */}
+              {expandedSections['medicalHistory'] && (
+                <View style={{ backgroundColor: 'rgba(255, 255, 255, 0.15)', padding: 12, borderRadius: 10, marginBottom: 20 }}>
+                  {isEditing ? (
+                    <>
+                      <TextInput
+                        value={editedInfo.medicalHistory || ''}
+                        onChangeText={(text) => handleInputChange('medicalHistory', text)}
+                        placeholder="Enter medical history"
+                        style={[styles.input, { height: 100, textAlignVertical: 'top' }]}
+                        multiline
+                      />
+                      <TouchableOpacity onPress={cancelEdit} style={styles.cancelButton}>
+                        <Text style={styles.buttonText}>Cancel</Text>
+                      </TouchableOpacity>
+                    </>
+                  ) : (
+                    <>
+                      <Text style={{ fontSize: 16, color: theme.colors.text }}>
+                        {medicalRecords?.medicalHistory || 'No records found'}
+                      </Text>
+                      <TouchableOpacity onPress={startEditing} style={styles.editButton}>
+                        <Text style={styles.buttonText}>Edit</Text>
+                      </TouchableOpacity>
+                    </>
+                  )}
+                </View>
+              )}
+
+
+
+
+
+
+
 
               {/* Dummy Section */}
               <View style={{ borderRadius: 12, padding: 2, marginBottom: 20 }}>
