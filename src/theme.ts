@@ -7,10 +7,13 @@ export const lightTheme = {
     text: '#0A1F44',
     primary: '#1E3A8A',
     secondary: '#000000',
-    logout:'#000000',
+    logout: '#000000',
     appointments: '#6d17f77e',
     appointments2: '#8d8d8d70',
     saveButton: '#758FFF',
+    // Add these:
+    placeholder: "#aaa",
+    border: "#555",
   },
 };
 
@@ -20,10 +23,13 @@ export const darkTheme = {
     text: '#FFFFFF',
     primary: '#4A90E2',
     secondary: '#ffffff',
-    logout:'#002855',
+    logout: '#002855',
     appointments: '#7407db9a',
     appointments2: '#ffffff6e',
     saveButton: '#4A90E2',
+    // Add these:
+    placeholder: "#aaa",
+    border: "#555",
   },
 };
 
@@ -31,5 +37,5 @@ export const darkTheme = {
 export type ThemeType = typeof lightTheme;
 
 declare module 'styled-components' {
-  export interface DefaultTheme extends ThemeType {}
+  export interface DefaultTheme extends ThemeType { }
 }
