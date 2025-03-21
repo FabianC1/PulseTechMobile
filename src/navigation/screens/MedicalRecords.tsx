@@ -28,7 +28,7 @@ type RootStackParamList = {
 export function MedicalRecords() {
   const theme = useTheme();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const { user, setUser } = useAuth(); // ✅ Now `setUser` is available
+  const { user, setUser } = useAuth();
 
 
   // State for tracking edits
@@ -39,6 +39,7 @@ export function MedicalRecords() {
     bloodType: user?.bloodType || '',
     emergencyContact: user?.emergencyContact || '',
     medicalHistory: user?.medicalHistory || '',
+    vaccinations: user?.vaccinations || '',
   });
 
   // State for storing medical records
@@ -162,6 +163,7 @@ export function MedicalRecords() {
         bloodType: medicalRecords?.bloodType || '',
         emergencyContact: medicalRecords?.emergencyContact || '',
         medicalHistory: medicalRecords?.medicalHistory || '',
+        vaccinations: medicalRecords?.vaccinations || '',
       });
 
       setIsEditing(true);
@@ -177,6 +179,7 @@ export function MedicalRecords() {
       bloodType: user?.bloodType || '',
       emergencyContact: user?.emergencyContact || '',
       medicalHistory: user?.medicalHistory || '',
+      vaccinations: user?.vaccinations || '',
     });
     setIsEditing(false);
   };
@@ -402,6 +405,70 @@ export function MedicalRecords() {
               )}
 
 
+              {/* Vaccination Records Section */}
+              <View style={{ borderRadius: 12, padding: 2, marginBottom: 20 }}>
+                <LinearGradient
+                  colors={['#8a5fff', '#0077ffea']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={{ borderRadius: 12, padding: 2 }}
+                >
+                  <View style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: 10 }}>
+                    <TouchableOpacity
+                      onPress={() => toggleSection('vaccinations')}
+                      style={{
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        paddingVertical: 12,
+                        paddingHorizontal: 16,
+                      }}
+                    >
+                      <Text style={{ fontSize: 18, fontWeight: 'bold', color: theme.colors.text }}>
+                        Vaccination Records
+                      </Text>
+                      <Text style={{ fontSize: 18, color: theme.colors.text }}>
+                        {expandedSections['vaccinations'] ? '▲' : '▼'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </LinearGradient>
+              </View>
+
+              {expandedSections['vaccinations'] && (
+                <View
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                    padding: 12,
+                    borderRadius: 10,
+                    marginBottom: 20,
+                  }}
+                >
+                  {isEditing ? (
+                    <>
+                      <TextInput
+                        value={editedInfo.vaccinations}
+                        onChangeText={(text) => handleInputChange('vaccinations', text)}
+                        placeholder="Vaccination Records"
+                        style={styles.input}
+                      />
+                      <TouchableOpacity onPress={cancelEdit} style={styles.cancelButton}>
+                        <Text style={styles.buttonText}>Cancel</Text>
+                      </TouchableOpacity>
+                    </>
+                  ) : (
+                    <>
+                      <Text style={{ fontSize: 16, color: theme.colors.text }}>
+                        <Text style={{ fontWeight: 'bold' }}>Vaccinations:</Text>{' '}
+                        {medicalRecords?.vaccinations || 'N/A'}
+                      </Text>
+                      <TouchableOpacity onPress={startEditing} style={styles.editButton}>
+                        <Text style={styles.buttonText}>Edit</Text>
+                      </TouchableOpacity>
+                    </>
+                  )}
+                </View>
+              )}
 
 
 
