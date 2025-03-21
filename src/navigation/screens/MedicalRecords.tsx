@@ -28,7 +28,8 @@ type RootStackParamList = {
 export function MedicalRecords() {
   const theme = useTheme();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const { user, setUser } = useAuth();
+  const { user, setUser } = useAuth(); // ✅ Now `setUser` is available
+
 
   // State for tracking edits
   const [editedInfo, setEditedInfo] = useState({
@@ -78,7 +79,6 @@ export function MedicalRecords() {
     }
   };
 
-
   const saveMedicalRecords = async () => {
     if (!user?.email) {
       console.error("User email is missing. Cannot save medical records.");
@@ -87,13 +87,24 @@ export function MedicalRecords() {
   
     try {
       const updatedMedicalRecords = {
-        ...medicalRecords, // Preserve all existing data
-        email: user.email, // ✅ Ensure email is included
+        ...medicalRecords,
+        email: user.email, // ✅ required for backend to match
+        userEmail: user.email, // ✅ keep this too, for saving into DB
         fullName: editedInfo.fullName || medicalRecords?.fullName || '',
         dateOfBirth: editedInfo.dateOfBirth || medicalRecords?.dateOfBirth || '',
         gender: editedInfo.gender || medicalRecords?.gender || '',
         bloodType: editedInfo.bloodType || medicalRecords?.bloodType || '',
         emergencyContact: editedInfo.emergencyContact || medicalRecords?.emergencyContact || '',
+        medications: medicalRecords?.medications || [],
+        healthLogs: medicalRecords?.healthLogs || '',
+        labResults: medicalRecords?.labResults || '',
+        doctorVisits: medicalRecords?.doctorVisits || '',
+        heartRate: medicalRecords?.heartRate || [],
+        stepCount: medicalRecords?.stepCount || [],
+        sleepTracking: medicalRecords?.sleepTracking || [],
+        bloodOxygen: medicalRecords?.bloodOxygen || [],
+        organDonorStatus: medicalRecords?.organDonorStatus || '',
+        medicalDirectives: medicalRecords?.medicalDirectives || '',
       };
   
       const response = await fetch("http://192.168.0.84:3000/save-medical-records", {
@@ -113,10 +124,8 @@ export function MedicalRecords() {
   
       console.log("✅ Medical records updated successfully:", data.message);
   
-      // 🔹 Update `medicalRecords`
       setMedicalRecords(updatedMedicalRecords);
   
-      // 🔹 Update `user` so Settings Page sees the changes
       setUser((prev) => ({
         ...prev!,
         ...updatedMedicalRecords,
@@ -127,7 +136,7 @@ export function MedicalRecords() {
       console.error("Error saving medical records:", error);
     }
   };
-
+  
 
   // Other states
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
@@ -214,7 +223,7 @@ export function MedicalRecords() {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <LinearGradient colors={theme.colors.background} style={{ flex: 1 }}>
           {user ? (
-            <KeyboardAwareScrollView 
+            <KeyboardAwareScrollView
               contentContainerStyle={{ flexGrow: 1, padding: 20, paddingBottom: 150 }}
               showsVerticalScrollIndicator={true}
               refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}

@@ -20,12 +20,13 @@ interface User {
 // Define context type
 interface AuthContextType {
   user: User | null;
-  setUser: React.Dispatch<React.SetStateAction<User | null>>;  // ✅ Add this
+  setUser: React.Dispatch<React.SetStateAction<User | null>>; // ✅ Add this line
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   signup: (userData: any) => Promise<boolean>;
   updateProfilePicture: (newProfilePicture: string | null) => Promise<void>;
 }
+
 
 
 // Create AuthContext
