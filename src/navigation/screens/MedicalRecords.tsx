@@ -40,6 +40,12 @@ export function MedicalRecords() {
     emergencyContact: user?.emergencyContact || '',
     medicalHistory: user?.medicalHistory || '',
     vaccinations: user?.vaccinations || '',
+    smokingStatus: user?.smokingStatus || '',
+    alcoholConsumption: user?.alcoholConsumption || '',
+    exerciseRoutine: user?.exerciseRoutine || '',
+    sleepPatterns: user?.sleepPatterns || '',
+    healthLogs: user?.healthLogs || '',
+    labResults: user?.labResults || '',
   });
 
   // State for storing medical records
@@ -164,6 +170,12 @@ export function MedicalRecords() {
         emergencyContact: medicalRecords?.emergencyContact || '',
         medicalHistory: medicalRecords?.medicalHistory || '',
         vaccinations: medicalRecords?.vaccinations || '',
+        smokingStatus: medicalRecords?.smokingStatus || '',
+        alcoholConsumption: medicalRecords?.alcoholConsumption || '',
+        exerciseRoutine: medicalRecords?.exerciseRoutine || '',
+        sleepPatterns: medicalRecords?.sleepPatterns || '',
+        healthLogs: medicalRecords?.healthLogs || '',
+        labResults: medicalRecords?.labResults || '',
       });
 
       setIsEditing(true);
@@ -180,6 +192,12 @@ export function MedicalRecords() {
       emergencyContact: user?.emergencyContact || '',
       medicalHistory: user?.medicalHistory || '',
       vaccinations: user?.vaccinations || '',
+      smokingStatus: user?.smokingStatus || '',
+      alcoholConsumption: user?.alcoholConsumption || '',
+      exerciseRoutine: user?.exerciseRoutine || '',
+      sleepPatterns: user?.sleepPatterns || '',
+      healthLogs: user?.healthLogs || '',
+      labResults: user?.labResults || '',
     });
     setIsEditing(false);
   };
@@ -469,6 +487,162 @@ export function MedicalRecords() {
                   )}
                 </View>
               )}
+
+
+              {/* Lifestyle & Habits Section */}
+              <View style={{ borderRadius: 12, padding: 2, marginBottom: 20 }}>
+                <LinearGradient colors={['#8a5fff', '#0077ffea']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 12, padding: 2 }}>
+                  <View style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: 10 }}>
+                    <TouchableOpacity
+                      onPress={() => toggleSection('lifestyleHabits')}
+                      style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 16 }}
+                    >
+                      <Text style={{ fontSize: 18, fontWeight: 'bold', color: theme.colors.text }}>
+                        Lifestyle & Habits
+                      </Text>
+                      <Text style={{ fontSize: 18, color: theme.colors.text }}>
+                        {expandedSections['lifestyleHabits'] ? '▲' : '▼'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </LinearGradient>
+              </View>
+
+              {expandedSections['lifestyleHabits'] && (
+                <View style={{ backgroundColor: 'rgba(255, 255, 255, 0.15)', padding: 12, borderRadius: 10, marginBottom: 20 }}>
+                  {isEditing ? (
+                    <>
+                      <TextInput
+                        value={editedInfo.smokingStatus}
+                        onChangeText={(text) => handleInputChange('smokingStatus', text)}
+                        placeholder="Smoking Status"
+                        style={styles.input}
+                      />
+                      <TextInput
+                        value={editedInfo.alcoholConsumption}
+                        onChangeText={(text) => handleInputChange('alcoholConsumption', text)}
+                        placeholder="Alcohol Consumption"
+                        style={styles.input}
+                      />
+                      <TextInput
+                        value={editedInfo.exerciseRoutine}
+                        onChangeText={(text) => handleInputChange('exerciseRoutine', text)}
+                        placeholder="Exercise Routine"
+                        style={styles.input}
+                      />
+                      <TextInput
+                        value={editedInfo.sleepPatterns}
+                        onChangeText={(text) => handleInputChange('sleepPatterns', text)}
+                        placeholder="Sleep Patterns"
+                        style={styles.input}
+                      />
+                      <TouchableOpacity onPress={cancelEdit} style={styles.cancelButton}>
+                        <Text style={styles.buttonText}>Cancel</Text>
+                      </TouchableOpacity>
+                    </>
+                  ) : (
+                    <>
+                      <Text style={{ fontSize: 16, color: theme.colors.text }}>
+                        <Text style={{ fontWeight: 'bold' }}>Smoking:</Text> {medicalRecords?.smokingStatus || 'N/A'} |{' '}
+                        <Text style={{ fontWeight: 'bold' }}>Alcohol:</Text> {medicalRecords?.alcoholConsumption || 'N/A'} |{' '}
+                        <Text style={{ fontWeight: 'bold' }}>Exercise:</Text> {medicalRecords?.exerciseRoutine || 'N/A'} |{' '}
+                        <Text style={{ fontWeight: 'bold' }}>Sleep:</Text> {medicalRecords?.sleepPatterns || 'N/A'}
+                      </Text>
+                      <TouchableOpacity onPress={startEditing} style={styles.editButton}>
+                        <Text style={styles.buttonText}>Edit</Text>
+                      </TouchableOpacity>
+                    </>
+                  )}
+                </View>
+              )}
+
+
+
+              {/* Symptoms & Health Logs Section */}
+              <View style={{ borderRadius: 12, padding: 2, marginBottom: 20 }}>
+                <LinearGradient colors={['#8a5fff', '#0077ffea']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 12, padding: 2 }}>
+                  <View style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: 10 }}>
+                    <TouchableOpacity onPress={() => toggleSection('symptomsLogs')} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 16 }}>
+                      <Text style={{ fontSize: 18, fontWeight: 'bold', color: theme.colors.text }}>Symptoms & Health Logs</Text>
+                      <Text style={{ fontSize: 18, color: theme.colors.text }}>
+                        {expandedSections['symptomsLogs'] ? '▲' : '▼'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </LinearGradient>
+              </View>
+
+              {expandedSections['symptomsLogs'] && (
+                <View style={{ backgroundColor: 'rgba(255, 255, 255, 0.15)', padding: 12, borderRadius: 10, marginBottom: 20 }}>
+                  {isEditing ? (
+                    <>
+                      <TextInput
+                        value={editedInfo.healthLogs}
+                        onChangeText={(text) => handleInputChange('healthLogs', text)}
+                        placeholder="Enter symptoms"
+                        multiline
+                        style={[styles.input, { height: 100, textAlignVertical: 'top' }]}
+                      />
+                      <TouchableOpacity onPress={cancelEdit} style={styles.cancelButton}>
+                        <Text style={styles.buttonText}>Cancel</Text>
+                      </TouchableOpacity>
+                    </>
+                  ) : (
+                    <>
+                      <Text style={{ fontSize: 16, color: theme.colors.text }}>
+                        {medicalRecords?.healthLogs || 'No symptoms recorded'}
+                      </Text>
+                      <TouchableOpacity onPress={startEditing} style={styles.editButton}>
+                        <Text style={styles.buttonText}>Edit</Text>
+                      </TouchableOpacity>
+                    </>
+                  )}
+                </View>
+              )}
+
+              {/* Lab Results & Reports Section */}
+              <View style={{ borderRadius: 12, padding: 2, marginBottom: 20 }}>
+                <LinearGradient colors={['#8a5fff', '#0077ffea']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 12, padding: 2 }}>
+                  <View style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: 10 }}>
+                    <TouchableOpacity onPress={() => toggleSection('labReports')} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 16 }}>
+                      <Text style={{ fontSize: 18, fontWeight: 'bold', color: theme.colors.text }}>Lab Results & Reports</Text>
+                      <Text style={{ fontSize: 18, color: theme.colors.text }}>
+                        {expandedSections['labReports'] ? '▲' : '▼'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </LinearGradient>
+              </View>
+
+              {expandedSections['labReports'] && (
+                <View style={{ backgroundColor: 'rgba(255, 255, 255, 0.15)', padding: 12, borderRadius: 10, marginBottom: 20 }}>
+                  {isEditing ? (
+                    <>
+                      <TextInput
+                        value={editedInfo.labResults}
+                        onChangeText={(text) => handleInputChange('labResults', text)}
+                        placeholder="Enter lab results"
+                        style={[styles.input, { height: 100, textAlignVertical: 'top' }]}
+                        multiline
+                      />
+                      <TouchableOpacity onPress={cancelEdit} style={styles.cancelButton}>
+                        <Text style={styles.buttonText}>Cancel</Text>
+                      </TouchableOpacity>
+                    </>
+                  ) : (
+                    <>
+                      <Text style={{ fontSize: 16, color: theme.colors.text }}>
+                        {medicalRecords?.labResults || 'No reports available'}
+                      </Text>
+                      <TouchableOpacity onPress={startEditing} style={styles.editButton}>
+                        <Text style={styles.buttonText}>Edit</Text>
+                      </TouchableOpacity>
+                    </>
+                  )}
+                </View>
+              )}
+
+
 
 
 
