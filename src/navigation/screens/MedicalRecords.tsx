@@ -203,8 +203,14 @@ export function MedicalRecords() {
     setExpandedSections({
       personalInfo: newExpandState,
       medicalHistory: newExpandState,
-      medications: newExpandState,
-      emergency: newExpandState,
+      medications: newExpandState, // already present
+      vaccinationRecords: newExpandState,
+      lifestyleHabits: newExpandState,
+      symptomsLogs: newExpandState,
+      labReports: newExpandState,
+      doctorVisits: newExpandState,
+      wearableData: newExpandState,
+      emergencyDetails: newExpandState,
     });
   };
 
@@ -317,8 +323,6 @@ export function MedicalRecords() {
               )}
 
 
-
-
               {/* Medical History Section */}
               <View style={{ borderRadius: 12, padding: 2, marginBottom: 20 }}>
                 <LinearGradient colors={['#8a5fff', '#0077ffea']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 12, padding: 2 }}>
@@ -364,31 +368,42 @@ export function MedicalRecords() {
 
 
 
-
-
-
-
-
-              {/* Dummy Section */}
+              {/* Current Medications Section */}
               <View style={{ borderRadius: 12, padding: 2, marginBottom: 20 }}>
-                <LinearGradient colors={['#ff7e5f', '#fd3a69']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 12, padding: 2 }}>
+                <LinearGradient colors={['#8a5fff', '#0077ffea']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 12, padding: 2 }}>
                   <View style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: 10 }}>
-                    <TouchableOpacity onPress={() => toggleSection('dummySection')} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 16 }}>
-                      <Text style={{ fontSize: 18, fontWeight: 'bold', color: theme.colors.text }}>Dummy Section</Text>
+                    <TouchableOpacity onPress={() => toggleSection('medications')} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 16 }}>
+                      <Text style={{ fontSize: 18, fontWeight: 'bold', color: theme.colors.text }}>Current Medications</Text>
                       <Text style={{ fontSize: 18, color: theme.colors.text }}>
-                        {expandedSections['dummySection'] ? '▲' : '▼'}
+                        {expandedSections['medications'] ? '▲' : '▼'}
                       </Text>
                     </TouchableOpacity>
                   </View>
                 </LinearGradient>
               </View>
 
-              {/* Content inside Dummy Section */}
-              {expandedSections['dummySection'] && (
+              {expandedSections['medications'] && (
                 <View style={{ backgroundColor: 'rgba(255, 255, 255, 0.15)', padding: 12, borderRadius: 10, marginBottom: 20 }}>
-                  <Text style={{ fontSize: 16, color: theme.colors.text }}>This is a test section to check expand/collapse functionality.</Text>
+                  {medicalRecords?.medications && medicalRecords.medications.length > 0 ? (
+                    medicalRecords.medications.map((med: any, index: number) => (
+                      <Text key={index} style={{ fontSize: 16, color: theme.colors.text, marginBottom: 10 }}>
+                        <Text style={{ fontWeight: 'bold' }}>Medication {index + 1}:</Text> {med.name} |{' '}
+                        <Text style={{ fontWeight: 'bold' }}>Dosage:</Text> {med.dosage} |{' '}
+                        <Text style={{ fontWeight: 'bold' }}>Frequency:</Text> {med.frequency} |{' '}
+                        <Text style={{ fontWeight: 'bold' }}>Time to Take:</Text> {med.timeToTake} |{' '}
+                        <Text style={{ fontWeight: 'bold' }}>Duration:</Text> {med.duration} |{' '}
+                        <Text style={{ fontWeight: 'bold' }}>Diagnosis:</Text> {med.diagnosis}
+                      </Text>
+                    ))
+                  ) : (
+                    <Text style={{ fontSize: 16, color: theme.colors.text }}>No medications recorded.</Text>
+                  )}
                 </View>
               )}
+
+
+
+
 
 
               {/* More Sections Here... */}
