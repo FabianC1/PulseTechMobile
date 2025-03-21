@@ -1,5 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  RefreshControl,
+} from 'react-native';
 import { useTheme } from 'styled-components/native';
 import LinearGradient from 'react-native-linear-gradient';
 
@@ -9,6 +19,7 @@ export function SymptomChecker() {
   const [userInput, setUserInput] = useState('');
   const [response, setResponse] = useState('');
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const startDiagnosis = async () => {
     try {
@@ -43,27 +54,66 @@ export function SymptomChecker() {
     setUserInput('');
   };
 
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    setStarted(false);
+    setUserInput('');
+    setResponse('');
+    await startDiagnosis();
+    setRefreshing(false);
+  }, []);
+
   return (
     <LinearGradient colors={theme.colors.background} style={styles.container}>
-      {!started ? (
-        <TouchableOpacity onPress={startDiagnosis} style={[styles.button, { backgroundColor: theme.colors.primary }]}>
-          <Text style={{ color: '#fff', fontWeight: 'bold' }}>Start Diagnosis</Text>
-        </TouchableOpacity>
-      ) : (
-        <View>
-          <Text style={[styles.message, { color: theme.colors.text }]}>{response}</Text>
-          <TextInput
-            value={userInput}
-            onChangeText={setUserInput}
-            placeholder="Type your symptom"
-            placeholderTextColor="#aaa"
-            style={[styles.input, { color: theme.colors.text, borderColor: '#aaa' }]}
-          />
-          <TouchableOpacity onPress={sendInput} disabled={loading} style={[styles.button, { backgroundColor: theme.colors.primary }]}>
-            <Text style={{ color: '#fff', fontWeight: 'bold' }}>{loading ? '...' : 'Send'}</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={100}
+      >
+        <ScrollView
+          contentContainerStyle={styles.inner}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          keyboardShouldPersistTaps="handled"
+        >
+          {!started ? (
+            <>
+              <Text style={[styles.introText, { color: theme.colors.text }]}>
+                Get diagnosed by a trained AI using your symptoms
+              </Text>
+              <TouchableOpacity
+                onPress={startDiagnosis}
+                style={[styles.button, { backgroundColor: theme.colors.primary }]}
+              >
+                <Text style={{ color: '#fff', fontWeight: 'bold' }}>Start Diagnosis</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <View style={styles.diagnosisContainer}>
+              <Text style={[styles.message, { color: theme.colors.text }]}>
+                {response}
+              </Text>
+              <TextInput
+                value={userInput}
+                onChangeText={setUserInput}
+                placeholder="Type your symptom"
+                placeholderTextColor="#aaa"
+                style={[styles.input, { color: theme.colors.text, borderColor: '#aaa' }]}
+              />
+              <TouchableOpacity
+                onPress={sendInput}
+                disabled={loading}
+                style={[styles.button, { backgroundColor: theme.colors.primary }]}
+              >
+                <Text style={{ color: '#fff', fontWeight: 'bold' }}>
+                  {loading ? '...' : 'Send'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </ScrollView>
+      </KeyboardAvoidingView>
     </LinearGradient>
   );
 }
@@ -71,12 +121,23 @@ export function SymptomChecker() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
-    justifyContent: 'center',
+  },
+  inner: {
+    flexGrow: 1, padding: 20, paddingBottom: 500
+  },
+  introText: {
+    fontSize: 18,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  diagnosisContainer: {
+    marginTop: 40,
   },
   message: {
     fontSize: 16,
     marginBottom: 20,
+    textAlign: 'center', // Add this
+    alignSelf: 'center', // Add this to center horizontally
   },
   input: {
     borderWidth: 1,
@@ -90,5 +151,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     borderRadius: 8,
     alignItems: 'center',
+    alignSelf: 'center',
   },
 });
