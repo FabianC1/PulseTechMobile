@@ -194,46 +194,61 @@ export function SymptomChecker() {
           ) : (
             <View style={styles.diagnosisContainer}>
               {!response.toLowerCase().includes('diagnosis accuracy') ? (
-                <Text style={[styles.message, { color: theme.colors.text }]}>
-                  {response}
-                </Text>
+                <>
+                  <Text style={[styles.message, { color: theme.colors.text }]}>
+                    {response}
+                  </Text>
+
+                  <TextInput
+                    value={userInput}
+                    onChangeText={setUserInput}
+                    placeholder="Type your symptom"
+                    placeholderTextColor={theme.colors.text + '88'}
+                    style={[
+                      styles.input,
+                      { color: theme.colors.text, borderColor: theme.colors.text },
+                    ]}
+                  />
+                  <LinearGradient
+                    colors={['#8a5fff', '#0077ffea']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.gradientButton}
+                  >
+                    <TouchableOpacity onPress={sendInput} disabled={loading} style={styles.touchable}>
+                      <Text style={styles.buttonText}>{loading ? '...' : 'Send'}</Text>
+                    </TouchableOpacity>
+                  </LinearGradient>
+
+                  {showQuickButtons && (
+                    <View style={styles.quickButtonsContainer}>
+                      <TouchableOpacity onPress={() => handleQuickResponse('yes')} style={styles.quickButton}>
+                        <Text style={styles.quickButtonText}>Yes</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => handleQuickResponse('no')} style={styles.quickButton}>
+                        <Text style={styles.quickButtonText}>No</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </>
               ) : (
-                renderDiagnosisSection()
-              )}
-
-              <TextInput
-                value={userInput}
-                onChangeText={setUserInput}
-                placeholder="Type your symptom"
-                placeholderTextColor={theme.colors.text + '88'}
-                style={[
-                  styles.input,
-                  { color: theme.colors.text, borderColor: theme.colors.text },
-                ]}
-              />
-              <LinearGradient
-                colors={['#8a5fff', '#0077ffea']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.gradientButton}
-              >
-                <TouchableOpacity onPress={sendInput} disabled={loading} style={styles.touchable}>
-                  <Text style={styles.buttonText}>{loading ? '...' : 'Send'}</Text>
-                </TouchableOpacity>
-              </LinearGradient>
-
-              {showQuickButtons && (
-                <View style={styles.quickButtonsContainer}>
-                  <TouchableOpacity onPress={() => handleQuickResponse('yes')} style={styles.quickButton}>
-                    <Text style={styles.quickButtonText}>Yes</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => handleQuickResponse('no')} style={styles.quickButton}>
-                    <Text style={styles.quickButtonText}>No</Text>
-                  </TouchableOpacity>
-                </View>
+                <>
+                  {renderDiagnosisSection()}
+                  <LinearGradient
+                    colors={['#8a5fff', '#0077ffea']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={[styles.gradientButton, { marginTop: 30 }]}
+                  >
+                    <TouchableOpacity onPress={onRefresh} style={styles.touchable}>
+                      <Text style={styles.buttonText}>Start New Diagnosis</Text>
+                    </TouchableOpacity>
+                  </LinearGradient>
+                </>
               )}
             </View>
           )}
+
         </ScrollView>
       </KeyboardAvoidingView>
     </LinearGradient>
@@ -320,5 +335,5 @@ const styles = StyleSheet.create({
     width: '40%',
     alignSelf: 'center',
     marginBottom: 12,
-  },  
+  },
 });
