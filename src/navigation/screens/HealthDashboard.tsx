@@ -437,7 +437,7 @@ export function HealthDashboard() {
                     const parsedDate = new Date(date);
                     return isNaN(parsedDate.getTime()) ? "" : parsedDate.getDate().toString();
                   }),                                 
-                  datasets: [{ data: heartRateData.slice(0, 15) }],
+                  datasets: [{ data: heartRateData.slice(0, 7) }],
                 }}
                 width={Dimensions.get("window").width - 40}
                 height={220}
@@ -461,7 +461,7 @@ export function HealthDashboard() {
           {/* Wearable Data - Step Count */}
           <View style={styles.chartContainer}>
             <Text style={[styles.chartTitle, { color: theme.colors.text }]}>
-              Step Count (Last 15 Days)
+              Step Count (Last 7 Days)
             </Text>
 
             {stepCountData.length > 0 ? (
@@ -481,7 +481,7 @@ export function HealthDashboard() {
                   backgroundGradientFrom: theme.colors.background[0],
                   backgroundGradientTo: theme.colors.background[1],
                   decimalPlaces: 0,
-                  color: (opacity = 1) => `rgba(0, 150, 255, ${opacity})`,
+                  color: (opacity = 1) => `rgba(0, 70, 255, ${opacity})`,
                   labelColor: () => theme.colors.text,
                   style: { borderRadius: 10 },
                   propsForDots: { r: "4", strokeWidth: "2", stroke: theme.colors.primary },
@@ -499,7 +499,7 @@ export function HealthDashboard() {
           {/* Wearable Data - Sleep Tracking */}
           <View style={styles.chartContainer}>
             <Text style={[styles.chartTitle, { color: theme.colors.text }]}>
-              Sleep Tracking (Last 15 Days)
+              Sleep Tracking (Last 7 Days)
             </Text>
 
             {sleepTrackingData.length > 0 ? (
