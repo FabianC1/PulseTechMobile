@@ -86,8 +86,9 @@ export function MedicalRecords() {
     }
   
     try {
+      await fetchMedicalRecords();
+
       const updatedMedicalRecords = {
-        ...medicalRecords,
         ...medicalRecords,
         email: user.email, // ✅ required for backend to match
         userEmail: user.email, // ✅ keep this too, for saving into DB
