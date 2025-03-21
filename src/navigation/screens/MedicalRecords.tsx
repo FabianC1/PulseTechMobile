@@ -122,7 +122,7 @@ export function MedicalRecords() {
         return;
       }
   
-      console.log("✅ Medical records updated successfully:", data.message);
+      console.log("Medical records updated successfully:", data.message);
   
       setMedicalRecords(updatedMedicalRecords);
   
