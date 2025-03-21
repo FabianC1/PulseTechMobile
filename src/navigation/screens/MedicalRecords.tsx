@@ -46,6 +46,13 @@ export function MedicalRecords() {
     sleepPatterns: user?.sleepPatterns || '',
     healthLogs: user?.healthLogs || '',
     labResults: user?.labResults || '',
+    doctorVisits: user?.doctorVisits || '',
+    heartRate: user?.heartRate || '',
+    stepCount: user?.stepCount || '',
+    sleepTracking: user?.sleepTracking || '',
+    bloodOxygen: user?.bloodOxygen || '',
+    organDonorStatus: user?.organDonorStatus || '',
+    medicalDirectives: user?.medicalDirectives || '',
   });
 
   // State for storing medical records
@@ -176,6 +183,13 @@ export function MedicalRecords() {
         sleepPatterns: medicalRecords?.sleepPatterns || '',
         healthLogs: medicalRecords?.healthLogs || '',
         labResults: medicalRecords?.labResults || '',
+        doctorVisits: medicalRecords?.doctorVisits || '',
+        heartRate: medicalRecords?.heartRate || '',
+        stepCount: medicalRecords?.stepCount || '',
+        sleepTracking: medicalRecords?.sleepTracking || '',
+        bloodOxygen: medicalRecords?.bloodOxygen || '',
+        organDonorStatus: medicalRecords?.organDonorStatus || '',
+        medicalDirectives: medicalRecords?.medicalDirectives || '',
       });
 
       setIsEditing(true);
@@ -198,6 +212,13 @@ export function MedicalRecords() {
       sleepPatterns: user?.sleepPatterns || '',
       healthLogs: user?.healthLogs || '',
       labResults: user?.labResults || '',
+      doctorVisits: user?.doctorVisits || '',
+      heartRate: user?.heartRate || '',
+      stepCount: user?.stepCount || '',
+      sleepTracking: user?.sleepTracking || '',
+      bloodOxygen: user?.bloodOxygen || '',
+      organDonorStatus: user?.organDonorStatus || '',
+      medicalDirectives: user?.medicalDirectives || '',
     });
     setIsEditing(false);
   };
@@ -219,13 +240,13 @@ export function MedicalRecords() {
   const toggleAllSections = () => {
     const allExpanded = Object.values(expandedSections).every((isOpen) => isOpen);
     const newExpandState = !allExpanded;
-
+  
     setExpandAll(newExpandState);
     setExpandedSections({
       personalInfo: newExpandState,
       medicalHistory: newExpandState,
-      medications: newExpandState, // already present
-      vaccinationRecords: newExpandState,
+      medications: newExpandState,
+      vaccinations: newExpandState,
       lifestyleHabits: newExpandState,
       symptomsLogs: newExpandState,
       labReports: newExpandState,
@@ -234,7 +255,6 @@ export function MedicalRecords() {
       emergencyDetails: newExpandState,
     });
   };
-
 
 
   const toggleEdit = () => {
@@ -643,13 +663,172 @@ export function MedicalRecords() {
               )}
 
 
+              {/* Doctor Visits & Appointments Section */}
+              <View style={{ borderRadius: 12, padding: 2, marginBottom: 20 }}>
+                <LinearGradient
+                  colors={['#8a5fff', '#0077ffea']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={{ borderRadius: 12, padding: 2 }}
+                >
+                  <View style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: 10 }}>
+                    <TouchableOpacity
+                      onPress={() => toggleSection('doctorVisits')}
+                      style={{
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        paddingVertical: 12,
+                        paddingHorizontal: 16,
+                      }}
+                    >
+                      <Text style={{ fontSize: 18, fontWeight: 'bold', color: theme.colors.text }}>
+                        Doctor Visits & Appointments
+                      </Text>
+                      <Text style={{ fontSize: 18, color: theme.colors.text }}>
+                        {expandedSections['doctorVisits'] ? '▲' : '▼'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </LinearGradient>
+              </View>
+
+              {expandedSections['doctorVisits'] && (
+                <View
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                    padding: 12,
+                    borderRadius: 10,
+                    marginBottom: 20,
+                  }}
+                >
+                  {isEditing ? (
+                    <>
+                      <TextInput
+                        value={editedInfo.doctorVisits}
+                        onChangeText={(text) => handleInputChange('doctorVisits', text)}
+                        placeholder="Enter doctor visit records"
+                        style={[styles.input, { height: 100, textAlignVertical: 'top' }]}
+                        multiline
+                      />
+                      <TouchableOpacity onPress={cancelEdit} style={styles.cancelButton}>
+                        <Text style={styles.buttonText}>Cancel</Text>
+                      </TouchableOpacity>
+                    </>
+                  ) : (
+                    <>
+                      <Text style={{ fontSize: 16, color: theme.colors.text }}>
+                        {medicalRecords?.doctorVisits || 'No records found'}
+                      </Text>
+                      <TouchableOpacity onPress={startEditing} style={styles.editButton}>
+                        <Text style={styles.buttonText}>Edit</Text>
+                      </TouchableOpacity>
+                    </>
+                  )}
+                </View>
+              )}
 
 
+              {/* Smartwatch & Wearable Data Section */}
+              <View style={{ borderRadius: 12, padding: 2, marginBottom: 20 }}>
+                <LinearGradient colors={['#8a5fff', '#0077ffea']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 12, padding: 2 }}>
+                  <View style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: 10 }}>
+                    <TouchableOpacity onPress={() => toggleSection('wearableData')} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 16 }}>
+                      <Text style={{ fontSize: 18, fontWeight: 'bold', color: theme.colors.text }}>Smartwatch & Wearable Data</Text>
+                      <Text style={{ fontSize: 18, color: theme.colors.text }}>
+                        {expandedSections['wearableData'] ? '▲' : '▼'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </LinearGradient>
+              </View>
+
+              {expandedSections['wearableData'] && (
+                <View style={{ backgroundColor: 'rgba(255, 255, 255, 0.15)', padding: 12, borderRadius: 10, marginBottom: 20 }}>
+                  {isEditing ? (
+                    <>
+                      <TextInput value={editedInfo.heartRate} onChangeText={(text) => handleInputChange('heartRate', text)} placeholder="Heart Rate" style={styles.input} />
+                      <TextInput value={editedInfo.stepCount} onChangeText={(text) => handleInputChange('stepCount', text)} placeholder="Step Count" style={styles.input} />
+                      <TextInput value={editedInfo.sleepTracking} onChangeText={(text) => handleInputChange('sleepTracking', text)} placeholder="Sleep Tracking" style={styles.input} />
+                      <TextInput value={editedInfo.bloodOxygen} onChangeText={(text) => handleInputChange('bloodOxygen', text)} placeholder="Blood Oxygen" style={styles.input} />
+                      <TouchableOpacity onPress={cancelEdit} style={styles.cancelButton}>
+                        <Text style={styles.buttonText}>Cancel</Text>
+                      </TouchableOpacity>
+                    </>
+                  ) : (
+                    <>
+                      <Text style={{ fontSize: 16, color: theme.colors.text }}>
+                        <Text style={{ fontWeight: 'bold' }}>Heart Rate:</Text> {medicalRecords?.heartRate || 'N/A'} |{' '}
+                        <Text style={{ fontWeight: 'bold' }}>Step Count:</Text> {medicalRecords?.stepCount || 'N/A'} |{' '}
+                        <Text style={{ fontWeight: 'bold' }}>Sleep Tracking:</Text> {medicalRecords?.sleepTracking || 'N/A'} |{' '}
+                        <Text style={{ fontWeight: 'bold' }}>Blood Oxygen:</Text> {medicalRecords?.bloodOxygen || 'N/A'}
+                      </Text>
+                      <TouchableOpacity onPress={startEditing} style={styles.editButton}>
+                        <Text style={styles.buttonText}>Edit</Text>
+                      </TouchableOpacity>
+                    </>
+                  )}
+                </View>
+              )}
 
 
-              {/* More Sections Here... */}
+              {/* Emergency Details Section */}
+              <View style={{ borderRadius: 12, padding: 2, marginBottom: 20 }}>
+                <LinearGradient
+                  colors={['#8a5fff', '#0077ffea']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={{ borderRadius: 12, padding: 2 }}
+                >
+                  <View style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: 10 }}>
+                    <TouchableOpacity
+                      onPress={() => toggleSection('emergencyDetails')}
+                      style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 16 }}
+                    >
+                      <Text style={{ fontSize: 18, fontWeight: 'bold', color: theme.colors.text }}>
+                        Emergency Details
+                      </Text>
+                      <Text style={{ fontSize: 18, color: theme.colors.text }}>
+                        {expandedSections['emergencyDetails'] ? '▲' : '▼'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </LinearGradient>
+              </View>
 
-
+              {expandedSections['emergencyDetails'] && (
+                <View style={{ backgroundColor: 'rgba(255, 255, 255, 0.15)', padding: 12, borderRadius: 10, marginBottom: 20 }}>
+                  {isEditing ? (
+                    <>
+                      <TextInput
+                        value={editedInfo.organDonorStatus}
+                        onChangeText={(text) => handleInputChange('organDonorStatus', text)}
+                        placeholder="Organ Donor Status"
+                        style={styles.input}
+                      />
+                      <TextInput
+                        value={editedInfo.medicalDirectives}
+                        onChangeText={(text) => handleInputChange('medicalDirectives', text)}
+                        placeholder="Medical Directives"
+                        style={styles.input}
+                      />
+                      <TouchableOpacity onPress={cancelEdit} style={styles.cancelButton}>
+                        <Text style={styles.buttonText}>Cancel</Text>
+                      </TouchableOpacity>
+                    </>
+                  ) : (
+                    <>
+                      <Text style={{ fontSize: 16, color: theme.colors.text }}>
+                        <Text style={{ fontWeight: 'bold' }}>Organ Donor:</Text> {medicalRecords?.organDonorStatus || 'N/A'} |{' '}
+                        <Text style={{ fontWeight: 'bold' }}>Medical Directives:</Text> {medicalRecords?.medicalDirectives || 'N/A'}
+                      </Text>
+                      <TouchableOpacity onPress={startEditing} style={styles.editButton}>
+                        <Text style={styles.buttonText}>Edit</Text>
+                      </TouchableOpacity>
+                    </>
+                  )}
+                </View>
+              )}
 
 
               {isEditing && (
