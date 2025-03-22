@@ -143,7 +143,7 @@ export function Appointments() {
       if (res.ok) {
         setModalMessage('Appointment requested successfully.');
         setModalVisible(true);
-        
+
         setEditingDoctorEmail(null);
         setAppointmentData((prev) => {
           const updated = { ...prev };
@@ -211,6 +211,32 @@ export function Appointments() {
       alert('Failed to request appointment.');
     }
   };
+
+
+
+  const markAppointmentCompleted = async (appointmentId: string) => {
+    try {
+      const res = await fetch('http://192.168.0.84:3000/update-appointment-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ appointmentId, status: 'Completed' }),
+      });
+
+      const result = await res.json();
+
+      if (res.ok) {
+        setModalMessage('Appointment marked as completed.');
+        setModalVisible(true);
+        fetchAppointments(); // Refresh the list
+      } else {
+        alert(result.message || 'Failed to update appointment.');
+      }
+    } catch (err) {
+      console.error('Error updating appointment:', err);
+      alert('Failed to update appointment.');
+    }
+  };
+
 
 
   return (
@@ -305,6 +331,25 @@ export function Appointments() {
                             Status: {appt.status}
                           </Text>
                         </View>
+
+                        {user?.role === 'doctor' && appt.status !== 'Completed' && (
+                          <LinearGradient
+                            colors={['#8a5fff', '#0077ffea']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 0 }}
+                            style={[styles.gradientButtonWide, { marginTop: 10 }]}
+                          >
+                            <TouchableOpacity
+                              onPress={() => markAppointmentCompleted(appt._id)}
+                              style={styles.touchableWide}
+                            >
+                              <Text style={styles.buttonText}>Mark as Completed</Text>
+                            </TouchableOpacity>
+                          </LinearGradient>
+                        )}
+
+
+
                       </View>
                     ))
                   )}
@@ -810,4 +855,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  gradientButtonWide: {
+    borderRadius: 8,
+    width: 260,
+    alignSelf: 'center',
+  },
+  touchableWide: {
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  
 });
