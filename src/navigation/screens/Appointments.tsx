@@ -125,7 +125,8 @@ export function Appointments() {
       const result = await res.json();
 
       if (res.ok) {
-        alert('Appointment requested successfully.');
+        setModalMessage('Appointment requested successfully.');
+        setModalVisible(true);
 
         // Clean up only after success
         setEditingDoctorEmail(null);
@@ -159,41 +160,48 @@ export function Appointments() {
           keyboardShouldPersistTaps="handled"
         >
           {user ? (
-            <View style={styles.contentWrapper}>
-              <Text style={[styles.title, { color: theme.colors.text }]}>
-                Here you can view your appointments
-              </Text>
+            <>
+              <View style={styles.contentWrapper}>
+                <Text style={[styles.title, { color: theme.colors.text }]}>
+                  {user.role === 'doctor'
+                    ? `Welcome, Dr. ${user.fullName || user.email}`
+                    : 'Here you can view your appointments'}
+                </Text>
 
-              <View style={styles.toggleButtonsRow}>
-                <LinearGradient
-                  colors={['#8a5fff', '#0077ffea']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.gradientButtonSmall}
-                >
-                  <TouchableOpacity
-                    onPress={() => setAppointmentsView('upcoming')}
-                    style={styles.touchableSmall}
+                <View style={styles.toggleButtonsRow}>
+                  <LinearGradient
+                    colors={['#8a5fff', '#0077ffea']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.gradientButtonSmall}
                   >
-                    <Text style={styles.buttonText}>View Upcoming</Text>
-                  </TouchableOpacity>
-                </LinearGradient>
+                    <TouchableOpacity
+                      onPress={() => setAppointmentsView('upcoming')}
+                      style={styles.touchableSmall}
+                    >
+                      <Text style={styles.buttonText}>View Upcoming</Text>
+                    </TouchableOpacity>
+                  </LinearGradient>
 
-                <LinearGradient
-                  colors={['#8a5fff', '#0077ffea']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.gradientButtonSmall}
-                >
-                  <TouchableOpacity
-                    onPress={() => setAppointmentsView('request')}
-                    style={styles.touchableSmall}
+                  <LinearGradient
+                    colors={['#8a5fff', '#0077ffea']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.gradientButtonSmall}
                   >
-                    <Text style={styles.buttonText}>Request Appointment</Text>
-                  </TouchableOpacity>
-                </LinearGradient>
+                    <TouchableOpacity
+                      onPress={() => setAppointmentsView('request')}
+                      style={styles.touchableSmall}
+                    >
+                      <Text style={styles.buttonText}>
+                        {user.role === 'doctor' ? 'Give Appointment' : 'Request Appointment'}
+                      </Text>
+                    </TouchableOpacity>
+                  </LinearGradient>
+                </View>
               </View>
 
+              {/* Upcoming Appointments for both doctor and patient */}
               {appointmentsView === 'upcoming' && (
                 <View style={styles.sectionWrapper}>
                   <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
@@ -208,14 +216,13 @@ export function Appointments() {
                     upcomingAppointments.map((appt, index) => (
                       <View
                         key={index}
-                        style={[
-                          styles.appointmentCard,
-                          { borderColor: theme.colors.primary }
-                        ]}
+                        style={[styles.appointmentCard, { borderColor: theme.colors.primary }]}
                       >
                         <View style={styles.rowBetween}>
                           <Text style={[styles.cornerText, { color: theme.colors.text }]}>
-                            {user?.role === 'doctor' ? `Patient: ${appt.patientEmail}` : `Doctor: ${appt.doctorEmail}`}
+                            {user?.role === 'doctor'
+                              ? `Patient: ${appt.patientEmail}`
+                              : `Doctor: ${appt.doctorEmail}`}
                           </Text>
                           <Text style={[styles.cornerText, { color: theme.colors.text }]}>
                             Reason: {appt.reason}
@@ -232,13 +239,12 @@ export function Appointments() {
                         </View>
                       </View>
                     ))
-
                   )}
                 </View>
               )}
 
-
-              {appointmentsView === 'request' && (
+              {/* Only for patient: Show doctor list to request appointment */}
+              {appointmentsView === 'request' && user.role === 'patient' && (
                 <View style={styles.sectionWrapper}>
                   <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
                     Doctors List
@@ -253,7 +259,7 @@ export function Appointments() {
                         key={index}
                         style={[
                           styles.doctorCard,
-                          { borderColor: theme.colors.primary }, // Or another theme color like theme.colors.text
+                          { borderColor: theme.colors.primary },
                         ]}
                       >
                         {!isEditing ? (
@@ -316,13 +322,7 @@ export function Appointments() {
 
                               <Text style={[styles.label, { color: theme.colors.text }]}>Reason:</Text>
                               <TextInput
-                                style={[
-                                  styles.textarea,
-                                  {
-                                    color: theme.colors.text,
-                                    borderColor: theme.colors.text,
-                                  },
-                                ]}
+                                style={[styles.textarea, { color: theme.colors.text, borderColor: theme.colors.text }]}
                                 placeholder="Describe your reason"
                                 placeholderTextColor={theme.colors.text + '88'}
                                 multiline
@@ -366,36 +366,12 @@ export function Appointments() {
                   })}
                 </View>
               )}
-              {showDatePicker && (
-                <DateTimePicker
-                  value={new Date()}
-                  mode="date"
-                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                  onChange={(event, selectedDate) => {
-                    setShowDatePicker(false);
-                    if (event.type === 'set' && selectedDate && currentDoctorForDate) {
-                      const formatted = selectedDate.toISOString().split('T')[0];
-                      setAppointmentData((prev) => ({
-                        ...prev,
-                        [currentDoctorForDate]: {
-                          ...prev[currentDoctorForDate],
-                          date: formatted,
-                        },
-                      }));
-                    }
-                  }}
-                />
-              )}
-              <CustomAlerts
-                visible={modalVisible}
-                onClose={() => setModalVisible(false)}
-                message={modalMessage}
-              />
-
-            </View>
-
-
+            </>
           ) : (
+
+
+
+
             <View style={styles.authPrompt}>
               <Text style={[styles.authText, { color: theme.colors.text }]}>
                 You need to log in or sign up
@@ -420,8 +396,37 @@ export function Appointments() {
             </View>
           )}
         </ScrollView>
+
+        {/* These should be outside the ScrollView and conditional */}
+        {showDatePicker && (
+          <DateTimePicker
+            value={new Date()}
+            mode="date"
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            onChange={(event, selectedDate) => {
+              setShowDatePicker(false);
+              if (event.type === 'set' && selectedDate && currentDoctorForDate) {
+                const formatted = selectedDate.toISOString().split('T')[0];
+                setAppointmentData((prev) => ({
+                  ...prev,
+                  [currentDoctorForDate]: {
+                    ...prev[currentDoctorForDate],
+                    date: formatted,
+                  },
+                }));
+              }
+            }}
+          />
+        )}
+
+        <CustomAlerts
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          message={modalMessage}
+        />
+
       </KeyboardAvoidingView>
-    </LinearGradient>
+    </LinearGradient >
   );
 }
 
