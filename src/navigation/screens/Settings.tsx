@@ -247,7 +247,7 @@ export function Settings({ isDarkMode, toggleTheme }: SettingsProps) {
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
               showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps="always"               
+              keyboardShouldPersistTaps="never"               
           >
             {/* Settings Title */}
             <Text style={[styles.title, { color: theme.colors.text }]}>Settings</Text>
