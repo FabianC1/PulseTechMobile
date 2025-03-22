@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -25,6 +25,7 @@ export function Appointments() {
 
 
   const [appointmentsView, setAppointmentsView] = useState<'upcoming' | 'request'>('upcoming');
+  const [doctorsList, setDoctorsList] = useState<any[]>([]);
 
 
   const [refreshing, setRefreshing] = useState(false);
@@ -35,6 +36,24 @@ export function Appointments() {
       setRefreshing(false);
     }, 1000);
   }, []);
+
+
+  useEffect(() => {
+    if (user && user.role === 'patient') {
+      fetchDoctors();
+    }
+  }, [user]);
+
+  const fetchDoctors = async () => {
+    try {
+      const res = await fetch('http://192.168.0.84:3000/get-doctors');
+      const data = await res.json();
+      setDoctorsList(data);
+    } catch (error) {
+      console.error('Failed to fetch doctors:', error);
+    }
+  };
+
 
   return (
     <LinearGradient colors={theme.colors.background} style={styles.container}>
@@ -85,7 +104,36 @@ export function Appointments() {
                   </TouchableOpacity>
                 </LinearGradient>
               </View>
+
+              {appointmentsView === 'request' && (
+                <View style={styles.sectionWrapper}>
+                  <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+                    Doctors List
+                  </Text>
+
+                  {doctorsList.map((doctor, index) => (
+                    <View key={index} style={styles.doctorCard}>
+                      <Text style={[styles.doctorName, { color: theme.colors.text }]}>
+                        {doctor.fullName}
+                      </Text>
+
+                      <LinearGradient
+                        colors={['#8a5fff', '#0077ffea']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                        style={styles.gradientButtonSmall}
+                      >
+                        <TouchableOpacity style={styles.touchableSmall}>
+                          <Text style={styles.buttonText}>Request Appointment</Text>
+                        </TouchableOpacity>
+                      </LinearGradient>
+                    </View>
+                  ))}
+                </View>
+              )}
+
             </View>
+
           ) : (
             <View style={styles.authPrompt}>
               <Text style={[styles.authText, { color: theme.colors.text }]}>
@@ -177,5 +225,33 @@ const styles = StyleSheet.create({
   touchableSmall: {
     paddingVertical: 12,
     alignItems: 'center',
+  },
+  sectionWrapper: {
+    marginTop: 30,
+    width: '90%',
+  },
+  
+  doctorCard: {
+    backgroundColor: '#88888836', // subtle card color, adjust to theme if needed
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 15,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+  },
+  
+  doctorName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    flex: 1,
+    marginRight: 10,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'center',
   },
 });
