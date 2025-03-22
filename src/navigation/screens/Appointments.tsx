@@ -29,6 +29,7 @@ export function Appointments() {
   const [doctorsList, setDoctorsList] = useState<any[]>([]);
   const [editingDoctorEmail, setEditingDoctorEmail] = useState<string | null>(null);
   const [appointmentData, setAppointmentData] = useState<{ [email: string]: { date: string; reason: string } }>({});
+  const [upcomingAppointments, setUpcomingAppointments] = useState<any[]>([]);
 
 
   const [refreshing, setRefreshing] = useState(false);
@@ -47,6 +48,13 @@ export function Appointments() {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (user && appointmentsView === 'upcoming') {
+      fetchAppointments();
+    }
+  }, [appointmentsView, user]);
+
+
   const fetchDoctors = async () => {
     try {
       const res = await fetch('http://192.168.0.84:3000/get-doctors');
@@ -54,6 +62,73 @@ export function Appointments() {
       setDoctorsList(data);
     } catch (error) {
       console.error('Failed to fetch doctors:', error);
+    }
+  };
+
+  const fetchAppointments = async () => {
+    if (!user?.email) return;
+
+    try {
+      const res = await fetch(`http://192.168.0.84:3000/get-appointments?email=${user.email}`);
+      const data = await res.json();
+
+      // Only show appointments where user is the patient
+      const filtered = data.filter((a: any) => a.patientEmail === user.email);
+
+      setUpcomingAppointments(filtered);
+    } catch (error) {
+      console.error('Failed to fetch appointments:', error);
+    }
+  };
+
+
+  const submitAppointmentRequest = async (doctorEmail: string) => {
+    const data = appointmentData[doctorEmail];
+    const patientEmail = user?.email;
+
+    if (!patientEmail) {
+      alert('User not logged in.');
+      return;
+    }
+
+    if (!data?.date || !data?.reason) {
+      alert('Please enter both date and reason.');
+      return;
+    }
+
+    try {
+      const payload = {
+        doctorEmail,
+        patientEmail,
+        date: data.date,
+        reason: data.reason,
+        status: 'Scheduled',
+      };
+
+      const res = await fetch('http://192.168.0.84:3000/create-appointment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await res.json();
+
+      if (res.ok) {
+        alert('Appointment requested successfully.');
+
+        // Clean up only after success
+        setEditingDoctorEmail(null);
+        setAppointmentData((prev) => {
+          const updated = { ...prev };
+          delete updated[doctorEmail];
+          return updated;
+        });
+      } else {
+        alert(result.message || 'Something went wrong.');
+      }
+    } catch (err) {
+      console.error('Error submitting appointment:', err);
+      alert('Failed to request appointment.');
     }
   };
 
@@ -107,6 +182,50 @@ export function Appointments() {
                   </TouchableOpacity>
                 </LinearGradient>
               </View>
+
+              {appointmentsView === 'upcoming' && (
+                <View style={styles.sectionWrapper}>
+                  <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+                    Upcoming Appointments
+                  </Text>
+
+                  {upcomingAppointments.length === 0 ? (
+                    <Text style={{ color: theme.colors.text, marginTop: 10 }}>
+                      You have no upcoming appointments.
+                    </Text>
+                  ) : (
+                    upcomingAppointments.map((appt, index) => (
+                      <View
+                        key={index}
+                        style={[
+                          styles.appointmentCard,
+                          { borderColor: theme.colors.primary }
+                        ]}
+                      >
+                        <View style={styles.rowBetween}>
+                          <Text style={[styles.cornerText, { color: theme.colors.text }]}>
+                            {user?.role === 'doctor' ? `Patient: ${appt.patientEmail}` : `Doctor: ${appt.doctorEmail}`}
+                          </Text>
+                          <Text style={[styles.cornerText, { color: theme.colors.text }]}>
+                            Reason: {appt.reason}
+                          </Text>
+                        </View>
+
+                        <View style={styles.rowBetween2}>
+                          <Text style={[styles.cornerText, { color: theme.colors.text }]}>
+                            Date: {appt.date}
+                          </Text>
+                          <Text style={[styles.cornerText, { color: theme.colors.text }]}>
+                            Status: {appt.status}
+                          </Text>
+                        </View>
+                      </View>
+                    ))
+
+                  )}
+                </View>
+              )}
+
 
               {appointmentsView === 'request' && (
                 <View style={styles.sectionWrapper}>
@@ -204,9 +323,7 @@ export function Appointments() {
 
                               <View style={styles.buttonRow}>
                                 <TouchableOpacity
-                                  onPress={() => {
-                                    // TODO: implement submission
-                                  }}
+                                  onPress={() => submitAppointmentRequest(doctor.email)}
                                   style={[styles.submitButton, { backgroundColor: theme.colors.primary }]}
                                 >
                                   <Text style={styles.submitText}>Submit</Text>
@@ -411,6 +528,49 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 15,
+  },
+  appointmentCard: {
+    width: '100%',
+    backgroundColor: '#ffffff10',
+    borderRadius: 10,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#ffffff20',
+    flexDirection: 'column',
+  },
+  appointmentText: {
+    fontSize: 15,
+    marginBottom: 6,
+  },
+  bold: {
+    fontWeight: 'bold',
+  },
+  appointmentRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+
+  appointmentColumn: {
+    width: '48%',
+  },
+
+  valueText: {
+    fontSize: 15,
+    marginTop: 4,
+  },
+  rowBetween2: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+
+  cornerText: {
+    fontSize: 15,
+    fontWeight: '500',
+    width: '48%',
+    flexWrap: 'wrap',
+    marginBottom:15,
   },
 
 });
