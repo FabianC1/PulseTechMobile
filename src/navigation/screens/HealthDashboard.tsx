@@ -614,7 +614,7 @@ const styles = StyleSheet.create({
   },
 
   profileContainer: {
-    marginTop: 10,
+    marginTop: 20,
     alignItems: 'center',
   },
 
