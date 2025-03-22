@@ -15,7 +15,7 @@ export const lightTheme = {
     placeholder: "#ff0000",
     border: "#9c0000",
     quickActions: '#1E3A8A',
-    Appointmentsbackground: ['#0d00bd57', '#017685bd'],
+    Appointmentsbackground: ['#1100ff57', '#00a4b9bd'],
   },
 };
 

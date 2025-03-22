@@ -15,6 +15,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { useAuth } from '../AuthContext';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import CustomAlerts from './CustomAlerts';
 import Icon from 'react-native-vector-icons/MaterialIcons';//calender icon
 
 type RootStackParamList = {
@@ -35,6 +36,10 @@ export function Appointments() {
 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [currentDoctorForDate, setCurrentDoctorForDate] = useState<string | null>(null);
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
+
 
 
   const [refreshing, setRefreshing] = useState(false);
@@ -97,7 +102,8 @@ export function Appointments() {
     }
 
     if (!data?.date || !data?.reason) {
-      alert('Please enter both date and reason.');
+      setModalMessage('Please enter both date and reason.');
+      setModalVisible(true);
       return;
     }
 
@@ -380,8 +386,14 @@ export function Appointments() {
                   }}
                 />
               )}
+              <CustomAlerts
+                visible={modalVisible}
+                onClose={() => setModalVisible(false)}
+                message={modalMessage}
+              />
 
             </View>
+
 
           ) : (
             <View style={styles.authPrompt}>
