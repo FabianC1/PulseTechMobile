@@ -14,6 +14,8 @@ import { useTheme } from 'styled-components/native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { useAuth } from '../AuthContext';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import Icon from 'react-native-vector-icons/MaterialIcons';//calender icon
 
 type RootStackParamList = {
   Auth: { screen: 'Login' | 'Signup' };
@@ -30,6 +32,9 @@ export function Appointments() {
   const [editingDoctorEmail, setEditingDoctorEmail] = useState<string | null>(null);
   const [appointmentData, setAppointmentData] = useState<{ [email: string]: { date: string; reason: string } }>({});
   const [upcomingAppointments, setUpcomingAppointments] = useState<any[]>([]);
+
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [currentDoctorForDate, setCurrentDoctorForDate] = useState<string | null>(null);
 
 
   const [refreshing, setRefreshing] = useState(false);
@@ -278,15 +283,9 @@ export function Appointments() {
                             </Text>
                             <View>
                               <Text style={[styles.label, { color: theme.colors.text }]}>Date:</Text>
-                              <TouchableOpacity onPress={() => { }}>
+                              <View style={styles.dateRow}>
                                 <TextInput
-                                  style={[
-                                    styles.input,
-                                    {
-                                      color: theme.colors.text,
-                                      borderColor: theme.colors.text,
-                                    },
-                                  ]}
+                                  style={[styles.input, { color: theme.colors.text, borderColor: theme.colors.text, flex: 1 }]}
                                   placeholder="YYYY-MM-DD"
                                   placeholderTextColor={theme.colors.text + '88'}
                                   value={data.date}
@@ -296,8 +295,18 @@ export function Appointments() {
                                       [doctor.email]: { ...data, date: text },
                                     }))
                                   }
+                                  keyboardType="numeric"
                                 />
-                              </TouchableOpacity>
+                                <TouchableOpacity
+                                  onPress={() => {
+                                    setShowDatePicker(true);
+                                    setCurrentDoctorForDate(doctor.email);
+                                  }}
+                                  style={{ marginLeft: 10 }}
+                                >
+                                  <Icon name="calendar-today" size={24} color={theme.colors.primary} />
+                                </TouchableOpacity>
+                              </View>
 
                               <Text style={[styles.label, { color: theme.colors.text }]}>Reason:</Text>
                               <TextInput
@@ -350,6 +359,26 @@ export function Appointments() {
                     );
                   })}
                 </View>
+              )}
+              {showDatePicker && (
+                <DateTimePicker
+                  value={new Date()}
+                  mode="date"
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  onChange={(event, selectedDate) => {
+                    setShowDatePicker(false);
+                    if (event.type === 'set' && selectedDate && currentDoctorForDate) {
+                      const formatted = selectedDate.toISOString().split('T')[0];
+                      setAppointmentData((prev) => ({
+                        ...prev,
+                        [currentDoctorForDate]: {
+                          ...prev[currentDoctorForDate],
+                          date: formatted,
+                        },
+                      }));
+                    }
+                  }}
+                />
               )}
 
             </View>
@@ -570,7 +599,10 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     width: '48%',
     flexWrap: 'wrap',
-    marginBottom:15,
+    marginBottom: 15,
   },
-
+  dateRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
 });
