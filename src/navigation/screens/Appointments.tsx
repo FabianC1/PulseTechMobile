@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
+  TextInput,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
@@ -26,6 +27,8 @@ export function Appointments() {
 
   const [appointmentsView, setAppointmentsView] = useState<'upcoming' | 'request'>('upcoming');
   const [doctorsList, setDoctorsList] = useState<any[]>([]);
+  const [editingDoctorEmail, setEditingDoctorEmail] = useState<string | null>(null);
+  const [appointmentData, setAppointmentData] = useState<{ [email: string]: { date: string; reason: string } }>({});
 
 
   const [refreshing, setRefreshing] = useState(false);
@@ -111,24 +114,124 @@ export function Appointments() {
                     Doctors List
                   </Text>
 
-                  {doctorsList.map((doctor, index) => (
-                    <View key={index} style={styles.doctorCard}>
-                      <Text style={[styles.doctorName, { color: theme.colors.text }]}>
-                        {doctor.fullName}
-                      </Text>
+                  {doctorsList.map((doctor, index) => {
+                    const isEditing = editingDoctorEmail === doctor.email;
+                    const data = appointmentData[doctor.email] || { date: '', reason: '' };
 
-                      <LinearGradient
-                        colors={['#8a5fff', '#0077ffea']}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 0 }}
-                        style={styles.gradientButtonSmall}
+                    return (
+                      <View
+                        key={index}
+                        style={[
+                          styles.doctorCard,
+                          { borderColor: theme.colors.primary }, // Or another theme color like theme.colors.text
+                        ]}
                       >
-                        <TouchableOpacity style={styles.touchableSmall}>
-                          <Text style={styles.buttonText}>Request Appointment</Text>
-                        </TouchableOpacity>
-                      </LinearGradient>
-                    </View>
-                  ))}
+                        {!isEditing ? (
+                          <View style={styles.rowBetween}>
+                            <Text style={[styles.doctorName, { color: theme.colors.text }]}>
+                              {doctor.fullName}
+                            </Text>
+                            <LinearGradient
+                              colors={['#8a5fff', '#0077ffea']}
+                              start={{ x: 0, y: 0 }}
+                              end={{ x: 1, y: 0 }}
+                              style={styles.gradientButtonSmall}
+                            >
+                              <TouchableOpacity
+                                style={styles.touchableSmall}
+                                onPress={() => {
+                                  setEditingDoctorEmail(doctor.email);
+                                }}
+                              >
+                                <Text style={styles.buttonText}>Request</Text>
+                              </TouchableOpacity>
+                            </LinearGradient>
+                          </View>
+                        ) : (
+                          <LinearGradient
+                            colors={theme.colors.Appointmentsbackground}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            style={styles.expandedCard}
+                          >
+                            <Text style={[styles.doctorName, { color: theme.colors.text, marginBottom: 8 }]}>
+                              {doctor.fullName}
+                            </Text>
+                            <View>
+                              <Text style={[styles.label, { color: theme.colors.text }]}>Date:</Text>
+                              <TouchableOpacity onPress={() => { }}>
+                                <TextInput
+                                  style={[
+                                    styles.input,
+                                    {
+                                      color: theme.colors.text,
+                                      borderColor: theme.colors.text,
+                                    },
+                                  ]}
+                                  placeholder="YYYY-MM-DD"
+                                  placeholderTextColor={theme.colors.text + '88'}
+                                  value={data.date}
+                                  onChangeText={(text: string) =>
+                                    setAppointmentData((prev) => ({
+                                      ...prev,
+                                      [doctor.email]: { ...data, date: text },
+                                    }))
+                                  }
+                                />
+                              </TouchableOpacity>
+
+                              <Text style={[styles.label, { color: theme.colors.text }]}>Reason:</Text>
+                              <TextInput
+                                style={[
+                                  styles.textarea,
+                                  {
+                                    color: theme.colors.text,
+                                    borderColor: theme.colors.text,
+                                  },
+                                ]}
+                                placeholder="Describe your reason"
+                                placeholderTextColor={theme.colors.text + '88'}
+                                multiline
+                                numberOfLines={4}
+                                value={data.reason}
+                                onChangeText={(text: string) =>
+                                  setAppointmentData((prev) => ({
+                                    ...prev,
+                                    [doctor.email]: { ...data, reason: text },
+                                  }))
+                                }
+                              />
+
+                              <View style={styles.buttonRow}>
+                                <TouchableOpacity
+                                  onPress={() => {
+                                    // TODO: implement submission
+                                  }}
+                                  style={[styles.submitButton, { backgroundColor: theme.colors.primary }]}
+                                >
+                                  <Text style={styles.submitText}>Submit</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity
+                                  onPress={() => {
+                                    setEditingDoctorEmail(null);
+                                    setAppointmentData((prev) => {
+                                      const copy = { ...prev };
+                                      delete copy[doctor.email];
+                                      return copy;
+                                    });
+                                  }}
+                                  style={styles.cancelButton}
+                                >
+                                  <Text style={[styles.submitText, { color: theme.colors.text }]}>Cancel</Text>
+                                </TouchableOpacity>
+                              </View>
+                            </View>
+                          </LinearGradient>
+                        )}
+                      </View>
+                    );
+                  })}
                 </View>
               )}
 
@@ -172,7 +275,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     alignItems: 'center',
     paddingTop: 20,
-    paddingBottom: 100,
+    paddingBottom: 500,
 
   },
   title: {
@@ -230,9 +333,9 @@ const styles = StyleSheet.create({
     marginTop: 30,
     width: '90%',
   },
-  
+
   doctorCard: {
-    backgroundColor: '#88888836', // subtle card color, adjust to theme if needed
+    backgroundColor: '#88888836',
     borderRadius: 10,
     padding: 15,
     marginBottom: 15,
@@ -240,8 +343,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     width: '100%',
+    borderWidth: 1.5,
   },
-  
+
   doctorName: {
     fontSize: 16,
     fontWeight: 'bold',
@@ -254,4 +358,59 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     textAlign: 'center',
   },
+  rowBetween: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  expandedCard: {
+    width: '95%',
+    alignSelf: 'center',
+    borderRadius: 10,
+    padding: 16,
+    marginBottom: 16,
+  },
+
+  label: {
+    fontSize: 14,
+    marginTop: 10,
+    marginBottom: 4,
+  },
+  input: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 10,
+    fontSize: 15,
+    marginBottom: 10,
+  },
+  textarea: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 10,
+    fontSize: 15,
+    height: 100,
+    textAlignVertical: 'top',
+    marginBottom: 10,
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  submitButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+  cancelButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    backgroundColor: '#ff0000b6',
+  },
+  submitText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 15,
+  },
+
 });
