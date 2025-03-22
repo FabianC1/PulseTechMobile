@@ -30,6 +30,7 @@ export function Appointments() {
 
   const [appointmentsView, setAppointmentsView] = useState<'upcoming' | 'request'>('upcoming');
   const [doctorsList, setDoctorsList] = useState<any[]>([]);
+  const [patientsList, setPatientsList] = useState<any[]>([]);
   const [editingDoctorEmail, setEditingDoctorEmail] = useState<string | null>(null);
   const [appointmentData, setAppointmentData] = useState<{ [email: string]: { date: string; reason: string } }>({});
   const [upcomingAppointments, setUpcomingAppointments] = useState<any[]>([]);
@@ -59,11 +60,26 @@ export function Appointments() {
   }, [user]);
 
   useEffect(() => {
+    if (user && user.role === 'doctor') {
+      fetchPatients();
+    }
+  }, [user]);
+
+  useEffect(() => {
     if (user && appointmentsView === 'upcoming') {
       fetchAppointments();
     }
   }, [appointmentsView, user]);
 
+  const fetchPatients = async () => {
+    try {
+      const res = await fetch('http://192.168.0.84:3000/get-patients');
+      const data = await res.json();
+      setPatientsList(data);
+    } catch (error) {
+      console.error('Failed to fetch patients:', error);
+    }
+  };
 
   const fetchDoctors = async () => {
     try {
@@ -82,12 +98,64 @@ export function Appointments() {
       const res = await fetch(`http://192.168.0.84:3000/get-appointments?email=${user.email}`);
       const data = await res.json();
 
-      // Only show appointments where user is the patient
-      const filtered = data.filter((a: any) => a.patientEmail === user.email);
+      const filtered = data.filter((a: any) =>
+        user.role === 'doctor' ? a.doctorEmail === user.email : a.patientEmail === user.email
+      );
 
       setUpcomingAppointments(filtered);
     } catch (error) {
       console.error('Failed to fetch appointments:', error);
+    }
+  };
+
+  const submitAppointmentAsDoctor = async (patientEmail: string) => {
+    const data = appointmentData[patientEmail];
+    const doctorEmail = user?.email;
+
+    if (!doctorEmail) {
+      alert('User not logged in.');
+      return;
+    }
+
+    if (!data?.date || !data?.reason) {
+      setModalMessage('Please enter both date and reason.');
+      setModalVisible(true);
+      return;
+    }
+
+    try {
+      const payload = {
+        doctorEmail,
+        patientEmail,
+        date: data.date,
+        reason: data.reason,
+        status: 'Scheduled',
+      };
+
+      const res = await fetch('http://192.168.0.84:3000/create-appointment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await res.json();
+
+      if (res.ok) {
+        setModalMessage('Appointment requested successfully.');
+        setModalVisible(true);
+        
+        setEditingDoctorEmail(null);
+        setAppointmentData((prev) => {
+          const updated = { ...prev };
+          delete updated[patientEmail];
+          return updated;
+        });
+      } else {
+        alert(result.message || 'Something went wrong.');
+      }
+    } catch (err) {
+      console.error('Error creating appointment:', err);
+      alert('Failed to create appointment.');
     }
   };
 
@@ -366,6 +434,126 @@ export function Appointments() {
                   })}
                 </View>
               )}
+              {appointmentsView === 'request' && user.role === 'doctor' && (
+                <View style={styles.sectionWrapper}>
+                  <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+                    Patients List
+                  </Text>
+
+                  {patientsList.map((patient, index) => {
+                    const isEditing = editingDoctorEmail === patient.email;
+                    const data = appointmentData[patient.email] || { date: '', reason: '' };
+
+                    return (
+                      <View
+                        key={index}
+                        style={[styles.doctorCard, { borderColor: theme.colors.primary }]}
+                      >
+                        {!isEditing ? (
+                          <View style={styles.rowBetween}>
+                            <Text style={[styles.doctorName, { color: theme.colors.text }]}>
+                              {patient.fullName || patient.email}
+                            </Text>
+                            <LinearGradient
+                              colors={['#8a5fff', '#0077ffea']}
+                              start={{ x: 0, y: 0 }}
+                              end={{ x: 1, y: 0 }}
+                              style={styles.gradientButtonSmall}
+                            >
+                              <TouchableOpacity
+                                style={styles.touchableSmall}
+                                onPress={() => {
+                                  setEditingDoctorEmail(patient.email);
+                                }}
+                              >
+                                <Text style={styles.buttonText}>Give</Text>
+                              </TouchableOpacity>
+                            </LinearGradient>
+                          </View>
+                        ) : (
+                          <LinearGradient
+                            colors={theme.colors.Appointmentsbackground}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            style={styles.expandedCard}
+                          >
+                            <Text style={[styles.doctorName, { color: theme.colors.text, marginBottom: 8 }]}>
+                              {patient.fullName || patient.email}
+                            </Text>
+                            <View>
+                              <Text style={[styles.label, { color: theme.colors.text }]}>Date:</Text>
+                              <View style={styles.dateRow}>
+                                <TextInput
+                                  style={[styles.input, { color: theme.colors.text, borderColor: theme.colors.text, flex: 1 }]}
+                                  placeholder="YYYY-MM-DD"
+                                  placeholderTextColor={theme.colors.text + '88'}
+                                  value={data.date}
+                                  onChangeText={(text: string) =>
+                                    setAppointmentData((prev) => ({
+                                      ...prev,
+                                      [patient.email]: { ...data, date: text },
+                                    }))
+                                  }
+                                  keyboardType="numeric"
+                                />
+                                <TouchableOpacity
+                                  onPress={() => {
+                                    setShowDatePicker(true);
+                                    setCurrentDoctorForDate(patient.email);
+                                  }}
+                                  style={{ marginLeft: 10 }}
+                                >
+                                  <Icon name="calendar-today" size={24} color={theme.colors.primary} />
+                                </TouchableOpacity>
+                              </View>
+
+                              <Text style={[styles.label, { color: theme.colors.text }]}>Reason:</Text>
+                              <TextInput
+                                style={[styles.textarea, { color: theme.colors.text, borderColor: theme.colors.text }]}
+                                placeholder="Describe the appointment"
+                                placeholderTextColor={theme.colors.text + '88'}
+                                multiline
+                                numberOfLines={4}
+                                value={data.reason}
+                                onChangeText={(text: string) =>
+                                  setAppointmentData((prev) => ({
+                                    ...prev,
+                                    [patient.email]: { ...data, reason: text },
+                                  }))
+                                }
+                              />
+
+                              <View style={styles.buttonRow}>
+                                <TouchableOpacity
+                                  onPress={() => submitAppointmentAsDoctor(patient.email)}
+                                  style={[styles.submitButton, { backgroundColor: theme.colors.primary }]}
+                                >
+                                  <Text style={styles.submitText}>Submit</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity
+                                  onPress={() => {
+                                    setEditingDoctorEmail(null);
+                                    setAppointmentData((prev) => {
+                                      const copy = { ...prev };
+                                      delete copy[patient.email];
+                                      return copy;
+                                    });
+                                  }}
+                                  style={styles.cancelButton}
+                                >
+                                  <Text style={[styles.submitText, { color: theme.colors.text }]}>Cancel</Text>
+                                </TouchableOpacity>
+                              </View>
+                            </View>
+                          </LinearGradient>
+                        )}
+                      </View>
+                    );
+                  })}
+                </View>
+              )}
+
             </>
           ) : (
 
