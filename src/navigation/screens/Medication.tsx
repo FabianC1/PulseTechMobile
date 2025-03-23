@@ -102,16 +102,16 @@ export function Medication() {
         key={med.name + med.diagnosis}
         style={[
           styles.medCard,
-          { backgroundColor: theme.colors.primary || '#fff' },
+          { backgroundColor: theme.colors.primary },
         ]}
       >
         <Text style={[styles.medName, { color: theme.colors.text }]}>{med.name}</Text>
-        <Text style={[styles.medDetails, { color: theme.colors.text }]}>Dosage: {med.dosage}</Text>
-        <Text style={[styles.medDetails, { color: theme.colors.text }]}>Frequency: {med.frequency}</Text>
-        <Text style={[styles.medDetails, { color: theme.colors.text }]}>Duration: {med.duration}</Text>
-        <Text style={[styles.medDetails, { color: theme.colors.text }]}>Diagnosis: {med.diagnosis}</Text>
+        <Text style={[styles.medDetailText, { color: theme.colors.text }]}>Dosage: {med.dosage}</Text>
+        <Text style={[styles.medDetailText, { color: theme.colors.text }]}>Frequency: {med.frequency}</Text>
+        <Text style={[styles.medDetailText, { color: theme.colors.text }]}>Duration: {med.duration}</Text>
+        <Text style={[styles.medDetailText, { color: theme.colors.text }]}>Diagnosis: {med.diagnosis}</Text>
         {nextDoseTime && (
-          <Text style={[styles.medDetails, { color: theme.colors.secondary }]}>
+          <Text style={[styles.medDetailText, { color: theme.colors.secondary }]}>
             Next Dose: {new Date(nextDoseTime).toLocaleTimeString()}
           </Text>
         )}
@@ -137,7 +137,9 @@ export function Medication() {
         >
           <ScrollView
             contentContainerStyle={styles.scrollContainer}
-            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
             keyboardShouldPersistTaps="handled"
           >
             {medications.length === 0 ? (
@@ -145,7 +147,66 @@ export function Medication() {
                 No medications found.
               </Text>
             ) : (
-              medications.map(renderMedicationCard)
+              <>
+                {medications.map((med: MedicationItem, index: number) => {
+                  const now = new Date().getTime();
+                  const nextDoseTime = med.nextDoseTime ? new Date(med.nextDoseTime).getTime() : null;
+                  const withinWindow =
+                    nextDoseTime !== null && Math.abs(now - nextDoseTime) <= 15 * 60 * 1000;
+  
+                  const frequencyColorMap: Record<string, string> = {
+                    'Once a day': '#3498db',
+                    '2 times a day': '#2ecc71',
+                    '3 times a day': '#f1c40f',
+                    'Every 4 hours': '#e67e22',
+                    'Every 6 hours': '#9b59b6',
+                  };
+                  const colorBar = frequencyColorMap[med.frequency] || '#95a5a6';
+  
+                  return (
+                    <View key={`${med.name}-${index}`} style={styles.medCardWrapper}>
+                      <View style={[styles.colorBar, { backgroundColor: colorBar }]} />
+                      <View style={[styles.medCard, { backgroundColor: theme.colors.card || '#fff' }]}>
+                        <View style={styles.medInfoSection}>
+                          <Text style={[styles.medName, { color: theme.colors.text }]}>{med.name}</Text>
+                          <Text style={[styles.medDetailText, { color: theme.colors.text }]}>Dosage: {med.dosage}</Text>
+                          <Text style={[styles.medDetailText, { color: theme.colors.text }]}>Frequency: {med.frequency}</Text>
+                          <Text style={[styles.medDetailText, { color: theme.colors.text }]}>Duration: {med.duration}</Text>
+                          <Text style={[styles.medDetailText, { color: theme.colors.text }]}>Diagnosis: {med.diagnosis}</Text>
+                          {nextDoseTime && (
+                            <Text style={[styles.nextDoseText, { color: theme.colors.secondary }]}>
+                              Next Dose: {new Date(nextDoseTime).toLocaleTimeString()}
+                            </Text>
+                          )}
+                        </View>
+  
+                        <View style={styles.medLogsSection}>
+                          {(med.logs || []).slice(-5).reverse().map((log: MedicationLog, logIndex: number) => (
+                            <Text
+                              key={logIndex}
+                              style={[
+                                styles.logEntry,
+                                log.status === 'Taken' ? styles.logTaken : styles.logMissed,
+                              ]}
+                            >
+                              {new Date(log.time).toLocaleString()} - {log.status}
+                            </Text>
+                          ))}
+  
+                          {withinWindow && (
+                            <TouchableOpacity
+                              style={[styles.markButton, { backgroundColor: theme.colors.quickActions }]}
+                              onPress={() => markAsTaken(med.name)}
+                            >
+                              <Text style={styles.markButtonText}>Mark as Taken</Text>
+                            </TouchableOpacity>
+                          )}
+                        </View>
+                      </View>
+                    </View>
+                  );
+                })}
+              </>
             )}
           </ScrollView>
         </KeyboardAvoidingView>
@@ -157,7 +218,7 @@ export function Medication() {
           <Text style={[styles.authText, { color: theme.colors.secondary }]}>
             To access your medication tracking, please log in or create an account.
           </Text>
-
+  
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={[styles.authButton, { backgroundColor: theme.colors.primary }]}
@@ -165,7 +226,7 @@ export function Medication() {
             >
               <Text style={styles.buttonText}>Login</Text>
             </TouchableOpacity>
-
+  
             <TouchableOpacity
               style={[styles.authButton, { backgroundColor: theme.colors.primary }]}
               onPress={() => navigation.navigate('Auth', { screen: 'Signup' })}
@@ -176,7 +237,7 @@ export function Medication() {
         </View>
       )}
     </LinearGradient>
-  );
+  );  
 }
 
 const styles = StyleSheet.create({
@@ -213,29 +274,60 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  medCard: {
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 16,
+  medCardWrapper: {
+    flexDirection: 'row',
+    marginBottom: 20,
+    borderRadius: 14,
+    overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  colorBar: {
+    width: 8,
+    backgroundColor: '#ccc',
+  },
+  medCard: {
+    flex: 1,
+    borderRadius: 14,
+    overflow: 'hidden',
+  },
+  medInfoSection: {
+    padding: 16,
+  },
+  medLogsSection: {
+    borderTopWidth: 1,
+    borderTopColor: '#ddd',
+    padding: 12,
+    backgroundColor: '#fff',
   },
   medName: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 8,
   },
-  medDetails: {
+  medDetailText: {
     fontSize: 14,
     marginBottom: 2,
   },
+  nextDoseText: {
+    fontSize: 13,
+    marginTop: 6,
+    fontStyle: 'italic',
+  },
   logEntry: {
-    fontSize: 12,
+    fontSize: 13,
+    marginBottom: 4,
     marginLeft: 8,
     color: '#666',
+  },
+  logTaken: {
+    color: '#2ecc71',
+  },
+  logMissed: {
+    color: '#e74c3c',
   },
   markButton: {
     marginTop: 10,
@@ -254,3 +346,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+
