@@ -43,6 +43,25 @@ export function Medication() {
   const [medications, setMedications] = useState<MedicationItem[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
+  const [showSimulators, setShowSimulators] = useState(false);
+  const [originalMedications, setOriginalMedications] = useState<MedicationItem[]>([]);
+
+  const handleSecretPress = () => {
+    setShowSimulators(prev => !prev);
+  };  
+
+  const simulateTimeForward = (hours: number) => {
+    const ms = hours * 60 * 60 * 1000;
+    const updated = medications.map(med => {
+      if (med.nextDoseTime) {
+        const updatedTime = new Date(new Date(med.nextDoseTime).getTime() - ms).toISOString();
+        return { ...med, nextDoseTime: updatedTime };
+      }
+      return med;
+    });
+    setMedications(updated);
+  };
+
   useEffect(() => {
     if (user?.email) fetchMedications();
   }, [user]);
@@ -131,85 +150,142 @@ export function Medication() {
   return (
     <LinearGradient colors={theme.colors.background} style={styles.container}>
       {user ? (
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={{ flex: 1, width: '100%' }}
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          <ScrollView
-            contentContainerStyle={styles.scrollContainer}
-            refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-            }
-            keyboardShouldPersistTaps="handled"
-          >
-            {medications.length === 0 ? (
-              <Text style={[styles.emptyText, { color: theme.colors.text }]}>
-                No medications found.
-              </Text>
-            ) : (
-              <>
-                {medications.map((med: MedicationItem, index: number) => {
-                  const now = new Date().getTime();
-                  const nextDoseTime = med.nextDoseTime ? new Date(med.nextDoseTime).getTime() : null;
-                  const withinWindow =
-                    nextDoseTime !== null && Math.abs(now - nextDoseTime) <= 15 * 60 * 1000;
-  
-                  const frequencyColorMap: Record<string, string> = {
-                    'Once a day': '#3498db',
-                    '2 times a day': '#2ecc71',
-                    '3 times a day': '#f1c40f',
-                    'Every 4 hours': '#e67e22',
-                    'Every 6 hours': '#9b59b6',
-                  };
-                  const colorBar = frequencyColorMap[med.frequency] || '#95a5a6';
-  
-                  return (
-                    <View key={`${med.name}-${index}`} style={styles.medCardWrapper}>
-                      <View style={[styles.colorBar, { backgroundColor: colorBar }]} />
-                      <View style={[styles.medCard, { backgroundColor: theme.colors.card || '#fff' }]}>
-                        <View style={styles.medInfoSection}>
-                          <Text style={[styles.medName, { color: theme.colors.text }]}>{med.name}</Text>
-                          <Text style={[styles.medDetailText, { color: theme.colors.text }]}>Dosage: {med.dosage}</Text>
-                          <Text style={[styles.medDetailText, { color: theme.colors.text }]}>Frequency: {med.frequency}</Text>
-                          <Text style={[styles.medDetailText, { color: theme.colors.text }]}>Duration: {med.duration}</Text>
-                          <Text style={[styles.medDetailText, { color: theme.colors.text }]}>Diagnosis: {med.diagnosis}</Text>
-                          {nextDoseTime && (
-                            <Text style={[styles.nextDoseText, { color: theme.colors.secondary }]}>
-                              Next Dose: {new Date(nextDoseTime).toLocaleTimeString()}
-                            </Text>
-                          )}
+          <TouchableOpacity onLongPress={() => setShowSimulators(prev => !prev)}>
+            <Text
+              style={[styles.pageTitle, { color: theme.colors.text }]}
+              onLongPress={handleSecretPress}
+            >
+              Track and take your medications here
+            </Text>
+
+          </TouchableOpacity>
+
+
+          {showSimulators && (
+            <View style={styles.simulatorControls}>
+              <Text style={[styles.simTitle, { color: theme.colors.text }]}>Time Simulators</Text>
+
+              <View style={styles.simButtonRow}>
+                <TouchableOpacity
+                  style={[styles.simButton, { backgroundColor: theme.colors.quickActions }]}
+                  onPress={() => simulateTimeForward(10 / 60)} // 10 minutes
+                >
+                  <Text style={styles.simButtonText}>+10 min</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.simButton, { backgroundColor: theme.colors.quickActions }]}
+                  onPress={() => simulateTimeForward(1)}
+                >
+                  <Text style={styles.simButtonText}>+1 hr</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.simButton, { backgroundColor: theme.colors.quickActions }]}
+                  onPress={() => simulateTimeForward(4)}
+                >
+                  <Text style={styles.simButtonText}>+4 hr</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
+
+          {medications.length === 0 ? (
+            <Text style={[styles.emptyText, { color: theme.colors.text }]}>
+              No medications found.
+            </Text>
+          ) : (
+            <>
+              {medications.map((med: MedicationItem, index: number) => {
+                const now = new Date().getTime();
+                const nextDoseTime = med.nextDoseTime ? new Date(med.nextDoseTime).getTime() : null;
+                const withinWindow =
+                  nextDoseTime !== null && Math.abs(now - nextDoseTime) <= 15 * 60 * 1000;
+
+                const frequencyColorMap: Record<string, string> = {
+                  'Every hour': '#e84393',
+                  'Once a day': '#3498db',
+                  '2 times a day': '#2ecc71',
+                  '3 times a day': '#f1c40f',
+                  'Every 4 hours': '#e67e22',
+                  'Every 6 hours': '#9b59b6',
+                };
+                const colorBar = frequencyColorMap[med.frequency] || '#95a5a6';
+
+                return (
+                  <View key={`${med.name}-${index}`} style={styles.medCardWrapper}>
+                    <View style={[styles.colorBar, { backgroundColor: colorBar }]} />
+                    <View style={[styles.medCard, {
+                      backgroundColor: theme.colors.card || '#fff',
+                      borderColor: theme.colors.border,
+                      borderWidth: 1,
+                    }]}>
+                      <View style={styles.medInfoSection}>
+                        <Text style={[styles.medName, { color: theme.colors.text }]}>{med.name}</Text>
+                        <Text style={[styles.medDetailText, { color: theme.colors.text }]}>Dosage: {med.dosage}</Text>
+                        <Text style={[styles.medDetailText, { color: theme.colors.text }]}>Frequency: {med.frequency}</Text>
+                        <Text style={[styles.medDetailText, { color: theme.colors.text }]}>Duration: {med.duration}</Text>
+                        <Text style={[styles.medDetailText, { color: theme.colors.text }]}>Diagnosis: {med.diagnosis}</Text>
+                        {nextDoseTime && (
+                          <Text style={[styles.nextDoseText, { color: theme.colors.secondary }]}>
+                            Next Dose: {new Date(nextDoseTime).toLocaleTimeString()}
+                          </Text>
+                        )}
+                      </View>
+
+                      <View style={styles.medLogsSection}>
+                        <View
+                          style={{
+                            borderTopWidth: 2,
+                            borderTopColor: theme.colors.border,
+                            paddingTop: 8,
+                            marginLeft: -4,
+                            width: '100%',
+                          }}
+                        >
+                          <Text style={{ color: theme.colors.text, fontWeight: 'bold', fontSize: 16 }}>
+                            Medication Logs
+                          </Text>
                         </View>
-  
-                        <View style={styles.medLogsSection}>
-                          {(med.logs || []).slice(-5).reverse().map((log: MedicationLog, logIndex: number) => (
-                            <Text
-                              key={logIndex}
-                              style={[
-                                styles.logEntry,
-                                log.status === 'Taken' ? styles.logTaken : styles.logMissed,
-                              ]}
-                            >
-                              {new Date(log.time).toLocaleString()} - {log.status}
-                            </Text>
-                          ))}
-  
-                          {withinWindow && (
-                            <TouchableOpacity
-                              style={[styles.markButton, { backgroundColor: theme.colors.quickActions }]}
-                              onPress={() => markAsTaken(med.name)}
-                            >
-                              <Text style={styles.markButtonText}>Mark as Taken</Text>
-                            </TouchableOpacity>
-                          )}
-                        </View>
+
+                        {(med.logs || []).slice(-5).reverse().map((log: MedicationLog, logIndex: number) => (
+                          <Text
+                            key={logIndex}
+                            style={[
+                              styles.logEntry,
+                              log.status === 'Taken' ? styles.logTaken : styles.logMissed,
+                            ]}
+                          >
+                            {new Date(log.time).toLocaleString()} - {log.status}
+                          </Text>
+                        ))}
+
+
+                        {withinWindow && (
+                          <TouchableOpacity
+                            style={[styles.markButton, { backgroundColor: theme.colors.quickActions }]}
+                            onPress={() => markAsTaken(med.name)}
+                          >
+                            <Text style={styles.markButtonText}>Mark as Taken</Text>
+                          </TouchableOpacity>
+                        )}
                       </View>
                     </View>
-                  );
-                })}
-              </>
-            )}
-          </ScrollView>
-        </KeyboardAvoidingView>
+                  </View>
+                );
+              })}
+            </>
+          )}
+        </ScrollView>
       ) : (
         <View style={styles.authPrompt}>
           <Text style={[styles.authText, { color: theme.colors.text }]}>
@@ -218,7 +294,7 @@ export function Medication() {
           <Text style={[styles.authText, { color: theme.colors.secondary }]}>
             To access your medication tracking, please log in or create an account.
           </Text>
-  
+
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={[styles.authButton, { backgroundColor: theme.colors.primary }]}
@@ -226,7 +302,7 @@ export function Medication() {
             >
               <Text style={styles.buttonText}>Login</Text>
             </TouchableOpacity>
-  
+
             <TouchableOpacity
               style={[styles.authButton, { backgroundColor: theme.colors.primary }]}
               onPress={() => navigation.navigate('Auth', { screen: 'Signup' })}
@@ -237,7 +313,7 @@ export function Medication() {
         </View>
       )}
     </LinearGradient>
-  );  
+  );
 }
 
 const styles = StyleSheet.create({
@@ -247,7 +323,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   scrollContainer: {
-    paddingBottom: 20,
+    paddingBottom: 200,
   },
   authPrompt: {
     alignItems: 'center',
@@ -298,10 +374,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   medLogsSection: {
-    borderTopWidth: 1,
-    borderTopColor: '#ddd',
     padding: 12,
-    backgroundColor: '#fff',
   },
   medName: {
     fontSize: 20,
@@ -329,6 +402,11 @@ const styles = StyleSheet.create({
   logMissed: {
     color: '#e74c3c',
   },
+  logTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    marginBottom: 6,
+  },
   markButton: {
     marginTop: 10,
     paddingVertical: 10,
@@ -345,5 +423,41 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
   },
+  pageTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  simulatorControls: {
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+
+  simTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+
+  simButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginVertical: 5,
+  },
+
+  simButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  simButtonRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 8,
+    justifyContent: 'center',
+  },
+
 });
 
