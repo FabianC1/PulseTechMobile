@@ -1,74 +1,129 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  RefreshControl,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableOpacity,
+  Keyboard,
+  TextInput,
+  TouchableWithoutFeedback,
+} from 'react-native';
 import { useTheme } from 'styled-components/native';
-import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { useAuth } from '../AuthContext'; // Import authentication context
+import LinearGradient from 'react-native-linear-gradient';
+import { useAuth } from '../AuthContext';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import CustomAlerts from './CustomAlerts';
+import { registerForPushNotificationsAsync, scheduleNotification } from '../../NotificationService'; // ✅ Included
 
-// Define navigation type
+// Navigation type
 type RootStackParamList = {
   Auth: { screen: 'Login' | 'Signup' };
 };
 
-
 export function Messages() {
   const theme = useTheme();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const { user } = useAuth(); // Get authentication state
+  const { user } = useAuth();
+
+  const [refreshing, setRefreshing] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1000);
+  }, []);
+
+  useEffect(() => {
+    registerForPushNotificationsAsync();
+  }, []);
 
   return (
-    <LinearGradient colors={theme.colors.background} style={styles.container}>
-      {/* If user is logged in, show messages page */}
-      {user ? (
-        <Text style={[styles.title, { color: theme.colors.text }]}>
-          Message your doctors here
-        </Text>
-      ) : (
-        // If not logged in, show login/signup prompt
-        <View style={styles.authPrompt}>
-          <Text style={[styles.authText, { color: theme.colors.text }]}>
-            You need to log in or sign up
-          </Text>
-          <Text style={[styles.authText, { color: theme.colors.secondary }]}>
-            To access your messages, please log in or create an account.
-          </Text>
-
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={[styles.authButton, { backgroundColor: theme.colors.primary }]}
-              onPress={() => navigation.navigate('Auth', { screen: 'Login' })} 
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={80}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <LinearGradient colors={theme.colors.background} style={{ flex: 1 }}>
+          {user ? (
+            <KeyboardAwareScrollView
+              contentContainerStyle={styles.scrollContent}
+              refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              }
+              keyboardShouldPersistTaps="handled"
+              extraScrollHeight={100}
             >
-              <Text style={styles.buttonText}>Login</Text>
-            </TouchableOpacity>
+              <Text style={[styles.header, { color: theme.colors.text }]}>
+                {user.role === 'doctor'
+                  ? 'Message your patients here'
+                  : 'Message your doctors here'}
+              </Text>
 
-            <TouchableOpacity
-              style={[styles.authButton, { backgroundColor: theme.colors.primary }]}
-              onPress={() => navigation.navigate('Auth', { screen: 'Signup' })} 
-            >
-              <Text style={styles.buttonText}>Sign Up</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
-    </LinearGradient>
+              {/* Chat UI will be built here next */}
+
+            </KeyboardAwareScrollView>
+          ) : (
+            <View style={styles.authPrompt}>
+              <Text style={[styles.authText, { color: theme.colors.text }]}>
+                You need to log in or sign up
+              </Text>
+              <Text style={[styles.authText, { color: theme.colors.secondary }]}>
+                To access your messages, please log in or create an account.
+              </Text>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                  style={[styles.authButton, { backgroundColor: theme.colors.primary }]}
+                  onPress={() => navigation.navigate('Auth', { screen: 'Login' })}
+                >
+                  <Text style={styles.buttonText}>Login</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.authButton, { backgroundColor: theme.colors.primary }]}
+                  onPress={() => navigation.navigate('Auth', { screen: 'Signup' })}
+                >
+                  <Text style={styles.buttonText}>Sign Up</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
+          <CustomAlerts
+            visible={modalVisible}
+            onClose={() => setModalVisible(false)}
+            message={modalMessage}
+          />
+        </LinearGradient>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
 
-// **Styles**
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
+  scrollContent: {
+    flexGrow: 1,
+    padding: 20,
+    paddingBottom: 150,
   },
-  title: {
+  header: {
     fontSize: 22,
     fontWeight: 'bold',
     textAlign: 'center',
+    marginBottom: 20,
   },
   authPrompt: {
     alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+    paddingHorizontal: 20,
   },
   authText: {
     fontSize: 16,

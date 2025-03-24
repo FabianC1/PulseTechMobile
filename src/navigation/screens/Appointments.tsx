@@ -636,9 +636,6 @@ export function Appointments() {
             </>
           ) : (
 
-
-
-
             <View style={styles.authPrompt}>
               <Text style={[styles.authText, { color: theme.colors.text }]}>
                 You need to log in or sign up
@@ -715,6 +712,10 @@ const styles = StyleSheet.create({
   },
   authPrompt: {
     alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+    paddingHorizontal: 20,
+    marginTop: 256,
   },
   authText: {
     fontSize: 16,
