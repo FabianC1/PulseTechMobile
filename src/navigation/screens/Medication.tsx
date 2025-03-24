@@ -19,6 +19,7 @@ import { useAuth } from '../AuthContext';
 import CustomAlerts from './CustomAlerts';
 import { Picker } from '@react-native-picker/picker';
 import DropDownPicker from 'react-native-dropdown-picker';
+import { registerForPushNotificationsAsync, scheduleNotification } from '../../NotificationService';
 
 type RootStackParamList = {
   Auth: { screen: 'Login' | 'Signup' };
@@ -208,10 +209,11 @@ export function Medication() {
     return `${hour.toString().padStart(2, '0')}:${mm}`;
   }
 
-
-
   useEffect(() => {
-    if (user?.email) fetchMedications();
+    if (user?.email) {
+      fetchMedications();
+      registerForPushNotificationsAsync();
+    }
   }, [user]);
 
   const fetchMedications = async () => {
@@ -234,6 +236,14 @@ export function Medication() {
     await fetchMedications();
     setRefreshing(false);
   };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSimulatedNow(new Date());
+    }, 60 * 1000); // update every 1 minute
+  
+    return () => clearInterval(interval); // cleanup on unmount
+  }, []);
 
   const markAsTaken = async (medName: string) => {
     if (!user?.email) return;
@@ -344,6 +354,24 @@ export function Medication() {
 
       if (!nextDoseTime) return;
 
+      if (nextDoseTime && nextDoseTime > Date.now()) {
+        // Test notification (for dev/testing purposes)
+        const testTime = new Date(Date.now() + 5000);
+        console.log("Test notification will fire at:", testTime);
+        scheduleNotification(
+          `Test: Time to take ${med.name}`,
+          `Take ${med.dosage} for ${med.diagnosis}`,
+          testTime
+        );
+      
+        // Real scheduled notification
+        scheduleNotification(
+          `Time to take ${med.name}`,
+          `Take ${med.dosage} for ${med.diagnosis}`,
+          new Date(nextDoseTime)
+        );
+      }      
+
       const frequencyMap: Record<string, number> = {
         'Every hour': 1,
         'Every 4 hours': 4,
@@ -370,17 +398,17 @@ export function Medication() {
         previousDoseTimeRef.current[med.name] &&
         previousDoseTime > previousDoseTimeRef.current[med.name];
 
-        if (hasDoseJustReset) {
-          takenThisWindowRef.current.delete(med.name);
-        
-          const missedKey = `${med.name}-${previousDoseTime}`;
-        
-          if (!alreadyLogged && !missedLoggedRef.current.has(missedKey)) {
-            missedLoggedRef.current.add(missedKey);
-            markAsMissed(med.name);
-          }
+      if (hasDoseJustReset) {
+        takenThisWindowRef.current.delete(med.name);
+
+        const missedKey = `${med.name}-${previousDoseTime}`;
+
+        if (!alreadyLogged && !missedLoggedRef.current.has(missedKey)) {
+          missedLoggedRef.current.add(missedKey);
+          markAsMissed(med.name);
         }
-        
+      }
+
 
       previousDoseTimeRef.current[med.name] = previousDoseTime;
     });
@@ -591,7 +619,7 @@ export function Medication() {
                   {/* Dosage */}
                   <Text style={[styles.inputLabel, { color: theme.colors.text }]}>Dosage</Text>
                   <View style={styles.pickerWrapper}>
-                    <Picker 
+                    <Picker
                       selectedValue={medicationForm[patient.email]?.dosage}
                       onValueChange={(value) =>
                         setMedicationForm((prev) => ({
@@ -628,9 +656,9 @@ export function Medication() {
                       dropdownIconColor={theme.colors.text2}
                       style={{ color: theme.colors.text2 }}
                     >
-                      <Picker.Item label="Select frequency" value="" color="white"  />
+                      <Picker.Item label="Select frequency" value="" color="white" />
                       <Picker.Item label="Twice a day" value="Twice a day" color="white" />
-                      <Picker.Item label="Every hour" value="Every hour"color="white"  />
+                      <Picker.Item label="Every hour" value="Every hour" color="white" />
                       <Picker.Item label="Every 4 hours" value="Every 4 hours" color="white" />
                       <Picker.Item label="Every 6 hours" value="Every 6 hours" color="white" />
                       <Picker.Item label="Every 8 hours" value="Every 8 hours" color="white" />
