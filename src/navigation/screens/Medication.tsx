@@ -17,8 +17,9 @@ import axios from 'axios';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { useAuth } from '../AuthContext';
 import CustomAlerts from './CustomAlerts';
+import { Picker } from '@react-native-picker/picker';
 
-// Define navigation type
+
 type RootStackParamList = {
   Auth: { screen: 'Login' | 'Signup' };
 };
@@ -59,6 +60,12 @@ export function Medication() {
   const [isEditing, setIsEditing] = useState<Record<string, boolean>>({});
   const [medicationInputs, setMedicationInputs] = useState<Record<string, string>>({});
   const [medicationSuggestions, setMedicationSuggestions] = useState<{ [email: string]: string[] }>({});
+  const [medicationForm, setMedicationForm] = useState<Record<string, any>>({});
+
+  const [originalMedicationForm, setOriginalMedicationForm] = useState<{
+    [email: string]: MedicationFormFields;
+  }>({});
+  
 
 
   const [medicationData, setMedicationData] = useState<Record<string, {
@@ -77,27 +84,37 @@ export function Medication() {
 
   const [patientsList, setPatientsList] = useState<Patient[]>([]);
 
+  type MedicationFormFields = {
+    name?: string;
+    dosage?: string;
+    frequency?: string;
+    timeToTake?: string;
+    duration?: string;
+    diagnosis?: string;
+  };  
 
   const toggleMedicationEdit = (email: string) => {
-    setIsEditing(prev => ({ ...prev, [email]: true }));
-
-    // Optionally reset fields when opening form
-    setMedicationInputs(prev => ({ ...prev, [email]: '' }));
-    setMedicationData(prev => ({
-      ...prev,
-      [email]: {
-        dosage: '',
-        frequency: '',
-        time: '',
-        duration: '',
-        diagnosis: '',
-      }
-    }));
+    setIsEditing(prev => ({ ...prev, [email]: !prev[email] }));
+  
+    if (!isEditing[email]) {
+      // Save original values only when starting to edit
+      setOriginalMedicationForm(prev => ({
+        ...prev,
+        [email]: medicationForm[email] || {}
+      }));
+    }
   };
+  
 
   const cancelMedicationEdit = (email: string) => {
+    setMedicationForm(prev => ({
+      ...prev,
+      [email]: originalMedicationForm[email] || {}
+    }));
+  
     setIsEditing(prev => ({ ...prev, [email]: false }));
   };
+  
 
 
   const fetchPatients = async () => {
@@ -368,37 +385,37 @@ export function Medication() {
       setMedicationSuggestions((prev) => ({ ...prev, [email]: [] }));
       return;
     }
-  
+
     try {
       const response = await axios.get<{ medications: string[] }[]>(
         `http://192.168.0.84:3000/collections/Medications?name=${encodeURIComponent(query)}`
       );
-  
+
       const data = response.data;
       const names = data[0]?.medications || [];
-  
+
       // Filter to only those that START with the query (case-insensitive)
       const filtered = names.filter((name) =>
         name.toLowerCase().startsWith(query.toLowerCase())
       );
-  
+
       setMedicationSuggestions((prev) => ({
         ...prev,
         [email]: filtered,
       }));
-  
+
     } catch (err) {
       console.error('Error fetching medication suggestions:', err);
     }
   };
-  
-  
+
+
 
   const submitMedication = (email: string) => {
     console.log('Submit medication for:', email);
     // We'll implement this logic right after autofill.
   };
-  
+
 
   return (
     <LinearGradient colors={theme.colors.background} style={styles.container}>
@@ -515,33 +532,106 @@ export function Medication() {
                     </View>
                   )}
 
+                  {/* Dosage */}
                   <Text style={[styles.inputLabel, { color: theme.colors.text }]}>Dosage</Text>
-                  <TextInput
-                    style={[styles.inputField, { color: theme.colors.text1 }]}
-                    placeholder="e.g. 1 pill"
-                    placeholderTextColor="gray"
-                  />
+                  <View style={styles.pickerWrapper}>
+                    <Picker
+                      selectedValue={medicationForm[patient.email]?.dosage}
+                      onValueChange={(value) =>
+                        setMedicationForm((prev) => ({
+                          ...prev,
+                          [patient.email]: { ...prev[patient.email], dosage: value }
+                        }))
+                      }
+                      dropdownIconColor={theme.colors.text}
+                      style={{ color: theme.colors.text1 }}
+                    >
+                      <Picker.Item label="Select dosage" value="" />
+                      <Picker.Item label="1 pill" value="1 pill" />
+                      <Picker.Item label="2 pills" value="2 pills" />
+                      <Picker.Item label="5ml syrup" value="5ml syrup" />
+                      <Picker.Item label="10ml syrup" value="10ml syrup" />
+                      <Picker.Item label="1 tablet" value="1 tablet" />
+                      <Picker.Item label="2 tablets" value="2 tablets" />
+                      <Picker.Item label="1 tsp" value="1 tsp" />
+                      <Picker.Item label="2 tsp" value="2 tsp" />
+                    </Picker>
+                  </View>
 
+                  {/* Frequency */}
                   <Text style={[styles.inputLabel, { color: theme.colors.text }]}>Frequency</Text>
-                  <TextInput
-                    style={[styles.inputField, { color: theme.colors.text1 }]}
-                    placeholder="e.g. Every 8 hours"
-                    placeholderTextColor="gray"
-                  />
+                  <View style={styles.pickerWrapper}>
+                    <Picker
+                      selectedValue={medicationForm[patient.email]?.frequency}
+                      onValueChange={(value) =>
+                        setMedicationForm((prev) => ({
+                          ...prev,
+                          [patient.email]: { ...prev[patient.email], frequency: value }
+                        }))
+                      }
+                      dropdownIconColor={theme.colors.text}
+                      style={{ color: theme.colors.text1 }}
+                    >
+                      <Picker.Item label="Select frequency" value="" />
+                      <Picker.Item label="Twice a day" value="Twice a day" />
+                      <Picker.Item label="Every hour" value="Every hour" />
+                      <Picker.Item label="Every 4 hours" value="Every 4 hours" />
+                      <Picker.Item label="Every 6 hours" value="Every 6 hours" />
+                      <Picker.Item label="Every 8 hours" value="Every 8 hours" />
+                      <Picker.Item label="Every 12 hours" value="Every 12 hours" />
+                      <Picker.Item label="Once a week" value="Once a week" />
+                    </Picker>
+                  </View>
 
+                  {/* Time to Take */}
                   <Text style={[styles.inputLabel, { color: theme.colors.text }]}>Time to Take</Text>
-                  <TextInput
-                    style={[styles.inputField, { color: theme.colors.text1 }]}
-                    placeholder="e.g. 8 PM"
-                    placeholderTextColor="gray"
-                  />
+                  <View style={styles.pickerWrapper}>
+                    <Picker
+                      selectedValue={medicationForm[patient.email]?.timeToTake}
+                      onValueChange={(value) =>
+                        setMedicationForm((prev) => ({
+                          ...prev,
+                          [patient.email]: { ...prev[patient.email], timeToTake: value }
+                        }))
+                      }
+                      dropdownIconColor={theme.colors.text}
+                      style={{ color: theme.colors.text1 }}
+                    >
+                      <Picker.Item label="Select time" value="" />
+                      <Picker.Item label="7 AM" value="7 AM" />
+                      <Picker.Item label="8 AM" value="8 AM" />
+                      <Picker.Item label="12 PM" value="12 PM" />
+                      <Picker.Item label="1 PM" value="1 PM" />
+                      <Picker.Item label="4 PM" value="4 PM" />
+                      <Picker.Item label="8 PM" value="8 PM" />
+                      <Picker.Item label="10 PM" value="10 PM" />
+                    </Picker>
+                  </View>
 
+                  {/* Duration */}
                   <Text style={[styles.inputLabel, { color: theme.colors.text }]}>Duration</Text>
-                  <TextInput
-                    style={[styles.inputField, { color: theme.colors.text1 }]}
-                    placeholder="e.g. 1 week"
-                    placeholderTextColor="gray"
-                  />
+                  <View style={styles.pickerWrapper}>
+                    <Picker
+                      selectedValue={medicationForm[patient.email]?.duration}
+                      onValueChange={(value) =>
+                        setMedicationForm((prev) => ({
+                          ...prev,
+                          [patient.email]: { ...prev[patient.email], duration: value }
+                        }))
+                      }
+                      dropdownIconColor={theme.colors.text}
+                      style={{ color: theme.colors.text1 }}
+                    >
+                      <Picker.Item label="Select duration" value="" />
+                      <Picker.Item label="3 days" value="3 days" />
+                      <Picker.Item label="5 days" value="5 days" />
+                      <Picker.Item label="1 week" value="1 week" />
+                      <Picker.Item label="2 weeks" value="2 weeks" />
+                      <Picker.Item label="1 month" value="1 month" />
+                      <Picker.Item label="Until further notice" value="Until further notice" />
+                    </Picker>
+                  </View>
+
 
                   <Text style={[styles.inputLabel, { color: theme.colors.text }]}>Diagnosis</Text>
                   <TextInput
@@ -1027,12 +1117,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
   },
-  
+
   suggestionItem: {
     paddingVertical: 8,
     paddingHorizontal: 10,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.1)',
+  },
+  pickerWrapper: {
+    borderWidth: 1,
+    borderColor: '#ccc', // or theme.colors.border
+    borderRadius: 8,
+    backgroundColor: '#ffffff', // or theme.colors.card if defined
+    marginBottom: 16,
+    paddingHorizontal: 10,
   },
   
 });
