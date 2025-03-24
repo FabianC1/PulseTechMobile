@@ -56,11 +56,68 @@ export function Medication() {
   const [medicationsLoaded, setMedicationsLoaded] = useState(false);
   const prevDoseTimesRef = useRef<Record<string, number>>({});
   const takenThisWindowRef = useRef<Set<string>>(new Set());
+  const [isEditing, setIsEditing] = useState<Record<string, boolean>>({});
+  const [medicationInputs, setMedicationInputs] = useState<Record<string, string>>({});
+  const [medicationData, setMedicationData] = useState<Record<string, {
+    dosage: string;
+    frequency: string;
+    time: string;
+    duration: string;
+    diagnosis: string;
+  }>>({});
 
-  const [patientsList, setPatientsList] = useState([
-    { fullName: 'Alice Thompson', email: 'alice@example.com' },
-    { fullName: 'Brian Carter', email: 'brian@example.com' },
-  ]);
+
+  type Patient = {
+    fullName: string;
+    email: string;
+  };
+
+  const [patientsList, setPatientsList] = useState<Patient[]>([]);
+
+
+  const toggleMedicationEdit = (email: string) => {
+    setIsEditing(prev => ({ ...prev, [email]: true }));
+
+    // Optionally reset fields when opening form
+    setMedicationInputs(prev => ({ ...prev, [email]: '' }));
+    setMedicationData(prev => ({
+      ...prev,
+      [email]: {
+        dosage: '',
+        frequency: '',
+        time: '',
+        duration: '',
+        diagnosis: '',
+      }
+    }));
+  };
+
+  const cancelMedicationEdit = (email: string) => {
+    setIsEditing(prev => ({ ...prev, [email]: false }));
+  };
+
+
+  const fetchPatients = async () => {
+    try {
+      const response = await fetch('http://192.168.0.84:3000/get-patients');
+      const data = await response.json();
+
+      if (response.ok && Array.isArray(data)) {
+        setPatientsList(data);
+      } else {
+        console.error('Invalid patient list response:', data);
+      }
+    } catch (err) {
+      console.error('Error fetching patients:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.role === 'doctor') {
+      fetchPatients();
+    }
+  }, [user]);
+
 
   const handleSecretPress = () => {
     setShowSimulators(prev => !prev);
@@ -353,53 +410,94 @@ export function Medication() {
 
 
           {user.role === 'doctor' && patientsList.map((patient, index) => (
-            <View key={index} style={styles.doctorCard}>
+            <View key={index} style={[styles.doctorCard, { borderColor: theme.colors.border, backgroundColor: theme.colors.card }]}>
               <View style={styles.cardHeader}>
                 <Text style={styles.patientName}>{patient.fullName}</Text>
-                <TouchableOpacity style={styles.prescribeButton}>
-                  <Text style={styles.prescribeButtonText}>Prescribe Medication</Text>
-                </TouchableOpacity>
+                {isEditing[patient.email] ? (
+                  <>
+                    <TouchableOpacity style={styles.submitButton}>
+                      <Text style={styles.submitButtonText}>Prescribe</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.cancelButton}
+                      onPress={() => cancelMedicationEdit(patient.email)}
+                    >
+                      <Text style={styles.cancelButtonText}>Cancel</Text>
+                    </TouchableOpacity>
+                  </>
+                ) : (
+                  <TouchableOpacity
+                    style={styles.prescribeButton}
+                    onPress={() => toggleMedicationEdit(patient.email)}
+                  >
+                    <LinearGradient
+                      colors={['#8a5fff', '#0077ff']}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                      style={styles.prescribeButton}
+                    >
+                      <Text style={styles.prescribeButtonText}>Prescribe Meds</Text>
+                    </LinearGradient>
+                  </TouchableOpacity>
+
+                )}
               </View>
 
-              {/* Medication form placeholder for now */}
-              <View style={styles.medForm}>
-                <Text style={styles.inputLabel}>Medication Name</Text>
-                <TextInput style={styles.inputField} placeholder="Start typing..." />
+              {isEditing[patient.email] && (
+                <View style={styles.medForm}>
+                  <Text style={styles.inputLabel}>Medication Name</Text>
+                  <TextInput style={styles.inputField} placeholder="Start typing..." />
 
-                <Text style={styles.inputLabel}>Dosage</Text>
-                <TextInput style={styles.inputField} placeholder="e.g. 1 pill" />
+                  <Text style={styles.inputLabel}>Dosage</Text>
+                  <TextInput style={styles.inputField} placeholder="e.g. 1 pill" />
 
-                <Text style={styles.inputLabel}>Frequency</Text>
-                <TextInput style={styles.inputField} placeholder="e.g. Every 8 hours" />
+                  <Text style={styles.inputLabel}>Frequency</Text>
+                  <TextInput style={styles.inputField} placeholder="e.g. Every 8 hours" />
 
-                <Text style={styles.inputLabel}>Time to Take</Text>
-                <TextInput style={styles.inputField} placeholder="e.g. 8 PM" />
+                  <Text style={styles.inputLabel}>Time to Take</Text>
+                  <TextInput style={styles.inputField} placeholder="e.g. 8 PM" />
 
-                <Text style={styles.inputLabel}>Duration</Text>
-                <TextInput style={styles.inputField} placeholder="e.g. 1 week" />
+                  <Text style={styles.inputLabel}>Duration</Text>
+                  <TextInput style={styles.inputField} placeholder="e.g. 1 week" />
 
-                <Text style={styles.inputLabel}>Diagnosis</Text>
-                <TextInput style={styles.inputField} placeholder="e.g. Headache" />
+                  <Text style={styles.inputLabel}>Diagnosis</Text>
+                  <TextInput style={styles.inputField} placeholder="e.g. Headache" />
 
-                <View style={styles.buttonRow}>
-                  <TouchableOpacity style={styles.submitButton}>
-                    <Text style={styles.submitButtonText}>Prescribe</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.cancelButton}>
-                    <Text style={styles.cancelButtonText}>Cancel</Text>
-                  </TouchableOpacity>
+                  <View style={styles.buttonRow}>
+                    <LinearGradient
+                      colors={['#8a5fff', '#0077ffea']}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                      style={styles.prescribeGradient}
+                    >
+                      <TouchableOpacity style={styles.prescribeButton}>
+                        <Text style={styles.prescribeButtonText}>Prescribe</Text>
+                      </TouchableOpacity>
+                    </LinearGradient>
+
+                    <TouchableOpacity
+                      style={styles.cancelButton}
+                      onPress={() => cancelMedicationEdit(patient.email)}
+                    >
+                      <Text style={styles.cancelButtonText}>Cancel</Text>
+                    </TouchableOpacity>
+                  </View>
+
                 </View>
-              </View>
+              )}
+
             </View>
           ))}
 
 
 
-          {medications.length === 0 ? (
+          {user.role !== 'doctor' && medications.length === 0 && (
             <Text style={[styles.emptyText, { color: theme.colors.text }]}>
               No medications found.
             </Text>
-          ) : (
+          )}
+
+          {(user.role !== 'doctor' || medications.length > 0) && (
             <>
               {medications.map((med: MedicationItem, index: number) => {
                 const nextDoseTime = med.timeToTake
@@ -744,14 +842,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   doctorCard: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
     borderRadius: 14,
     padding: 16,
     marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#ccc',
+    borderWidth: 1, // added
   },
-
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -766,10 +861,11 @@ const styles = StyleSheet.create({
   },
 
   prescribeButton: {
-    backgroundColor: '#4caf50',
-    paddingVertical: 8,
-    paddingHorizontal: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     borderRadius: 8,
+    alignItems: 'center',
+    marginLeft: 10,
   },
 
   prescribeButtonText: {
@@ -826,7 +922,11 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
-
+  prescribeGradient: {
+    borderRadius: 8,
+    overflow: 'hidden',
+    marginRight: 10,
+  },
 
 });
 
