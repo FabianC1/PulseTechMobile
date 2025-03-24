@@ -32,6 +32,7 @@ type MedicationItem = {
   frequency: string;
   duration: string;
   diagnosis: string;
+  timeToTake: string; // example: "16:00" (4 PM)
   logs?: MedicationLog[];
   nextDoseTime?: string;
 };
@@ -44,23 +45,78 @@ export function Medication() {
   const [refreshing, setRefreshing] = useState(false);
 
   const [showSimulators, setShowSimulators] = useState(false);
-  const [originalMedications, setOriginalMedications] = useState<MedicationItem[]>([]);
+  const [simulatedNow, setSimulatedNow] = useState<Date>(new Date());
+
 
   const handleSecretPress = () => {
     setShowSimulators(prev => !prev);
-  };  
+  };
 
   const simulateTimeForward = (hours: number) => {
-    const ms = hours * 60 * 60 * 1000;
-    const updated = medications.map(med => {
-      if (med.nextDoseTime) {
-        const updatedTime = new Date(new Date(med.nextDoseTime).getTime() - ms).toISOString();
-        return { ...med, nextDoseTime: updatedTime };
-      }
-      return med;
-    });
-    setMedications(updated);
+    const newTime = new Date(simulatedNow.getTime() + hours * 60 * 60 * 1000);
+    setSimulatedNow(newTime);
   };
+
+  const convertTo24Hour = (timeStr: string): string | null => {
+    const match = timeStr.match(/^(\d{1,2})\s*(AM|PM)$/i);
+    if (!match) return null;
+
+    let hour = parseInt(match[1]);
+    const period = match[2].toUpperCase();
+
+    if (period === 'PM' && hour !== 12) hour += 12;
+    if (period === 'AM' && hour === 12) hour = 0;
+
+    return `${hour.toString().padStart(2, '0')}:00`; // Always returns HH:00
+  };
+
+  const calculateNextDoseTime = (
+    timeToTake: string,
+    frequency: string,
+    currentTime: Date | number
+  ): number | null => {
+    console.log('Checking med.timeToTake:', timeToTake);
+  
+    if (!timeToTake) return null;
+  
+    const timeParts = timeToTake.trim().toUpperCase().split(' ');
+    if (timeParts.length !== 2) return null;
+  
+    let [hourStr, period] = timeParts;
+    let hour = parseInt(hourStr);
+    let minute = 0;
+  
+    if (isNaN(hour)) return null;
+  
+    // Convert to 24-hour format
+    if (period === 'PM' && hour < 12) hour += 12;
+    if (period === 'AM' && hour === 12) hour = 0;
+  
+    const current = new Date(currentTime);
+    const base = new Date(current);
+    base.setHours(hour, minute, 0, 0);
+  
+    const nextDose = new Date(base);
+  
+    const frequencyMap: Record<string, number> = {
+      'Every hour': 1,
+      'Every 4 hours': 4,
+      'Every 6 hours': 6,
+      'Once a day': 24,
+      '2 times a day': 12,
+      '3 times a day': 8,
+    };
+  
+    const freqHours = frequencyMap[frequency] || 24;
+  
+    while (nextDose.getTime() <= current.getTime()) {
+      nextDose.setHours(nextDose.getHours() + freqHours);
+    }
+  
+    console.log(`Next dose time for ${timeToTake}: ${nextDose.toLocaleTimeString()}`);
+    return nextDose.getTime();
+  };
+  
 
   useEffect(() => {
     if (user?.email) fetchMedications();
@@ -108,43 +164,6 @@ export function Medication() {
           {new Date(log.time).toLocaleString()} - {log.status}
         </Text>
       ));
-  };
-
-  const renderMedicationCard = (med: MedicationItem) => {
-    const now = new Date().getTime();
-    const nextDoseTime = med.nextDoseTime ? new Date(med.nextDoseTime).getTime() : null;
-    const withinWindow =
-      nextDoseTime !== null && Math.abs(now - nextDoseTime) <= 15 * 60 * 1000;
-
-    return (
-      <View
-        key={med.name + med.diagnosis}
-        style={[
-          styles.medCard,
-          { backgroundColor: theme.colors.primary },
-        ]}
-      >
-        <Text style={[styles.medName, { color: theme.colors.text }]}>{med.name}</Text>
-        <Text style={[styles.medDetailText, { color: theme.colors.text }]}>Dosage: {med.dosage}</Text>
-        <Text style={[styles.medDetailText, { color: theme.colors.text }]}>Frequency: {med.frequency}</Text>
-        <Text style={[styles.medDetailText, { color: theme.colors.text }]}>Duration: {med.duration}</Text>
-        <Text style={[styles.medDetailText, { color: theme.colors.text }]}>Diagnosis: {med.diagnosis}</Text>
-        {nextDoseTime && (
-          <Text style={[styles.medDetailText, { color: theme.colors.secondary }]}>
-            Next Dose: {new Date(nextDoseTime).toLocaleTimeString()}
-          </Text>
-        )}
-        {renderLogs(med.logs)}
-        {withinWindow && (
-          <TouchableOpacity
-            style={[styles.markButton, { backgroundColor: theme.colors.quickActions }]}
-            onPress={() => markAsTaken(med.name)}
-          >
-            <Text style={styles.markButtonText}>Mark as Taken</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-    );
   };
 
   return (
@@ -206,10 +225,16 @@ export function Medication() {
           ) : (
             <>
               {medications.map((med: MedicationItem, index: number) => {
-                const now = new Date().getTime();
-                const nextDoseTime = med.nextDoseTime ? new Date(med.nextDoseTime).getTime() : null;
+                console.log(`Checking med.timeToTake for ${med.name}:`, med.timeToTake);
+                const nextDoseTime = med.timeToTake
+                  ? calculateNextDoseTime(med.timeToTake, med.frequency, simulatedNow)
+                  : null;
+
+
                 const withinWindow =
-                  nextDoseTime !== null && Math.abs(now - nextDoseTime) <= 15 * 60 * 1000;
+                  nextDoseTime !== null &&
+                  Math.abs(simulatedNow.getTime() - nextDoseTime) <= 60 * 60 * 1000;
+
 
                 const frequencyColorMap: Record<string, string> = {
                   'Every hour': '#e84393',
@@ -221,6 +246,7 @@ export function Medication() {
                 };
                 const colorBar = frequencyColorMap[med.frequency] || '#95a5a6';
 
+                console.log('Next dose time for', med.name, ':', nextDoseTime);
                 return (
                   <View key={`${med.name}-${index}`} style={styles.medCardWrapper}>
                     <View style={[styles.colorBar, { backgroundColor: colorBar }]} />
@@ -231,15 +257,41 @@ export function Medication() {
                     }]}>
                       <View style={styles.medInfoSection}>
                         <Text style={[styles.medName, { color: theme.colors.text }]}>{med.name}</Text>
-                        <Text style={[styles.medDetailText, { color: theme.colors.text }]}>Dosage: {med.dosage}</Text>
-                        <Text style={[styles.medDetailText, { color: theme.colors.text }]}>Frequency: {med.frequency}</Text>
-                        <Text style={[styles.medDetailText, { color: theme.colors.text }]}>Duration: {med.duration}</Text>
-                        <Text style={[styles.medDetailText, { color: theme.colors.text }]}>Diagnosis: {med.diagnosis}</Text>
-                        {nextDoseTime && (
-                          <Text style={[styles.nextDoseText, { color: theme.colors.secondary }]}>
-                            Next Dose: {new Date(nextDoseTime).toLocaleTimeString()}
-                          </Text>
-                        )}
+
+                        <Text style={[styles.medDetailText, { color: theme.colors.text }]}>
+                          <Text style={{ fontWeight: 'bold' }}>Dosage: </Text>{med.dosage}
+                        </Text>
+
+                        <Text style={[styles.medDetailText, { color: theme.colors.text }]}>
+                          <Text style={{ fontWeight: 'bold' }}>Frequency: </Text>{med.frequency}
+                        </Text>
+
+                        <Text style={[styles.medDetailText, { color: theme.colors.text }]}>
+                          <Text style={{ fontWeight: 'bold' }}>Duration: </Text>{med.duration}
+                        </Text>
+
+                        <Text style={[styles.medDetailText, { color: theme.colors.text }]}>
+                          <Text style={{ fontWeight: 'bold' }}>Diagnosis: </Text>{med.diagnosis}
+                        </Text>
+
+                        <Text style={[styles.medDetailText, { color: theme.colors.text }]}>
+                          <Text style={{ fontWeight: 'bold' }}>Time to Take: </Text>{med.timeToTake}
+                        </Text>
+
+                        {nextDoseTime && (() => {
+                          const timeDiff = nextDoseTime - simulatedNow.getTime();
+
+                          const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+                          const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+
+                          return (
+                            <Text style={[styles.nextDoseText, { color: theme.colors.secondary, fontSize: 18 }]}>
+                              <Text style={{ fontWeight: 'bold' }}>Next Dose in: </Text>{hours}h {minutes}m
+                            </Text>
+                          );
+                        })()}
+
+
                       </View>
 
                       <View style={styles.medLogsSection}>
