@@ -495,8 +495,6 @@ export function Medication() {
 
                           const takenInCurrentWindow = takenThisWindowRef.current.has(med.name);
 
-                          console.log('SHOW BUTTON:', med.name, { withinWindow, alreadyTakenThisDose, takenInCurrentWindow });
-
                           if (withinWindow && !alreadyTakenThisDose && !takenInCurrentWindow) {
                             return (
                               <TouchableOpacity
