@@ -413,55 +413,68 @@ export function Medication() {
             <View key={index} style={[styles.doctorCard, { borderColor: theme.colors.border, backgroundColor: theme.colors.card }]}>
               <View style={styles.cardHeader}>
                 <Text style={styles.patientName}>{patient.fullName}</Text>
-                {isEditing[patient.email] ? (
-                  <>
-                    <TouchableOpacity style={styles.submitButton}>
-                      <Text style={styles.submitButtonText}>Prescribe</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.cancelButton}
-                      onPress={() => cancelMedicationEdit(patient.email)}
-                    >
-                      <Text style={styles.cancelButtonText}>Cancel</Text>
-                    </TouchableOpacity>
-                  </>
-                ) : (
-                  <TouchableOpacity
-                    style={styles.prescribeButton}
-                    onPress={() => toggleMedicationEdit(patient.email)}
-                  >
-                    <LinearGradient
-                      colors={['#8a5fff', '#0077ff']}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 0 }}
-                      style={styles.prescribeButton}
-                    >
-                      <Text style={styles.prescribeButtonText}>Prescribe Meds</Text>
-                    </LinearGradient>
-                  </TouchableOpacity>
 
+                {!isEditing[patient.email] && (
+                  <LinearGradient
+                    colors={['#8a5fff', '#0077ffea']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.prescribeGradient}
+                  >
+                    <TouchableOpacity
+                      style={styles.prescribeButton}
+                      onPress={() => toggleMedicationEdit(patient.email)}
+                    >
+                      <Text style={styles.prescribeButtonText}>Prescribe</Text>
+                    </TouchableOpacity>
+                  </LinearGradient>
                 )}
               </View>
 
+
               {isEditing[patient.email] && (
                 <View style={styles.medForm}>
-                  <Text style={styles.inputLabel}>Medication Name</Text>
-                  <TextInput style={styles.inputField} placeholder="Start typing..." />
+                  <Text style={[styles.inputLabel, { color: theme.colors.text }]}>Medication Name</Text>
+                  <TextInput
+                    style={[styles.inputField, { color: theme.colors.text1 }]}
+                    placeholder="Start typing..."
+                    placeholderTextColor="gray"
+                  />
 
-                  <Text style={styles.inputLabel}>Dosage</Text>
-                  <TextInput style={styles.inputField} placeholder="e.g. 1 pill" />
+                  <Text style={[styles.inputLabel, { color: theme.colors.text }]}>Dosage</Text>
+                  <TextInput
+                    style={[styles.inputField, { color: theme.colors.text1 }]}
+                    placeholder="e.g. 1 pill"
+                    placeholderTextColor="gray"
+                  />
 
-                  <Text style={styles.inputLabel}>Frequency</Text>
-                  <TextInput style={styles.inputField} placeholder="e.g. Every 8 hours" />
+                  <Text style={[styles.inputLabel, { color: theme.colors.text }]}>Frequency</Text>
+                  <TextInput
+                    style={[styles.inputField, { color: theme.colors.text1 }]}
+                    placeholder="e.g. Every 8 hours"
+                    placeholderTextColor="gray"
+                  />
 
-                  <Text style={styles.inputLabel}>Time to Take</Text>
-                  <TextInput style={styles.inputField} placeholder="e.g. 8 PM" />
+                  <Text style={[styles.inputLabel, { color: theme.colors.text }]}>Time to Take</Text>
+                  <TextInput
+                    style={[styles.inputField, { color: theme.colors.text1 }]}
+                    placeholder="e.g. 8 PM"
+                    placeholderTextColor="gray"
+                  />
 
-                  <Text style={styles.inputLabel}>Duration</Text>
-                  <TextInput style={styles.inputField} placeholder="e.g. 1 week" />
+                  <Text style={[styles.inputLabel, { color: theme.colors.text }]}>Duration</Text>
+                  <TextInput
+                    style={[styles.inputField, { color: theme.colors.text1 }]}
+                    placeholder="e.g. 1 week"
+                    placeholderTextColor="gray"
+                  />
 
-                  <Text style={styles.inputLabel}>Diagnosis</Text>
-                  <TextInput style={styles.inputField} placeholder="e.g. Headache" />
+                  <Text style={[styles.inputLabel, { color: theme.colors.text }]}>Diagnosis</Text>
+                  <TextInput
+                    style={[styles.inputField, { color: theme.colors.text }]}
+                    placeholder="e.g. Headache"
+                    placeholderTextColor="gray"
+                  />
 
                   <View style={styles.buttonRow}>
                     <LinearGradient
@@ -912,7 +925,7 @@ const styles = StyleSheet.create({
 
   cancelButton: {
     flex: 1,
-    backgroundColor: '#aaa',
+    backgroundColor: '#ff0000ee',
     paddingVertical: 10,
     borderRadius: 8,
     alignItems: 'center',

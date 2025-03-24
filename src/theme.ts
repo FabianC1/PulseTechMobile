@@ -16,7 +16,8 @@ export const lightTheme = {
     border: "#000000",
     quickActions: '#1E3A8A',
     Appointmentsbackground: ['#1100ff57', '#00a4b9bd'],
-    card: '#f0f0f071'
+    card: '#f0f0f071',
+    text1: '#FFFFFF',
   },
 };
 
@@ -35,7 +36,8 @@ export const darkTheme = {
     border: "#4A90E2",
     quickActions: '#4A90E2',
     Appointmentsbackground: ['#00566b',  '#2a004d'],
-    card: '#00014262'
+    card: '#00014262',
+    text1: '#0A1F44',
   },
 };
 
