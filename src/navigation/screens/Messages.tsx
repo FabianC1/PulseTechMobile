@@ -6,6 +6,7 @@ import {
   StyleSheet,
   TextInput,
   RefreshControl,
+  ScrollView
 } from 'react-native';
 import { useTheme } from 'styled-components/native';
 import LinearGradient from 'react-native-linear-gradient';
@@ -13,6 +14,8 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { useAuth } from '../AuthContext';
 import { registerForPushNotificationsAsync, scheduleNotification } from '../../NotificationService';
+import Icon from 'react-native-vector-icons/MaterialIcons'; // or use your preferred icon set
+
 
 type RootStackParamList = {
   Auth: { screen: 'Login' | 'Signup' };
@@ -65,77 +68,88 @@ export function Messages() {
     <LinearGradient colors={theme.colors.background} style={styles.container}>
       <KeyboardAwareScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        <Text style={[styles.title, { color: theme.colors.text }]}>
-          Message your {user.role === 'doctor' ? 'patients' : 'doctors'} here
-        </Text>
 
-        <View style={styles.chatLayout}>
-          {/* Contacts Panel */}
-          <View style={styles.contactsPanel}>
-            <Text style={[styles.panelTitle, { color: theme.colors.text }]}>Contacts</Text>
-            {/* Placeholder list */}
-            {['Contact A', 'Contact B', 'Contact C'].map((name, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.contactItem}
-                onPress={() => setSelectedContact(name)}
-              >
-                <Text style={{ color: theme.colors.text }}>{name}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+        {!selectedContact && (
+          <Text style={[styles.title, { color: theme.colors.text }]}>
+            Message your {user.role === 'doctor' ? 'patients' : 'doctors'} here
+          </Text>
+        )}
 
-          {/* Chat Panel */}
-          {/* Chat Panel */}
-          <View style={styles.chatPanel}>
-            {selectedContact ? (
-              <>
-                {/* Back Button */}
-                <TouchableOpacity onPress={() => setSelectedContact(null)} style={{ marginBottom: 10 }}>
-                  <Text style={{ color: theme.colors.primary, fontWeight: 'bold' }}>← Back to Contacts</Text>
+
+        <>
+
+
+          {/* Contacts View */}
+          {!selectedContact && (
+            <View style={styles.contactsFullPage}>
+              <Text style={[styles.panelTitle, { color: theme.colors.text }]}>Contacts</Text>
+
+              <ScrollView style={{ marginTop: 10 }}>
+                {['Contact A', 'Contact B', 'Contact C', 'Contact D', 'Contact E'].map((name, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.contactRow}
+                    onPress={() => setSelectedContact(name)}
+                  >
+                    <View style={styles.avatarPlaceholder} />
+                    <Text style={[styles.contactName, { color: theme.colors.text }]}>{name}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          )}
+
+          {/* Chat View */}
+          {selectedContact && (
+            <View style={styles.chatFullPage}>
+              {/* Back Button */}
+              <View style={styles.chatHeaderRow}>
+                <TouchableOpacity onPress={() => setSelectedContact(null)} style={styles.backButton}>
+                  <Icon name="arrow-back" size={24} color={theme.colors.primary} />
                 </TouchableOpacity>
 
-                {/* Chat Title */}
-                <Text style={[styles.panelTitle, { color: theme.colors.text }]}>
+                <Text style={[styles.chatTitle, { color: theme.colors.text }]}>
                   Chat with {selectedContact}
                 </Text>
+              </View>
 
-                {/* Messages Area */}
-                <View style={styles.messagesArea}>
+
+              {/* Scrollable Messages */}
+              <View style={styles.messagesArea}>
+                <ScrollView
+                  contentContainerStyle={{ paddingBottom: 10 }}
+                  showsVerticalScrollIndicator={false}
+                >
                   <Text style={{ color: theme.colors.text, opacity: 0.5 }}>(Messages appear here)</Text>
-                </View>
+                </ScrollView>
+              </View>
 
-                {/* Input Row */}
-                <View style={styles.chatInputRow}>
-                  <TextInput
-                    value={newMessage}
-                    onChangeText={setNewMessage}
-                    placeholder="Type a message..."
-                    placeholderTextColor={theme.colors.text + '88'}
-                    style={[styles.messageInput, { borderColor: theme.colors.primary, color: theme.colors.text }]}
-                  />
-                  <TouchableOpacity style={styles.sendButton}>
-                    <Text style={styles.sendText}>Send</Text>
-                  </TouchableOpacity>
-                </View>
-              </>
-            ) : (
-              <Text style={[styles.panelTitle, { color: theme.colors.text }]}>
-                Select a contact to start chatting
-              </Text>
-            )}
-          </View>
+              {/* Sticky Input Bar */}
+              <View style={styles.chatInputRow}>
+                <TextInput
+                  value={newMessage}
+                  onChangeText={setNewMessage}
+                  placeholder="Type a message..."
+                  placeholderTextColor={theme.colors.text + '88'}
+                  style={[styles.messageInput, { borderColor: theme.colors.primary, color: theme.colors.text }]}
+                />
+                <TouchableOpacity style={styles.sendButton}>
+                  <Text style={styles.sendText}>Send</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
 
 
 
 
-        </View>
+        </>
       </KeyboardAwareScrollView>
     </LinearGradient>
   );
@@ -144,6 +158,7 @@ export function Messages() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    position: 'relative', // Required for absolute children
   },
   scrollContent: {
     padding: 20,
@@ -155,31 +170,57 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 20,
   },
-  chatLayout: {
+
+  contactsFullPage: {
+    position: 'absolute',
+    marginTop: 30,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    padding: 20,
+    backgroundColor: '#00000010', // Optional for semi-transparent feel
+    height: '1200%',
+  },
+
+  chatFullPage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    padding: 20,
+    backgroundColor: '#00000010',
+    justifyContent: 'flex-end',
+    height: '86%',
+  },
+
+
+  // Contact Row
+  contactRow: {
     flexDirection: 'row',
-    gap: 10,
-  },
-  contactsPanel: {
-    width: '35%',
-    padding: 10,
-    backgroundColor: '#ffffff12',
-    borderRadius: 10,
-  },
-  chatPanel: {
-    flex: 1,
-    padding: 10,
-    backgroundColor: '#ffffff12',
-    borderRadius: 10,
-  },
-  panelTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  contactItem: {
-    paddingVertical: 8,
+    alignItems: 'center',
+    paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#ffffff22',
+  },
+  avatarPlaceholder: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#cccccc44',
+    marginRight: 12,
+  },
+  contactName: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+
+  // Chat Display
+  panelTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
   },
   messagesArea: {
     flex: 1,
@@ -187,21 +228,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff10',
     borderRadius: 10,
     marginBottom: 10,
-    height: 200,
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: '100%',
   },
   chatInputRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+    width: '100%',
   },
+
   messageInput: {
     flex: 1,
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 10,
-    height: 40,
+    height: 42,
   },
   sendButton: {
     backgroundColor: '#8a5fff',
@@ -213,6 +254,8 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
+
+  // Auth fallback
   authPrompt: {
     alignItems: 'center',
     paddingHorizontal: 20,
@@ -238,4 +281,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  chatHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+
+  backButton: {
+    padding: 6,
+  },
+
+  chatTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    flex: 1,
+    textAlign: 'right',
+  },
+
 });
