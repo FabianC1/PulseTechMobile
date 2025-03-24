@@ -58,6 +58,9 @@ export function Medication() {
   const takenThisWindowRef = useRef<Set<string>>(new Set());
   const [isEditing, setIsEditing] = useState<Record<string, boolean>>({});
   const [medicationInputs, setMedicationInputs] = useState<Record<string, string>>({});
+  const [medicationSuggestions, setMedicationSuggestions] = useState<{ [email: string]: string[] }>({});
+
+
   const [medicationData, setMedicationData] = useState<Record<string, {
     dosage: string;
     frequency: string;
@@ -358,6 +361,45 @@ export function Medication() {
     });
   }, [simulatedNow, medications]);
 
+
+
+  const fetchMedicationSuggestions = async (email: string, query: string) => {
+    if (query.length < 3) {
+      setMedicationSuggestions((prev) => ({ ...prev, [email]: [] }));
+      return;
+    }
+  
+    try {
+      const response = await axios.get<{ medications: string[] }[]>(
+        `http://192.168.0.84:3000/collections/Medications?name=${encodeURIComponent(query)}`
+      );
+  
+      const data = response.data;
+      const names = data[0]?.medications || [];
+  
+      // Filter to only those that START with the query (case-insensitive)
+      const filtered = names.filter((name) =>
+        name.toLowerCase().startsWith(query.toLowerCase())
+      );
+  
+      setMedicationSuggestions((prev) => ({
+        ...prev,
+        [email]: filtered,
+      }));
+  
+    } catch (err) {
+      console.error('Error fetching medication suggestions:', err);
+    }
+  };
+  
+  
+
+  const submitMedication = (email: string) => {
+    console.log('Submit medication for:', email);
+    // We'll implement this logic right after autofill.
+  };
+  
+
   return (
     <LinearGradient colors={theme.colors.background} style={styles.container}>
       {user ? (
@@ -370,7 +412,13 @@ export function Medication() {
           showsVerticalScrollIndicator={false}
         >
           <TouchableOpacity onLongPress={() => setShowSimulators(prev => !prev)}>
-            <Text style={[styles.pageTitle, { color: theme.colors.text }]}>
+            <Text
+              style={[
+                styles.pageTitle,
+                { color: theme.colors.text },
+                user.role === 'doctor' && { marginTop: 16 }
+              ]}
+            >
               {user.role === 'doctor'
                 ? `Welcome, Dr. ${user.fullName}`
                 : 'Track and take your medications here'}
@@ -412,7 +460,9 @@ export function Medication() {
           {user.role === 'doctor' && patientsList.map((patient, index) => (
             <View key={index} style={[styles.doctorCard, { borderColor: theme.colors.border, backgroundColor: theme.colors.card }]}>
               <View style={styles.cardHeader}>
-                <Text style={styles.patientName}>{patient.fullName}</Text>
+                <Text style={[styles.patientName, { color: theme.colors.text }]}>
+                  {patient.fullName}
+                </Text>
 
                 {!isEditing[patient.email] && (
                   <LinearGradient
@@ -439,7 +489,31 @@ export function Medication() {
                     style={[styles.inputField, { color: theme.colors.text1 }]}
                     placeholder="Start typing..."
                     placeholderTextColor="gray"
+                    value={medicationInputs[patient.email] || ''}
+                    onChangeText={(text) => {
+                      console.log('User typing:', text);
+                      setMedicationInputs((prev) => ({ ...prev, [patient.email]: text }));
+                      fetchMedicationSuggestions(patient.email, text);
+                    }}
                   />
+
+                  {/* Suggestion List */}
+                  {medicationSuggestions[patient.email]?.length > 0 && (
+                    <View style={styles.suggestionsContainer}>
+                      {medicationSuggestions[patient.email].map((suggestion, idx) => (
+                        <TouchableOpacity
+                          key={idx}
+                          onPress={() => {
+                            setMedicationInputs((prev) => ({ ...prev, [patient.email]: suggestion }));
+                            setMedicationSuggestions((prev) => ({ ...prev, [patient.email]: [] }));
+                          }}
+                          style={styles.suggestionItem}
+                        >
+                          <Text style={{ color: theme.colors.text }}>{suggestion}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  )}
 
                   <Text style={[styles.inputLabel, { color: theme.colors.text }]}>Dosage</Text>
                   <TextInput
@@ -481,20 +555,24 @@ export function Medication() {
                       colors={['#8a5fff', '#0077ffea']}
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 0 }}
-                      style={styles.prescribeGradient}
+                      style={[styles.prescribeGradient, { flex: 1, marginRight: 8 }]} // flex: 1 ensures full width
                     >
-                      <TouchableOpacity style={styles.prescribeButton}>
+                      <TouchableOpacity
+                        style={[styles.prescribeButton, { width: '100%' }]}
+                        onPress={() => submitMedication(patient.email)}
+                      >
                         <Text style={styles.prescribeButtonText}>Prescribe</Text>
                       </TouchableOpacity>
                     </LinearGradient>
 
                     <TouchableOpacity
-                      style={styles.cancelButton}
+                      style={[styles.cancelButton, { flex: 1, marginLeft: 8 }]}
                       onPress={() => cancelMedicationEdit(patient.email)}
                     >
                       <Text style={styles.cancelButtonText}>Cancel</Text>
                     </TouchableOpacity>
                   </View>
+
 
                 </View>
               )}
@@ -822,7 +900,7 @@ const styles = StyleSheet.create({
   pageTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 16,
+    marginBottom: 25,
     textAlign: 'center',
   },
   simulatorControls: {
@@ -851,7 +929,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-    marginTop: 8,
+    marginTop: 10,
     justifyContent: 'center',
   },
   doctorCard: {
@@ -940,6 +1018,22 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginRight: 10,
   },
-
+  suggestionsContainer: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 8,
+    marginTop: 4,
+    paddingVertical: 4,
+    paddingHorizontal: 6,
+    borderWidth: 1,
+    borderColor: '#ccc',
+  },
+  
+  suggestionItem: {
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.1)',
+  },
+  
 });
 
