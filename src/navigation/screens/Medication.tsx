@@ -15,6 +15,7 @@ import { useTheme } from 'styled-components/native';
 import axios from 'axios';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { useAuth } from '../AuthContext';
+import CustomAlerts from './CustomAlerts';
 
 // Define navigation type
 type RootStackParamList = {
@@ -47,6 +48,8 @@ export function Medication() {
   const [showSimulators, setShowSimulators] = useState(false);
   const [simulatedNow, setSimulatedNow] = useState<Date>(new Date());
 
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
 
   const handleSecretPress = () => {
     setShowSimulators(prev => !prev);
@@ -64,7 +67,7 @@ export function Medication() {
     currentTime: Date | number
   ): number | null => {
     if (!timeToTake) return null;
-  
+
     const frequencyMap: Record<string, number> = {
       'Every hour': 1,
       'Every 4 hours': 4,
@@ -75,34 +78,34 @@ export function Medication() {
       '2 times a day': 12,
       '3 times a day': 8,
     };
-  
+
     const freqHours = frequencyMap[frequency] || 24;
-  
+
     // Convert "8 PM" or "12 AM" → hours and minutes
     const parsed = new Date(`1970-01-01T${convertTo24Hour(timeToTake)}:00`);
     if (isNaN(parsed.getTime())) return null;
-  
+
     const startHour = parsed.getHours();
     const startMinute = parsed.getMinutes();
-  
+
     const now = new Date(currentTime);
     const start = new Date(now);
     start.setHours(startHour, startMinute, 0, 0);
-  
+
     // Go backward in time until we find the last possible dose time before now
     while (start.getTime() > now.getTime()) {
       start.setHours(start.getHours() - freqHours);
     }
-  
+
     // Step forward until we pass the current time
     let nextDose = new Date(start);
     while (nextDose.getTime() <= now.getTime()) {
       nextDose.setHours(nextDose.getHours() + freqHours);
     }
-  
+
     return nextDose.getTime();
   };
-  
+
   // Converts "8 PM" or "12 AM" etc. → "20:00"
   function convertTo24Hour(time: string): string {
     const [_, hh, mm = '00', period] = time.match(/(\d{1,2})(?::(\d{2}))?\s*(AM|PM)/i) || [];
@@ -112,7 +115,7 @@ export function Medication() {
     if (period.toUpperCase() === 'AM' && hour === 12) hour = 0;
     return `${hour.toString().padStart(2, '0')}:${mm}`;
   }
-  
+
 
 
   useEffect(() => {
@@ -133,6 +136,7 @@ export function Medication() {
 
   const onRefresh = async () => {
     setRefreshing(true);
+    setSimulatedNow(new Date());  // Reset simulated time to the current time
     await fetchMedications();
     setRefreshing(false);
   };
@@ -144,11 +148,12 @@ export function Medication() {
         email: user.email,
         medicationName: medName,
       });
-      Alert.alert('Success', 'Medication marked as taken');
+      setModalMessage('Success, Medication marked as taken');
+      setModalVisible(true);
       fetchMedications();
     } catch (err) {
-      console.error('Error marking medication as taken:', err);
-      Alert.alert('Error', 'Could not update medication');
+      setModalMessage('ErrorCould not update medication');
+      setModalVisible(true);
     }
   };
 
@@ -369,6 +374,13 @@ export function Medication() {
           </View>
         </View>
       )}
+
+      <CustomAlerts
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        message={modalMessage}
+      />
+
     </LinearGradient>
   );
 }
