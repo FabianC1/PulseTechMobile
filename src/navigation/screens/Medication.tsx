@@ -61,11 +61,12 @@ export function Medication() {
   const [medicationInputs, setMedicationInputs] = useState<Record<string, string>>({});
   const [medicationSuggestions, setMedicationSuggestions] = useState<{ [email: string]: string[] }>({});
   const [medicationForm, setMedicationForm] = useState<Record<string, any>>({});
+  const [isSubmitting, setIsSubmitting] = useState<{ [email: string]: boolean }>({});
 
   const [originalMedicationForm, setOriginalMedicationForm] = useState<{
     [email: string]: MedicationFormFields;
   }>({});
-  
+
 
 
   const [medicationData, setMedicationData] = useState<Record<string, {
@@ -91,11 +92,11 @@ export function Medication() {
     timeToTake?: string;
     duration?: string;
     diagnosis?: string;
-  };  
+  };
 
   const toggleMedicationEdit = (email: string) => {
     setIsEditing(prev => ({ ...prev, [email]: !prev[email] }));
-  
+
     if (!isEditing[email]) {
       // Save original values only when starting to edit
       setOriginalMedicationForm(prev => ({
@@ -104,17 +105,17 @@ export function Medication() {
       }));
     }
   };
-  
+
 
   const cancelMedicationEdit = (email: string) => {
     setMedicationForm(prev => ({
       ...prev,
       [email]: originalMedicationForm[email] || {}
     }));
-  
+
     setIsEditing(prev => ({ ...prev, [email]: false }));
   };
-  
+
 
 
   const fetchPatients = async () => {
@@ -410,11 +411,54 @@ export function Medication() {
   };
 
 
+  const submitMedication = async (email: string) => {
+    console.log("Submitting form for:", email, medicationForm[email]);
+    const form = medicationForm[email];
 
-  const submitMedication = (email: string) => {
-    console.log('Submit medication for:', email);
-    // We'll implement this logic right after autofill.
+    if (!form?.name || !form?.dosage || !form?.frequency || !form?.timeToTake || !form?.duration || !form?.diagnosis) {
+      setModalMessage("Please fill in all fields before prescribing.");
+      setModalVisible(true);
+      return;
+    }
+
+    setIsSubmitting((prev) => ({ ...prev, [email]: true }));
+
+    const medication = {
+      name: form.name,
+      dosage: form.dosage,
+      frequency: form.frequency,
+      timeToTake: form.timeToTake,
+      duration: form.duration,
+      diagnosis: form.diagnosis,
+      logs: [],
+    };
+
+    try {
+      const response = await axios.post("http://192.168.0.84:3000/save-medication", {
+        email,
+        medication,
+      });
+
+      if (response.status === 200) {
+        setModalMessage("Medication prescribed successfully.");
+        setModalVisible(true);
+        setIsEditing((prev) => ({ ...prev, [email]: false }));
+        setMedicationForm((prev) => ({ ...prev, [email]: {} }));
+        setMedicationInputs((prev) => ({ ...prev, [email]: '' }));
+        await fetchMedications();
+      } else {
+        setModalMessage("Failed to prescribe medication. Please try again.");
+        setModalVisible(true);
+      }
+    } catch (err) {
+      console.error("Error prescribing medication:", err);
+      setModalMessage("An error occurred while prescribing the medication.");
+      setModalVisible(true);
+    } finally {
+      setIsSubmitting((prev) => ({ ...prev, [email]: false }));
+    }
   };
+
 
 
   return (
@@ -498,18 +542,19 @@ export function Medication() {
                 )}
               </View>
 
-
+              {/* Medication Name (Autofill input) */}
               {isEditing[patient.email] && (
                 <View style={styles.medForm}>
-                  <Text style={[styles.inputLabel, { color: theme.colors.text }]}>Medication Name</Text>
                   <TextInput
                     style={[styles.inputField, { color: theme.colors.text1 }]}
                     placeholder="Start typing..."
                     placeholderTextColor="gray"
-                    value={medicationInputs[patient.email] || ''}
+                    value={medicationForm[patient.email]?.name || ''}
                     onChangeText={(text) => {
-                      console.log('User typing:', text);
-                      setMedicationInputs((prev) => ({ ...prev, [patient.email]: text }));
+                      setMedicationForm((prev) => ({
+                        ...prev,
+                        [patient.email]: { ...prev[patient.email], name: text },
+                      }));
                       fetchMedicationSuggestions(patient.email, text);
                     }}
                   />
@@ -522,12 +567,17 @@ export function Medication() {
                           key={idx}
                           onPress={() => {
                             setMedicationInputs((prev) => ({ ...prev, [patient.email]: suggestion }));
+                            setMedicationForm((prev) => ({
+                              ...prev,
+                              [patient.email]: { ...prev[patient.email], name: suggestion },
+                            }));
                             setMedicationSuggestions((prev) => ({ ...prev, [patient.email]: [] }));
                           }}
                           style={styles.suggestionItem}
                         >
                           <Text style={{ color: theme.colors.text }}>{suggestion}</Text>
                         </TouchableOpacity>
+
                       ))}
                     </View>
                   )}
@@ -632,12 +682,19 @@ export function Medication() {
                     </Picker>
                   </View>
 
-
+                  {/* Diagnosis */}
                   <Text style={[styles.inputLabel, { color: theme.colors.text }]}>Diagnosis</Text>
                   <TextInput
-                    style={[styles.inputField, { color: theme.colors.text }]}
+                    style={[styles.inputField, { color: theme.colors.text1 }]}
                     placeholder="e.g. Headache"
                     placeholderTextColor="gray"
+                    value={medicationForm[patient.email]?.diagnosis || ''}
+                    onChangeText={(text) =>
+                      setMedicationForm((prev) => ({
+                        ...prev,
+                        [patient.email]: { ...prev[patient.email], diagnosis: text },
+                      }))
+                    }
                   />
 
                   <View style={styles.buttonRow}>
@@ -645,13 +702,16 @@ export function Medication() {
                       colors={['#8a5fff', '#0077ffea']}
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 0 }}
-                      style={[styles.prescribeGradient, { flex: 1, marginRight: 8 }]} // flex: 1 ensures full width
+                      style={[styles.prescribeGradient, { flex: 1, marginRight: 8 }]}
                     >
                       <TouchableOpacity
-                        style={[styles.prescribeButton, { width: '100%' }]}
+                        style={[styles.prescribeButton, { width: '100%', opacity: isSubmitting[patient.email] ? 0.6 : 1 }]}
                         onPress={() => submitMedication(patient.email)}
+                        disabled={isSubmitting[patient.email]}
                       >
-                        <Text style={styles.prescribeButtonText}>Prescribe</Text>
+                        <Text style={styles.prescribeButtonText}>
+                          {isSubmitting[patient.email] ? 'Submitting...' : 'Prescribe'}
+                        </Text>
                       </TouchableOpacity>
                     </LinearGradient>
 
@@ -1132,6 +1192,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingHorizontal: 10,
   },
-  
+
 });
 
