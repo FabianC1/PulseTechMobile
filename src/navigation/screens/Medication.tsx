@@ -57,51 +57,20 @@ export function Medication() {
     setSimulatedNow(newTime);
   };
 
-  const convertTo24Hour = (timeStr: string): string | null => {
-    const match = timeStr.match(/^(\d{1,2})\s*(AM|PM)$/i);
-    if (!match) return null;
-
-    let hour = parseInt(match[1]);
-    const period = match[2].toUpperCase();
-
-    if (period === 'PM' && hour !== 12) hour += 12;
-    if (period === 'AM' && hour === 12) hour = 0;
-
-    return `${hour.toString().padStart(2, '0')}:00`; // Always returns HH:00
-  };
 
   const calculateNextDoseTime = (
-    timeToTake: string,
-    frequency: string,
+    timeToTake: string, // "8 PM"
+    frequency: string,  // "Every 12 hours"
     currentTime: Date | number
   ): number | null => {
-    console.log('Checking med.timeToTake:', timeToTake);
-  
     if (!timeToTake) return null;
-  
-    const timeParts = timeToTake.trim().toUpperCase().split(' ');
-    if (timeParts.length !== 2) return null;
-  
-    let [hourStr, period] = timeParts;
-    let hour = parseInt(hourStr);
-    let minute = 0;
-  
-    if (isNaN(hour)) return null;
-  
-    // Convert to 24-hour format
-    if (period === 'PM' && hour < 12) hour += 12;
-    if (period === 'AM' && hour === 12) hour = 0;
-  
-    const current = new Date(currentTime);
-    const base = new Date(current);
-    base.setHours(hour, minute, 0, 0);
-  
-    const nextDose = new Date(base);
   
     const frequencyMap: Record<string, number> = {
       'Every hour': 1,
       'Every 4 hours': 4,
       'Every 6 hours': 6,
+      'Every 8 hours': 8,
+      'Every 12 hours': 12,
       'Once a day': 24,
       '2 times a day': 12,
       '3 times a day': 8,
@@ -109,14 +78,42 @@ export function Medication() {
   
     const freqHours = frequencyMap[frequency] || 24;
   
-    while (nextDose.getTime() <= current.getTime()) {
+    // Convert "8 PM" or "12 AM" → hours and minutes
+    const parsed = new Date(`1970-01-01T${convertTo24Hour(timeToTake)}:00`);
+    if (isNaN(parsed.getTime())) return null;
+  
+    const startHour = parsed.getHours();
+    const startMinute = parsed.getMinutes();
+  
+    const now = new Date(currentTime);
+    const start = new Date(now);
+    start.setHours(startHour, startMinute, 0, 0);
+  
+    // Go backward in time until we find the last possible dose time before now
+    while (start.getTime() > now.getTime()) {
+      start.setHours(start.getHours() - freqHours);
+    }
+  
+    // Step forward until we pass the current time
+    let nextDose = new Date(start);
+    while (nextDose.getTime() <= now.getTime()) {
       nextDose.setHours(nextDose.getHours() + freqHours);
     }
   
-    console.log(`Next dose time for ${timeToTake}: ${nextDose.toLocaleTimeString()}`);
     return nextDose.getTime();
   };
   
+  // Converts "8 PM" or "12 AM" etc. → "20:00"
+  function convertTo24Hour(time: string): string {
+    const [_, hh, mm = '00', period] = time.match(/(\d{1,2})(?::(\d{2}))?\s*(AM|PM)/i) || [];
+    if (!hh || !period) return '00:00';
+    let hour = parseInt(hh);
+    if (period.toUpperCase() === 'PM' && hour !== 12) hour += 12;
+    if (period.toUpperCase() === 'AM' && hour === 12) hour = 0;
+    return `${hour.toString().padStart(2, '0')}:${mm}`;
+  }
+  
+
 
   useEffect(() => {
     if (user?.email) fetchMedications();
@@ -231,6 +228,7 @@ export function Medication() {
                   : null;
 
 
+
                 const withinWindow =
                   nextDoseTime !== null &&
                   Math.abs(simulatedNow.getTime() - nextDoseTime) <= 60 * 60 * 1000;
@@ -279,14 +277,21 @@ export function Medication() {
                         </Text>
 
                         {nextDoseTime && (() => {
-                          const timeDiff = nextDoseTime - simulatedNow.getTime();
+                          const diffMs = nextDoseTime - simulatedNow.getTime();
+                          if (diffMs <= 0) return null;
 
-                          const hours = Math.floor(timeDiff / (1000 * 60 * 60));
-                          const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+                          const diffMins = Math.floor(diffMs / (1000 * 60));
+                          const hours = Math.floor(diffMins / 60);
+                          const mins = diffMins % 60;
 
                           return (
-                            <Text style={[styles.nextDoseText, { color: theme.colors.secondary, fontSize: 18 }]}>
-                              <Text style={{ fontWeight: 'bold' }}>Next Dose in: </Text>{hours}h {minutes}m
+                            <Text
+                              style={[
+                                styles.nextDoseText,
+                                { color: theme.colors.secondary, fontSize: 18, fontWeight: 'bold' },
+                              ]}
+                            >
+                              Next Dose in: {hours}h {mins}m
                             </Text>
                           );
                         })()}
