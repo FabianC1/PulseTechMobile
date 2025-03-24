@@ -9,6 +9,7 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  TextInput,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useTheme } from 'styled-components/native';
@@ -56,6 +57,10 @@ export function Medication() {
   const prevDoseTimesRef = useRef<Record<string, number>>({});
   const takenThisWindowRef = useRef<Set<string>>(new Set());
 
+  const [patientsList, setPatientsList] = useState([
+    { fullName: 'Alice Thompson', email: 'alice@example.com' },
+    { fullName: 'Brian Carter', email: 'brian@example.com' },
+  ]);
 
   const handleSecretPress = () => {
     setShowSimulators(prev => !prev);
@@ -284,13 +289,13 @@ export function Medication() {
         previousDoseTimeRef.current[med.name] &&
         previousDoseTime > previousDoseTimeRef.current[med.name];
 
-        if (hasDoseJustReset) {
-          takenThisWindowRef.current.delete(med.name); // Reset the "taken" flag for new window
-        
-          if (!alreadyLogged) {
-            markAsMissed(med.name);
-          }
+      if (hasDoseJustReset) {
+        takenThisWindowRef.current.delete(med.name); // Reset the "taken" flag for new window
+
+        if (!alreadyLogged) {
+          markAsMissed(med.name);
         }
+      }
 
       previousDoseTimeRef.current[med.name] = previousDoseTime;
     });
@@ -308,13 +313,11 @@ export function Medication() {
           showsVerticalScrollIndicator={false}
         >
           <TouchableOpacity onLongPress={() => setShowSimulators(prev => !prev)}>
-            <Text
-              style={[styles.pageTitle, { color: theme.colors.text }]}
-              onLongPress={handleSecretPress}
-            >
-              Track and take your medications here
+            <Text style={[styles.pageTitle, { color: theme.colors.text }]}>
+              {user.role === 'doctor'
+                ? `Welcome, Dr. ${user.fullName}`
+                : 'Track and take your medications here'}
             </Text>
-
           </TouchableOpacity>
 
 
@@ -346,6 +349,50 @@ export function Medication() {
               </View>
             </View>
           )}
+
+
+
+          {user.role === 'doctor' && patientsList.map((patient, index) => (
+            <View key={index} style={styles.doctorCard}>
+              <View style={styles.cardHeader}>
+                <Text style={styles.patientName}>{patient.fullName}</Text>
+                <TouchableOpacity style={styles.prescribeButton}>
+                  <Text style={styles.prescribeButtonText}>Prescribe Medication</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Medication form placeholder for now */}
+              <View style={styles.medForm}>
+                <Text style={styles.inputLabel}>Medication Name</Text>
+                <TextInput style={styles.inputField} placeholder="Start typing..." />
+
+                <Text style={styles.inputLabel}>Dosage</Text>
+                <TextInput style={styles.inputField} placeholder="e.g. 1 pill" />
+
+                <Text style={styles.inputLabel}>Frequency</Text>
+                <TextInput style={styles.inputField} placeholder="e.g. Every 8 hours" />
+
+                <Text style={styles.inputLabel}>Time to Take</Text>
+                <TextInput style={styles.inputField} placeholder="e.g. 8 PM" />
+
+                <Text style={styles.inputLabel}>Duration</Text>
+                <TextInput style={styles.inputField} placeholder="e.g. 1 week" />
+
+                <Text style={styles.inputLabel}>Diagnosis</Text>
+                <TextInput style={styles.inputField} placeholder="e.g. Headache" />
+
+                <View style={styles.buttonRow}>
+                  <TouchableOpacity style={styles.submitButton}>
+                    <Text style={styles.submitButtonText}>Prescribe</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.cancelButton}>
+                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          ))}
+
 
 
           {medications.length === 0 ? (
@@ -696,6 +743,90 @@ const styles = StyleSheet.create({
     marginTop: 8,
     justifyContent: 'center',
   },
+  doctorCard: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 14,
+    padding: 16,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#ccc',
+  },
+
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+
+  patientName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+
+  prescribeButton: {
+    backgroundColor: '#4caf50',
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+  },
+
+  prescribeButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+
+  medForm: {
+    marginTop: 12,
+  },
+
+  inputLabel: {
+    fontSize: 14,
+    color: '#ddd',
+    marginTop: 10,
+    marginBottom: 4,
+  },
+
+  inputField: {
+    backgroundColor: '#fff',
+    padding: 10,
+    borderRadius: 8,
+  },
+
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 16,
+  },
+
+  submitButton: {
+    flex: 1,
+    backgroundColor: '#4caf50',
+    paddingVertical: 10,
+    borderRadius: 8,
+    marginRight: 8,
+    alignItems: 'center',
+  },
+
+  submitButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+
+  cancelButton: {
+    flex: 1,
+    backgroundColor: '#aaa',
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+
+  cancelButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+
 
 });
 
