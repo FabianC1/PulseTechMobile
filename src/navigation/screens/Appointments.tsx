@@ -17,6 +17,7 @@ import { useAuth } from '../AuthContext';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import CustomAlerts from './CustomAlerts';
 import Icon from 'react-native-vector-icons/MaterialIcons';//calender icon
+import { scheduleNotification } from '../../NotificationService';
 
 type RootStackParamList = {
   Auth: { screen: 'Login' | 'Signup' };
@@ -93,20 +94,53 @@ export function Appointments() {
 
   const fetchAppointments = async () => {
     if (!user?.email) return;
-
+  
     try {
       const res = await fetch(`http://192.168.0.84:3000/get-appointments?email=${user.email}`);
       const data = await res.json();
-
+  
       const filtered = data.filter((a: any) =>
         user.role === 'doctor' ? a.doctorEmail === user.email : a.patientEmail === user.email
       );
-
+  
       setUpcomingAppointments(filtered);
+  
+      filtered.forEach((appt: { date: string; reason: string; status: string; patientEmail?: string; doctorEmail?: string }) => {
+        if (appt.status === 'Scheduled') {
+          const appointmentDate = new Date(appt.date);
+          const dateStr = appointmentDate.toDateString();
+      
+          // Determine who the appointment is with
+          const withWhom =
+            user.role === 'doctor'
+              ? `with ${appt.patientEmail}`
+              : `with Dr. ${appt.doctorEmail}`;
+      
+          const message = `You have an appointment ${withWhom} on ${dateStr} for: ${appt.reason}`;
+      
+          // Schedule test notification (10s from now for each one)
+          const testTime = new Date(Date.now() + 10000);
+          console.log('Test appointment notification will fire at:', testTime);
+      
+          scheduleNotification('Test: Upcoming Appointment', message, testTime);
+      
+          //Schedule real notification (1 day before at 9 AM)
+          const reminderTime = new Date(appointmentDate);
+          reminderTime.setDate(reminderTime.getDate() - 1);
+          reminderTime.setHours(9, 0, 0, 0);
+      
+          if (reminderTime > new Date()) {
+            scheduleNotification('Upcoming Appointment', message, reminderTime);
+          }
+        }
+      });
+      
+  
     } catch (error) {
       console.error('Failed to fetch appointments:', error);
     }
   };
+  
 
   const submitAppointmentAsDoctor = async (patientEmail: string) => {
     const data = appointmentData[patientEmail];
@@ -864,5 +898,5 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: 'center',
   },
-  
+
 });
