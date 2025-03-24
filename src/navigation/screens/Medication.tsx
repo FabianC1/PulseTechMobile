@@ -18,7 +18,7 @@ import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { useAuth } from '../AuthContext';
 import CustomAlerts from './CustomAlerts';
 import { Picker } from '@react-native-picker/picker';
-
+import DropDownPicker from 'react-native-dropdown-picker';
 
 type RootStackParamList = {
   Auth: { screen: 'Login' | 'Signup' };
@@ -581,11 +581,10 @@ export function Medication() {
                       ))}
                     </View>
                   )}
-
                   {/* Dosage */}
                   <Text style={[styles.inputLabel, { color: theme.colors.text }]}>Dosage</Text>
                   <View style={styles.pickerWrapper}>
-                    <Picker
+                    <Picker 
                       selectedValue={medicationForm[patient.email]?.dosage}
                       onValueChange={(value) =>
                         setMedicationForm((prev) => ({
@@ -593,18 +592,18 @@ export function Medication() {
                           [patient.email]: { ...prev[patient.email], dosage: value }
                         }))
                       }
-                      dropdownIconColor={theme.colors.text}
-                      style={{ color: theme.colors.text1 }}
+                      dropdownIconColor={theme.colors.text2}
+                      style={{ color: theme.colors.text2 }}
                     >
-                      <Picker.Item label="Select dosage" value="" />
-                      <Picker.Item label="1 pill" value="1 pill" />
-                      <Picker.Item label="2 pills" value="2 pills" />
-                      <Picker.Item label="5ml syrup" value="5ml syrup" />
-                      <Picker.Item label="10ml syrup" value="10ml syrup" />
-                      <Picker.Item label="1 tablet" value="1 tablet" />
-                      <Picker.Item label="2 tablets" value="2 tablets" />
-                      <Picker.Item label="1 tsp" value="1 tsp" />
-                      <Picker.Item label="2 tsp" value="2 tsp" />
+                      <Picker.Item label="Select dosage" value="" color="white" />
+                      <Picker.Item label="1 pill" value="1 pill" color="white" />
+                      <Picker.Item label="2 pills" value="2 pills" color="white" />
+                      <Picker.Item label="5ml syrup" value="5ml syrup" color="white" />
+                      <Picker.Item label="10ml syrup" value="10ml syrup" color="white" />
+                      <Picker.Item label="1 tablet" value="1 tablet" color="white" />
+                      <Picker.Item label="2 tablets" value="2 tablets" color="white" />
+                      <Picker.Item label="1 tsp" value="1 tsp" color="white" />
+                      <Picker.Item label="2 tsp" value="2 tsp" color="white" />
                     </Picker>
                   </View>
 
@@ -619,17 +618,17 @@ export function Medication() {
                           [patient.email]: { ...prev[patient.email], frequency: value }
                         }))
                       }
-                      dropdownIconColor={theme.colors.text}
-                      style={{ color: theme.colors.text1 }}
+                      dropdownIconColor={theme.colors.text2}
+                      style={{ color: theme.colors.text2 }}
                     >
-                      <Picker.Item label="Select frequency" value="" />
-                      <Picker.Item label="Twice a day" value="Twice a day" />
-                      <Picker.Item label="Every hour" value="Every hour" />
-                      <Picker.Item label="Every 4 hours" value="Every 4 hours" />
-                      <Picker.Item label="Every 6 hours" value="Every 6 hours" />
-                      <Picker.Item label="Every 8 hours" value="Every 8 hours" />
-                      <Picker.Item label="Every 12 hours" value="Every 12 hours" />
-                      <Picker.Item label="Once a week" value="Once a week" />
+                      <Picker.Item label="Select frequency" value="" color="white"  />
+                      <Picker.Item label="Twice a day" value="Twice a day" color="white" />
+                      <Picker.Item label="Every hour" value="Every hour"color="white"  />
+                      <Picker.Item label="Every 4 hours" value="Every 4 hours" color="white" />
+                      <Picker.Item label="Every 6 hours" value="Every 6 hours" color="white" />
+                      <Picker.Item label="Every 8 hours" value="Every 8 hours" color="white" />
+                      <Picker.Item label="Every 12 hours" value="Every 12 hours" color="white" />
+                      <Picker.Item label="Once a week" value="Once a week" color="white" />
                     </Picker>
                   </View>
 
@@ -644,17 +643,17 @@ export function Medication() {
                           [patient.email]: { ...prev[patient.email], timeToTake: value }
                         }))
                       }
-                      dropdownIconColor={theme.colors.text}
-                      style={{ color: theme.colors.text1 }}
+                      dropdownIconColor={theme.colors.text2}
+                      style={{ color: theme.colors.text2 }}
                     >
-                      <Picker.Item label="Select time" value="" />
-                      <Picker.Item label="7 AM" value="7 AM" />
-                      <Picker.Item label="8 AM" value="8 AM" />
-                      <Picker.Item label="12 PM" value="12 PM" />
-                      <Picker.Item label="1 PM" value="1 PM" />
-                      <Picker.Item label="4 PM" value="4 PM" />
-                      <Picker.Item label="8 PM" value="8 PM" />
-                      <Picker.Item label="10 PM" value="10 PM" />
+                      <Picker.Item label="Select time" value="" color="white" />
+                      <Picker.Item label="7 AM" value="7 AM" color="white" />
+                      <Picker.Item label="8 AM" value="8 AM" color="white" />
+                      <Picker.Item label="12 PM" value="12 PM" color="white" />
+                      <Picker.Item label="1 PM" value="1 PM" color="white" />
+                      <Picker.Item label="4 PM" value="4 PM" color="white" />
+                      <Picker.Item label="8 PM" value="8 PM" color="white" />
+                      <Picker.Item label="10 PM" value="10 PM" color="white" />
                     </Picker>
                   </View>
 
@@ -669,16 +668,16 @@ export function Medication() {
                           [patient.email]: { ...prev[patient.email], duration: value }
                         }))
                       }
-                      dropdownIconColor={theme.colors.text}
-                      style={{ color: theme.colors.text1 }}
+                      dropdownIconColor={theme.colors.text2}
+                      style={{ color: theme.colors.text2 }}
                     >
-                      <Picker.Item label="Select duration" value="" />
-                      <Picker.Item label="3 days" value="3 days" />
-                      <Picker.Item label="5 days" value="5 days" />
-                      <Picker.Item label="1 week" value="1 week" />
-                      <Picker.Item label="2 weeks" value="2 weeks" />
-                      <Picker.Item label="1 month" value="1 month" />
-                      <Picker.Item label="Until further notice" value="Until further notice" />
+                      <Picker.Item label="Select duration" value="" color="white" />
+                      <Picker.Item label="3 days" value="3 days" color="white" />
+                      <Picker.Item label="5 days" value="5 days" color="white" />
+                      <Picker.Item label="1 week" value="1 week" color="white" />
+                      <Picker.Item label="2 weeks" value="2 weeks" color="white" />
+                      <Picker.Item label="1 month" value="1 month" color="white" />
+                      <Picker.Item label="Until further notice" value="Until further notice" color="white" />
                     </Picker>
                   </View>
 

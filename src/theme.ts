@@ -18,6 +18,7 @@ export const lightTheme = {
     Appointmentsbackground: ['#1100ff57', '#00a4b9bd'],
     card: '#f0f0f071',
     text1: '#FFFFFF',
+    text2: '#0A1F44',
   },
 };
 
@@ -38,6 +39,7 @@ export const darkTheme = {
     Appointmentsbackground: ['#00566b',  '#2a004d'],
     card: '#00014262',
     text1: '#0A1F44',
+    text2: '#0A1F44',
   },
 };
 
