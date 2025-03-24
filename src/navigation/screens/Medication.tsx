@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef} from 'react';
 import {
   View,
   Text,
@@ -51,6 +51,10 @@ export function Medication() {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
 
+  const [markedMissed, setMarkedMissed] = useState<Set<string>>(new Set());
+  const [medicationsLoaded, setMedicationsLoaded] = useState(false);
+  const prevDoseTimesRef = useRef<Record<string, number>>({});
+  
   const handleSecretPress = () => {
     setShowSimulators(prev => !prev);
   };
@@ -129,6 +133,7 @@ export function Medication() {
         `http://192.168.0.84:3000/get-medical-records?email=${user.email}`
       );
       setMedications(res.data.medications || []);
+      setMedicationsLoaded(true);
     } catch (err) {
       console.error('Error fetching medications:', err);
     }
@@ -157,6 +162,74 @@ export function Medication() {
     }
   };
 
+  const markAsMissed = async (medName: string) => {
+    if (!user?.email) return;
+    try {
+      await axios.post('http://192.168.0.84:3000/mark-medication-missed', {
+        email: user.email,
+        medicationName: medName,
+      });
+      setModalMessage('Medication marked as missed');
+      setModalVisible(true);
+      fetchMedications();
+    } catch (err) {
+      setModalMessage('Error: Could not mark as missed');
+      setModalVisible(true);
+    }
+  };
+
+  const getMissedDoseTimes = (
+    med: MedicationItem,
+    currentTime: Date
+  ): number[] => {
+    const frequencyMap: Record<string, number> = {
+      'Every hour': 1,
+      'Every 4 hours': 4,
+      'Every 6 hours': 6,
+      'Every 8 hours': 8,
+      'Every 12 hours': 12,
+      'Once a day': 24,
+      '2 times a day': 12,
+      '3 times a day': 8,
+    };
+  
+    const freqHours = frequencyMap[med.frequency] || 24;
+    const freqMs = freqHours * 60 * 60 * 1000;
+  
+    const logs = med.logs || [];
+  
+    const takenOrMissedTimes = logs.map(log => new Date(log.time).getTime());
+  
+    const startTime = new Date(currentTime);
+    const firstDose = new Date(`1970-01-01T${convertTo24Hour(med.timeToTake)}:00`);
+    startTime.setHours(firstDose.getHours(), firstDose.getMinutes(), 0, 0);
+  
+    // go backward to find latest dose time before current
+    while (startTime.getTime() > currentTime.getTime()) {
+      startTime.setTime(startTime.getTime() - freqMs);
+    }
+  
+    const missedDoseTimes: number[] = [];
+  
+    let doseTime = new Date(startTime);
+    const nowMs = currentTime.getTime();
+  
+    while (doseTime.getTime() + 60 * 60 * 1000 < nowMs) {
+      const alreadyLogged = takenOrMissedTimes.some(
+        logTime => Math.abs(logTime - doseTime.getTime()) < 5 * 60 * 1000
+      );
+  
+      if (!alreadyLogged) {
+        missedDoseTimes.push(doseTime.getTime());
+      }
+  
+      doseTime.setTime(doseTime.getTime() + freqMs);
+    }
+  
+    return missedDoseTimes;
+  };
+  
+
   const renderLogs = (logs: MedicationLog[] = []) => {
     return logs
       .slice(-5)
@@ -168,6 +241,52 @@ export function Medication() {
       ));
   };
 
+  const previousDoseTimeRef = useRef<{ [key: string]: number }>({});
+
+  useEffect(() => {
+    if (!medications.length) return;
+  
+    medications.forEach((med) => {
+      const nextDoseTime = med.timeToTake
+        ? calculateNextDoseTime(med.timeToTake, med.frequency, simulatedNow)
+        : null;
+  
+      if (!nextDoseTime) return;
+  
+      const frequencyMap: Record<string, number> = {
+        'Every hour': 1,
+        'Every 4 hours': 4,
+        'Every 6 hours': 6,
+        'Every 8 hours': 8,
+        'Every 12 hours': 12,
+        'Once a day': 24,
+        '2 times a day': 12,
+        '3 times a day': 8,
+      };
+  
+      const freqMs = (frequencyMap[med.frequency] || 24) * 60 * 60 * 1000;
+      const previousDoseTime = nextDoseTime - freqMs;
+  
+      const alreadyLogged = (med.logs || []).some(log => {
+        const logTime = new Date(log.time).getTime();
+        return (
+          Math.abs(logTime - previousDoseTime) < 5 * 60 * 1000 &&
+          (log.status === 'Taken' || log.status === 'Missed')
+        );
+      });
+  
+      const hasDoseJustReset =
+        previousDoseTimeRef.current[med.name] &&
+        previousDoseTime > previousDoseTimeRef.current[med.name];
+  
+      if (hasDoseJustReset && !alreadyLogged) {
+        markAsMissed(med.name);
+      }
+  
+      previousDoseTimeRef.current[med.name] = previousDoseTime;
+    });
+  }, [simulatedNow, medications]);
+  
   return (
     <LinearGradient colors={theme.colors.background} style={styles.container}>
       {user ? (
@@ -227,12 +346,27 @@ export function Medication() {
           ) : (
             <>
               {medications.map((med: MedicationItem, index: number) => {
-                console.log(`Checking med.timeToTake for ${med.name}:`, med.timeToTake);
                 const nextDoseTime = med.timeToTake
                   ? calculateNextDoseTime(med.timeToTake, med.frequency, simulatedNow)
                   : null;
 
-
+                  const frequencyMap: Record<string, number> = {
+                    'Every hour': 1,
+                    'Every 4 hours': 4,
+                    'Every 6 hours': 6,
+                    'Every 8 hours': 8,
+                    'Every 12 hours': 12,
+                    'Once a day': 24,
+                    '2 times a day': 12,
+                    '3 times a day': 8,
+                  };
+                  
+                  const freqHours = frequencyMap[med.frequency] || 24;
+                  const freqInMs = freqHours * 60 * 60 * 1000;
+                  
+                  const previousDoseTime = nextDoseTime ? nextDoseTime - freqInMs : null;
+                  const windowEnd = previousDoseTime ? previousDoseTime + 60 * 60 * 1000 : null;                  
+                
 
                 const withinWindow =
                   nextDoseTime !== null &&
@@ -249,7 +383,6 @@ export function Medication() {
                 };
                 const colorBar = frequencyColorMap[med.frequency] || '#95a5a6';
 
-                console.log('Next dose time for', med.name, ':', nextDoseTime);
                 return (
                   <View key={`${med.name}-${index}`} style={styles.medCardWrapper}>
                     <View style={[styles.colorBar, { backgroundColor: colorBar }]} />
