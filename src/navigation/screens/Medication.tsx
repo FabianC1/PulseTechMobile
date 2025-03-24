@@ -63,6 +63,9 @@ export function Medication() {
   const [medicationForm, setMedicationForm] = useState<Record<string, any>>({});
   const [isSubmitting, setIsSubmitting] = useState<{ [email: string]: boolean }>({});
 
+  const missedLoggedRef = useRef<Set<string>>(new Set());
+
+
   const [originalMedicationForm, setOriginalMedicationForm] = useState<{
     [email: string]: MedicationFormFields;
   }>({});
@@ -367,13 +370,17 @@ export function Medication() {
         previousDoseTimeRef.current[med.name] &&
         previousDoseTime > previousDoseTimeRef.current[med.name];
 
-      if (hasDoseJustReset) {
-        takenThisWindowRef.current.delete(med.name); // Reset the "taken" flag for new window
-
-        if (!alreadyLogged) {
-          markAsMissed(med.name);
+        if (hasDoseJustReset) {
+          takenThisWindowRef.current.delete(med.name);
+        
+          const missedKey = `${med.name}-${previousDoseTime}`;
+        
+          if (!alreadyLogged && !missedLoggedRef.current.has(missedKey)) {
+            missedLoggedRef.current.add(missedKey);
+            markAsMissed(med.name);
+          }
         }
-      }
+        
 
       previousDoseTimeRef.current[med.name] = previousDoseTime;
     });
