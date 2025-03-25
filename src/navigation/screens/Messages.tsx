@@ -6,7 +6,8 @@ import {
   StyleSheet,
   TextInput,
   RefreshControl,
-  ScrollView
+  ScrollView,
+  Image
 } from 'react-native';
 import { useTheme } from 'styled-components/native';
 import LinearGradient from 'react-native-linear-gradient';
@@ -15,7 +16,8 @@ import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { useAuth } from '../AuthContext';
 import { registerForPushNotificationsAsync, scheduleNotification } from '../../NotificationService';
 import Icon from 'react-native-vector-icons/MaterialIcons'; // or use your preferred icon set
-
+import { useEffect } from 'react';
+import axios from 'axios'; // if you're using axios
 
 type RootStackParamList = {
   Auth: { screen: 'Login' | 'Signup' };
@@ -33,6 +35,7 @@ export function Messages() {
   const [searchText, setSearchText] = useState('');
   const [attachedRecord, setAttachedRecord] = useState<{ name: string } | null>(null);
   const [viewRecordModalVisible, setViewRecordModalVisible] = useState(false);
+  const [contacts, setContacts] = useState<any[]>([]);
 
   const handleAttachPress = () => {
     // Simulate fetching the latest record
@@ -51,6 +54,22 @@ export function Messages() {
     setAttachedRecord(null);
   };
 
+  useEffect(() => {
+    const fetchContacts = async () => {
+      if (!user) return;
+
+      try {
+        const response = await axios.get(`http://192.168.0.84:3000/get-contacts`, {
+          params: { email: user.email }
+        });
+        setContacts(response.data as any[]);
+      } catch (error) {
+        console.error('Failed to fetch contacts:', error);
+      }
+    };
+
+    fetchContacts();
+  }, [user]);
 
 
   const onRefresh = () => {
@@ -126,7 +145,6 @@ export function Messages() {
                   </TouchableOpacity>
                 </View>
 
-
                 {showSearch && (
                   <TextInput
                     value={searchText}
@@ -142,17 +160,27 @@ export function Messages() {
                   contentContainerStyle={{ paddingBottom: 20 }}
                   showsVerticalScrollIndicator={false}
                 >
-                  {['Contact A', 'Contact B', 'Contact C', 'Contact D', 'Contact E', 'Contact D', 'Contact E', 'Contact D', 'Contact E'].map((name, index, array) => (
-                    <View key={index}>
+                  {contacts.map((contact: any, index: number) => (
+                    <View key={contact.id || index}>
                       <TouchableOpacity
                         style={styles.contactRow}
-                        onPress={() => setSelectedContact(name)}
+                        onPress={() => setSelectedContact(contact.fullName || contact.name || 'Unnamed')}
                       >
-                        <View style={styles.avatarPlaceholder} />
-                        <Text style={[styles.contactName, { color: theme.colors.text }]}>{name}</Text>
+                        {contact.profilePicture ? (
+                          <Image
+                            source={{ uri: contact.profilePicture }}
+                            style={styles.contactAvatar}
+                          />
+                        ) : (
+                          <View style={styles.avatarPlaceholder} />
+                        )}
+
+                        <Text style={[styles.contactName, { color: theme.colors.text }]}>
+                          {contact.fullName || contact.name || 'Unnamed'}
+                        </Text>
                       </TouchableOpacity>
 
-                      {index < array.length && (
+                      {index < contacts.length - 1 && (
                         <LinearGradient
                           colors={['#0091ff', '#8400ff']}
                           style={styles.gradientSeparator}
@@ -165,8 +193,8 @@ export function Messages() {
                 </ScrollView>
               </View>
             </View>
-
           )}
+
 
           {/* Chat View */}
           {selectedContact && (
@@ -206,7 +234,7 @@ export function Messages() {
                   <View style={styles.messagesArea}>
                     <ScrollView contentContainerStyle={{ paddingBottom: 10 }} showsVerticalScrollIndicator={false}>
                       <View style={styles.bubbleContainer}>
-                        
+
                         {/* Example: Sent */}
                         <View style={styles.sentBubble}>
                           <Text style={styles.bubbleText}>Here is my medical record</Text>
@@ -217,21 +245,21 @@ export function Messages() {
                             </TouchableOpacity>
                           </View>
                         </View>
-                        
+
                       </View>
                     </ScrollView>
                   </View>
 
                   {attachedRecord && (
-                      <View style={styles.attachmentButtonsContainer}>
-                        <TouchableOpacity onPress={handleViewRecord} style={styles.viewButton}>
-                          <Text style={styles.viewText}>View</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={() => setAttachedRecord(null)} style={styles.removeButton}>
-                          <Text style={styles.removeText}>Remove</Text>
-                        </TouchableOpacity>
-                      </View>
-                    )}
+                    <View style={styles.attachmentButtonsContainer}>
+                      <TouchableOpacity onPress={handleViewRecord} style={styles.viewButton}>
+                        <Text style={styles.viewText}>View</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => setAttachedRecord(null)} style={styles.removeButton}>
+                        <Text style={styles.removeText}>Remove</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
 
                   {/* Input Row */}
                   <View style={styles.chatInputRow}>
@@ -580,7 +608,7 @@ const styles = StyleSheet.create({
     maxHeight: '80%',
     justifyContent: 'space-between',
   },
-  
+
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
@@ -592,7 +620,7 @@ const styles = StyleSheet.create({
     maxHeight: 250,
     marginBottom: 20,
   },
-  
+
   modalCloseBtn: {
     padding: 10,
     backgroundColor: '#d80000cc',
@@ -600,7 +628,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 10,
   },
-  
+
 
   // For view button inside chat bubbles
   viewChatRecordButton: {
@@ -615,4 +643,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
+  contactAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#cccccc44',
+    marginRight: 12,
+  },
+
 });
