@@ -34,8 +34,9 @@ export function Messages() {
   const [newMessage, setNewMessage] = useState('');
   const [showSearch, setShowSearch] = useState(false);
   const [searchText, setSearchText] = useState('');
-  const [attachedRecord, setAttachedRecord] = useState<{ name: string } | null>(null);
+  const [attachedRecord, setAttachedRecord] = useState<any>(null);
   const [viewRecordModalVisible, setViewRecordModalVisible] = useState(false);
+  const [selectedMessageAttachment, setSelectedMessageAttachment] = useState<any | null>(null);
   const [contacts, setContacts] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
   const scrollViewRef = useRef<ScrollView>(null);
@@ -46,11 +47,29 @@ export function Messages() {
 
 
 
-  const handleAttachPress = () => {
-    // Simulate fetching the latest record
-    const latestRecord = { name: 'Your Latest Medical Record' }; // replace with actual logic
-    setAttachedRecord(latestRecord);
+  const handleAttachPress = async () => {
+    if (!user) return;
+  
+    try {
+      const response = await axios.get<{ record: any }>(
+        'http://192.168.0.84:3000/get-medical-records',
+        {
+          params: { email: user.email }
+        }
+      );
+      console.log('Medical record response:', response.data);
+
+      if (response.data) {
+        setAttachedRecord(response.data || null);
+      } else {
+        console.warn('No medical record found for this user.');
+      }
+      
+    } catch (error) {
+      console.error('Failed to fetch medical record:', error);
+    }
   };
+  
 
   const handleViewRecord = () => {
     setViewRecordModalVisible(true);
@@ -107,27 +126,33 @@ export function Messages() {
 
 
   useEffect(() => {
+    let isMounted = true;
+  
     const fetchContacts = async () => {
-      if (!user) return;
-
+      if (!user || contacts.length > 0) return;
+  
       try {
         const response = await axios.get(`http://192.168.0.84:3000/get-contacts`, {
           params: { email: user.email }
         });
-        setContacts(response.data as any[]);
+  
+        if (isMounted) {
+          setContacts(response.data as any[]);
+        }
       } catch (error) {
-        console.error('Failed to fetch contacts:', error);
+        if (isMounted) {
+          console.error('Failed to fetch contacts:', error);
+        }
       }
     };
-
+  
     fetchContacts();
+  
+    return () => {
+      isMounted = false;
+    };
   }, [user]);
-
-
-  const onRefresh = () => {
-    setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 1000);
-  };
+  
 
   if (!user) {
     return (
@@ -164,9 +189,6 @@ export function Messages() {
         style={{ flex: 1 }}
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
       >
 
         {!selectedContact && (
@@ -330,11 +352,12 @@ export function Messages() {
                                   </Text>
                                   <TouchableOpacity
                                     onPress={() => {
+                                      setSelectedMessageAttachment(msg.attachment);
                                       setViewRecordModalVisible(true);
                                     }}
                                     style={[styles.viewChatRecordButton, { backgroundColor: theme.colors.sentBubbleBackground }]}
                                   >
-                                    <Text style={[styles.viewChatRecordText, { color: theme.colors.text }]} >View</Text>
+                                    <Text style={[styles.viewChatRecordText, { color: theme.colors.text }]}>View</Text>
                                   </TouchableOpacity>
                                 </View>
                               )}
@@ -350,9 +373,16 @@ export function Messages() {
 
                   {attachedRecord && (
                     <View style={styles.attachmentButtonsContainer}>
-                      <TouchableOpacity onPress={handleViewRecord} style={styles.viewButton}>
+                      <TouchableOpacity
+                        onPress={() => {
+                          setSelectedMessageAttachment(attachedRecord);
+                          setViewRecordModalVisible(true);
+                        }}
+                        style={styles.viewButton}
+                      >
                         <Text style={styles.viewText}>View</Text>
                       </TouchableOpacity>
+
                       <TouchableOpacity onPress={() => setAttachedRecord(null)} style={styles.removeButton}>
                         <Text style={styles.removeText}>Remove</Text>
                       </TouchableOpacity>
@@ -392,20 +422,63 @@ export function Messages() {
               </KeyboardAwareScrollView>
 
               {/* Medical Record Popup */}
-              {viewRecordModalVisible && (
+              {viewRecordModalVisible && selectedMessageAttachment && (
                 <View style={styles.modalOverlay}>
                   <View style={styles.popupContent}>
                     <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Attached Medical Record</Text>
                     <ScrollView style={styles.popupScroll}>
-                      {/* Render attached record content here */}
-                      <Text style={{ color: theme.colors.text }}>...record details...</Text>
+                      <Text style={{ color: theme.colors.text }}>
+                        <Text style={{ fontWeight: 'bold' }}>Name:</Text> {selectedMessageAttachment.fullName}{"\n"}
+                        <Text style={{ fontWeight: 'bold' }}>DOB:</Text> {selectedMessageAttachment.dateOfBirth}{"\n"}
+                        <Text style={{ fontWeight: 'bold' }}>Gender:</Text> {selectedMessageAttachment.gender}{"\n"}
+                        <Text style={{ fontWeight: 'bold' }}>Blood Type:</Text> {selectedMessageAttachment.bloodType || "N/A"}{"\n"}
+                        <Text style={{ fontWeight: 'bold' }}>Emergency Contact:</Text> {selectedMessageAttachment.emergencyContact || "N/A"}{"\n\n"}
+
+                        <Text style={{ fontWeight: 'bold' }}>Medical History:</Text>{"\n"}
+                        {selectedMessageAttachment.medicalHistory || "No medical history available."}{"\n\n"}
+
+                        <Text style={{ fontWeight: 'bold' }}>Current Medications:</Text>{"\n"}
+                        {selectedMessageAttachment.medications?.length ? (
+                          selectedMessageAttachment.medications.map((med: any, idx: number) => (
+                            <Text key={idx}>
+                              • {med.name} | {med.dosage} | {med.frequency} | {med.timeToTake} | {med.duration} | {med.diagnosis}{"\n"}
+                            </Text>
+                          ))
+                        ) : "No current medications recorded."}{"\n\n"}
+
+                        <Text style={{ fontWeight: 'bold' }}>Vaccinations:</Text>{"\n"}
+                        {selectedMessageAttachment.vaccinations || "No vaccination records available."}{"\n\n"}
+
+                        <Text style={{ fontWeight: 'bold' }}>Lifestyle:</Text>{"\n"}
+                        Smoking: {selectedMessageAttachment.smokingStatus || "N/A"} |
+                        Alcohol: {selectedMessageAttachment.alcoholConsumption || "N/A"} |
+                        Exercise: {selectedMessageAttachment.exerciseRoutine || "N/A"} |
+                        Sleep: {selectedMessageAttachment.sleepPatterns || "N/A"}{"\n\n"}
+
+                        <Text style={{ fontWeight: 'bold' }}>Health Logs:</Text>{"\n"}
+                        {selectedMessageAttachment.healthLogs || "No health logs available."}{"\n\n"}
+
+                        <Text style={{ fontWeight: 'bold' }}>Wearable Data:</Text>{"\n"}
+                        HR: {selectedMessageAttachment.heartRate || "N/A"} |
+                        Steps: {selectedMessageAttachment.stepCount || "N/A"} |
+                        Sleep: {selectedMessageAttachment.sleepTracking || "N/A"} |
+                        O₂: {selectedMessageAttachment.bloodOxygen || "N/A"}
+                      </Text>
                     </ScrollView>
-                    <TouchableOpacity onPress={() => setViewRecordModalVisible(false)} style={styles.modalCloseBtn}>
+
+                    <TouchableOpacity
+                      onPress={() => {
+                        setSelectedMessageAttachment(null);
+                        setViewRecordModalVisible(false);
+                      }}
+                      style={styles.modalCloseBtn}
+                    >
                       <Text style={styles.sendText}>Close</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
               )}
+
             </>
           )}
 
