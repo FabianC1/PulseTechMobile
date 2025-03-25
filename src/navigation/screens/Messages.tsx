@@ -150,52 +150,87 @@ export function Messages() {
 
           {/* Chat View */}
           {selectedContact && (
-            <View style={styles.chatFullPage}>
-              {/* Back Button */}
-              <View style={styles.chatHeaderRow}>
-                <TouchableOpacity onPress={() => setSelectedContact(null)} style={styles.backButton}>
-                  <Icon name="arrow-back" size={24} color={theme.colors.primary} />
-                </TouchableOpacity>
+            <KeyboardAwareScrollView
+              style={{ flex: 1 }}
+              contentContainerStyle={styles.chatFullPage}
+              keyboardShouldPersistTaps="handled"
+              enableOnAndroid
+              extraScrollHeight={20}
+            >
+              <View style={[
+                styles.chatBox,
+                {
 
-                <View style={styles.chatTitleContainer}>
-                  <Text style={[styles.chatTitle, { color: theme.colors.text }]}>
-                    Chat with {selectedContact}
-                  </Text>
+                  borderColor: theme.colors.border,
+                }
+              ]}>
+
+                {/* Header Row */}
+                <View style={styles.chatHeaderRow}>
+                  <TouchableOpacity onPress={() => setSelectedContact(null)} style={styles.backButton}>
+                    <Icon name="arrow-back" size={24} color={theme.colors.primary} />
+                  </TouchableOpacity>
+
+                  <View style={styles.chatTitleContainer}>
+                    <Text style={[styles.chatTitle, { color: theme.colors.text }]}>
+                      Chat with {selectedContact}
+                    </Text>
+
+                    <LinearGradient
+                      colors={['#0091ff', '#8400ff']}
+                      style={styles.chatTitleUnderline}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                    />
+                  </View>
+
+
+                  <View style={styles.avatarWrapper}>
+                    <View style={styles.avatarPlaceholder} />
+                  </View>
                 </View>
 
-                <View style={styles.avatarWrapper}>
-                  <View style={styles.avatarPlaceholder} />
+                {/* Scrollable Messages */}
+                <View style={styles.messagesArea}>
+                  <ScrollView
+                    contentContainerStyle={{ paddingBottom: 10 }}
+                    showsVerticalScrollIndicator={false}
+                  >
+                    <Text style={{ color: theme.colors.text, opacity: 0.5 }}>(Messages appear here)</Text>
+                  </ScrollView>
+                </View>
+
+                {/* Sticky Input Bar */}
+                <View style={styles.chatInputRow}>
+                  <TouchableOpacity style={styles.attachButton}>
+                    <Icon name="attach-file" size={22} color={theme.colors.text} />
+                  </TouchableOpacity>
+
+                  <TextInput
+                    value={newMessage}
+                    onChangeText={setNewMessage}
+                    placeholder="Type a message..."
+                    placeholderTextColor={theme.colors.text + '99'}
+                    style={[styles.messageInput, {
+                      borderColor: theme.colors.primary,
+                      color: theme.colors.text,
+                    }]}
+                  />
+
+                  <LinearGradient
+                    colors={['#0091ff', '#8400ff']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.sendButton}
+                  >
+                    <TouchableOpacity onPress={() => { }} style={{ paddingHorizontal: 10 }}>
+                      <Text style={styles.sendText}>Send</Text>
+                    </TouchableOpacity>
+                  </LinearGradient>
                 </View>
               </View>
-
-
-
-              {/* Scrollable Messages */}
-              <View style={styles.messagesArea}>
-                <ScrollView
-                  contentContainerStyle={{ paddingBottom: 10 }}
-                  showsVerticalScrollIndicator={false}
-                >
-                  <Text style={{ color: theme.colors.text, opacity: 0.5 }}>(Messages appear here)</Text>
-                </ScrollView>
-              </View>
-
-              {/* Sticky Input Bar */}
-              <View style={styles.chatInputRow}>
-                <TextInput
-                  value={newMessage}
-                  onChangeText={setNewMessage}
-                  placeholder="Type a message..."
-                  placeholderTextColor={theme.colors.text + '88'}
-                  style={[styles.messageInput, { borderColor: theme.colors.primary, color: theme.colors.text }]}
-                />
-                <TouchableOpacity style={styles.sendButton}>
-                  <Text style={styles.sendText}>Send</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+            </KeyboardAwareScrollView>
           )}
-
 
 
 
@@ -208,7 +243,7 @@ export function Messages() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    position: 'relative', // Required for absolute children
+    position: 'relative',
   },
   scrollContent: {
     padding: 20,
@@ -224,27 +259,32 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 20,
     width: '100%',
-    alignItems: 'center', // optional: center the inner content
+    alignItems: 'center',
   },
-
-  chatFullPage: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    padding: 20,
-    backgroundColor: '#00000010',
-    justifyContent: 'flex-end',
-    height: '90%',
+  contactsBox: {
+    flex: 1,
+    width: '100%',
+    borderWidth: 1.5,
+    borderRadius: 12,
+    padding: 16,
+    backgroundColor: '#ffffff05',
   },
-  gradientSeparator: {
+  contactsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  contactsLabel: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+  },
+  contactsUnderline: {
     height: 3,
     width: '100%',
-    marginVertical: 8,
-    borderRadius: 15,
+    marginTop: 4,
+    borderRadius: 10,
   },
-  // Contact Row
   contactRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -264,38 +304,97 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: 20,
   },
-  // Chat Display
-  panelTitle: {
-    fontSize: 24,
+  searchInput: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    marginBottom: 10,
+    fontSize: 16,
+  },
+  searchIcon: {
+    padding: 8,
+  },
+  gradientSeparator: {
+    height: 3,
+    width: '100%',
+    marginVertical: 8,
+    borderRadius: 15,
+  },
+
+  // Chat UI
+  chatFullPage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    padding: 5,
+    backgroundColor: '#00000010',
+    justifyContent: 'flex-end',
+    height: '89.8%',
+  },
+  chatBox: {
+    flex: 1,
+    width: '100%',
+    borderWidth: 1.5,
+    borderRadius: 12,
+    padding: 16,
+  },
+
+  chatHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  backButton: {
+    padding: 6,
+  },
+  chatTitleContainer: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  chatTitle: {
+    fontSize: 18,
     fontWeight: 'bold',
+    color: '#fff',
+  },
+  avatarWrapper: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#cccccc44',
+    marginLeft: 8,
   },
   messagesArea: {
     flex: 1,
-    padding: 10,
     backgroundColor: '#ffffff10',
     borderRadius: 10,
+    padding: 10,
     marginBottom: 10,
-    width: '100%',
   },
   chatInputRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    width: '100%',
   },
-
+  attachButton: {
+    paddingHorizontal: 6,
+  },
   messageInput: {
     flex: 1,
     borderWidth: 1,
+    borderColor: '#ffffff55',
     borderRadius: 8,
     paddingHorizontal: 10,
-    height: 42,
+    height: 40,
+    color: '#fff',
   },
   sendButton: {
-    backgroundColor: '#8a5fff',
     paddingVertical: 10,
-    paddingHorizontal: 15,
     borderRadius: 8,
+    justifyContent: 'center',
   },
   sendText: {
     color: '#fff',
@@ -328,68 +427,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  chatHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-
-  backButton: {
-    padding: 6,
-  },
-
-  chatTitle: {
-    fontSize: 18,
+  // Chat Display
+  panelTitle: {
+    fontSize: 24,
     fontWeight: 'bold',
-    flex: 1,
-    marginTop: 5,
   },
-  chatTitleContainer: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  avatarWrapper: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    overflow: 'hidden',
-    backgroundColor: '#cccccc44',
-    marginLeft: 8,
-  },
-  contactsHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  searchInput: {
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    marginBottom: 10,
-    fontSize: 16,
-  },
-  contactsBox: {
-    flex: 1,
-    width: '100%',
-    borderWidth: 1.5,
-    borderRadius: 12,
-    padding: 16,
-    backgroundColor: '#ffffff05',
-  },
-  searchIcon: {
-    padding: 8,
-  },
-  contactsLabel: {
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-  },
-  contactsUnderline: {
+  chatTitleUnderline: {
     height: 3,
-    width: '100%',
+    width: '80%',
     marginTop: 4,
-    borderRadius: 10,
+    borderRadius: 15,
   },
 });
