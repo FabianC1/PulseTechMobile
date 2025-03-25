@@ -31,6 +31,26 @@ export function Messages() {
   const [newMessage, setNewMessage] = useState('');
   const [showSearch, setShowSearch] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [attachedRecord, setAttachedRecord] = useState<{ name: string } | null>(null);
+  const [viewRecordModalVisible, setViewRecordModalVisible] = useState(false);
+  
+  const handleAttachPress = () => {
+    // Simulate fetching the latest record
+    const latestRecord = { name: 'Your Latest Medical Record' }; // replace with actual logic
+    setAttachedRecord(latestRecord);
+  };
+  
+  const handleViewRecord = () => {
+    setViewRecordModalVisible(true);
+  };
+  
+  const handleSendMessage = () => {
+    // Implement sending logic with attachedRecord
+    console.log('Message:', newMessage, 'Attached:', attachedRecord);
+    setNewMessage('');
+    setAttachedRecord(null);
+  };
+  
 
 
   const onRefresh = () => {
@@ -150,100 +170,114 @@ export function Messages() {
 
           {/* Chat View */}
           {selectedContact && (
-            <KeyboardAwareScrollView
-              style={{ flex: 1 }}
-              contentContainerStyle={styles.chatFullPage}
-              keyboardShouldPersistTaps="handled"
-              enableOnAndroid
-              extraScrollHeight={20}
-            >
-              <View style={[
-                styles.chatBox,
-                {
+            <>
+              <KeyboardAwareScrollView
+                style={{ flex: 1 }}
+                contentContainerStyle={styles.chatFullPage}
+                keyboardShouldPersistTaps="handled"
+                enableOnAndroid
+                extraScrollHeight={20}
+              >
+                <View style={[styles.chatBox, { borderColor: theme.colors.border }]}>
+                  {/* Header Row */}
+                  <View style={styles.chatHeaderRow}>
+                    <TouchableOpacity onPress={() => setSelectedContact(null)} style={styles.backButton}>
+                      <Icon name="arrow-back" size={24} color={theme.colors.primary} />
+                    </TouchableOpacity>
 
-                  borderColor: theme.colors.border,
-                }
-              ]}>
-
-                {/* Header Row */}
-                <View style={styles.chatHeaderRow}>
-                  <TouchableOpacity onPress={() => setSelectedContact(null)} style={styles.backButton}>
-                    <Icon name="arrow-back" size={24} color={theme.colors.primary} />
-                  </TouchableOpacity>
-
-                  <View style={styles.chatTitleContainer}>
-                    <Text style={[styles.chatTitle, { color: theme.colors.text }]}>
-                      Chat with {selectedContact}
-                    </Text>
-
-                    <LinearGradient
-                      colors={['#0091ff', '#8400ff']}
-                      style={styles.chatTitleUnderline}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 0 }}
-                    />
-                  </View>
-
-
-                  <View style={styles.avatarWrapper}>
-                    <View style={styles.avatarPlaceholder} />
-                  </View>
-                </View>
-
-                {/* Scrollable Messages */}
-                <View style={styles.messagesArea}>
-                  <ScrollView
-                    contentContainerStyle={{ paddingBottom: 10 }}
-                    showsVerticalScrollIndicator={false}
-                  >
-                    <View style={styles.bubbleContainer}>
-                      {/* Received message */}
-                      <View style={styles.receivedBubble}>
-                        <Text style={styles.bubbleText}>Hello!</Text>
-                      </View>
-
-                      {/* Sent message */}
-                      <View style={styles.sentBubble}>
-                        <Text style={styles.bubbleText}>Hi, how are you?</Text>
-                      </View>
+                    <View style={styles.chatTitleContainer}>
+                      <Text style={[styles.chatTitle, { color: theme.colors.text }]}>
+                        Chat with {selectedContact}
+                      </Text>
+                      <LinearGradient
+                        colors={['#0091ff', '#8400ff']}
+                        style={styles.chatTitleUnderline}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                      />
                     </View>
 
-                  </ScrollView>
+                    <View style={styles.avatarWrapper}>
+                      <View style={styles.avatarPlaceholder} />
+                    </View>
+                  </View>
+
+                  {/* Scrollable Messages */}
+                  <View style={styles.messagesArea}>
+                    <ScrollView contentContainerStyle={{ paddingBottom: 10 }} showsVerticalScrollIndicator={false}>
+                      <View style={styles.bubbleContainer}>
+                        {/* Example: Sent */}
+                        <View style={styles.sentBubble}>
+                          <Text style={styles.bubbleText}>Here is my medical record</Text>
+                          <View style={styles.attachedBlock}>
+                            <Text style={styles.attachmentTitle}>Attached Medical Record:</Text>
+                            <TouchableOpacity onPress={() => setViewRecordModalVisible(true)} style={styles.viewButton}>
+                              <Text style={styles.viewText}>View</Text>
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+                      </View>
+                    </ScrollView>
+                  </View>
+
+                  {/* Input Row */}
+                  <View style={styles.chatInputRow}>
+                    <TouchableOpacity style={styles.attachButton} onPress={handleAttachPress}>
+                      <Icon name="attach-file" size={22} color={theme.colors.text} />
+                    </TouchableOpacity>
+
+                    {attachedRecord && (
+                      <>
+                        <TouchableOpacity onPress={handleViewRecord} style={styles.viewButton}>
+                          <Text style={styles.viewText}>View</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => setAttachedRecord(null)} style={styles.removeButton}>
+                          <Text style={styles.removeText}>Remove</Text>
+                        </TouchableOpacity>
+                      </>
+                    )}
+
+                    <TextInput
+                      value={newMessage}
+                      onChangeText={setNewMessage}
+                      placeholder="Type a message..."
+                      placeholderTextColor={theme.colors.text + '99'}
+                      style={[
+                        styles.messageInput,
+                        {
+                          borderColor: theme.colors.primary,
+                          color: theme.colors.text,
+                          flex: attachedRecord ? 0.8 : 1,
+                        },
+                      ]}
+                    />
+
+                    <TouchableOpacity
+                      onPress={handleSendMessage}
+                      style={[styles.sendButton, { backgroundColor: theme.colors.primary, paddingHorizontal: 14 }]}
+                    >
+                      <Text style={styles.sendText}>Send</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
+              </KeyboardAwareScrollView>
 
-                {/* Sticky Input Bar */}
-                <View style={styles.chatInputRow}>
-                  <TouchableOpacity style={styles.attachButton}>
-                    <Icon name="attach-file" size={22} color={theme.colors.text} />
-                  </TouchableOpacity>
-
-                  <TextInput
-                    value={newMessage}
-                    onChangeText={setNewMessage}
-                    placeholder="Type a message..."
-                    placeholderTextColor={theme.colors.text + '99'}
-                    style={[styles.messageInput, {
-                      borderColor: theme.colors.primary,
-                      color: theme.colors.text,
-                    }]}
-                  />
-
-                  <TouchableOpacity
-                    onPress={() => { }}
-                    style={[
-                      styles.sendButton,
-                      {
-                        backgroundColor: theme.colors.primary,
-                        paddingHorizontal: 10, // increase for more width
-                      },
-                    ]}
-                  >
-                    <Text style={styles.sendText}>Send</Text>
-                  </TouchableOpacity>
-
+              {/* Medical Record Popup */}
+              {viewRecordModalVisible && (
+                <View style={styles.modalOverlay}>
+                  <View style={styles.popupContent}>
+                    <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Attached Medical Record</Text>
+                    <ScrollView style={styles.popupScroll}>
+                      {/* Render attached record content here */}
+                      <Text style={{ color: theme.colors.text }}>...record details...</Text>
+                    </ScrollView>
+                    <TouchableOpacity onPress={() => setViewRecordModalVisible(false)} style={styles.modalCloseBtn}>
+                      <Text style={styles.sendText}>Close</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
-              </View>
-            </KeyboardAwareScrollView>
+              )}
+            </>
           )}
 
 
@@ -479,6 +513,80 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 15,
   },
-
-
+  attachedBlock: {
+    backgroundColor: '#ffffff22',
+    padding: 10,
+    borderRadius: 10,
+    marginTop: 6,
+  },
+  
+  attachmentTitle: {
+    fontWeight: 'bold',
+    marginBottom: 6,
+    color: '#fff',
+  },
+  
+  viewButton: {
+    backgroundColor: '#0091ff',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    marginTop: 4,
+    alignSelf: 'flex-start',
+  },
+  
+  viewText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  
+  removeButton: {
+    marginLeft: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    backgroundColor: '#ff4444',
+    borderRadius: 6,
+  },
+  
+  removeText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  
+  // Modal
+  modalOverlay: {
+    position: 'absolute',
+    top: 0, bottom: 0, left: 0, right: 0,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  
+  popupContent: {
+    backgroundColor: '#222',
+    padding: 20,
+    borderRadius: 10,
+    width: '90%',
+    maxHeight: '80%',
+  },
+  
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 10,
+  },
+  
+  popupScroll: {
+    maxHeight: 300,
+    marginBottom: 20,
+  },
+  
+  modalCloseBtn: {
+    padding: 10,
+    backgroundColor: '#8400ff',
+    borderRadius: 8,
+  },
+  
 });
