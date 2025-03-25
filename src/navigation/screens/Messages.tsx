@@ -33,24 +33,24 @@ export function Messages() {
   const [searchText, setSearchText] = useState('');
   const [attachedRecord, setAttachedRecord] = useState<{ name: string } | null>(null);
   const [viewRecordModalVisible, setViewRecordModalVisible] = useState(false);
-  
+
   const handleAttachPress = () => {
     // Simulate fetching the latest record
     const latestRecord = { name: 'Your Latest Medical Record' }; // replace with actual logic
     setAttachedRecord(latestRecord);
   };
-  
+
   const handleViewRecord = () => {
     setViewRecordModalVisible(true);
   };
-  
+
   const handleSendMessage = () => {
     // Implement sending logic with attachedRecord
     console.log('Message:', newMessage, 'Attached:', attachedRecord);
     setNewMessage('');
     setAttachedRecord(null);
   };
-  
+
 
 
   const onRefresh = () => {
@@ -206,19 +206,32 @@ export function Messages() {
                   <View style={styles.messagesArea}>
                     <ScrollView contentContainerStyle={{ paddingBottom: 10 }} showsVerticalScrollIndicator={false}>
                       <View style={styles.bubbleContainer}>
+                        
                         {/* Example: Sent */}
                         <View style={styles.sentBubble}>
                           <Text style={styles.bubbleText}>Here is my medical record</Text>
                           <View style={styles.attachedBlock}>
                             <Text style={styles.attachmentTitle}>Attached Medical Record:</Text>
-                            <TouchableOpacity onPress={() => setViewRecordModalVisible(true)} style={styles.viewButton}>
-                              <Text style={styles.viewText}>View</Text>
+                            <TouchableOpacity onPress={() => setViewRecordModalVisible(true)} style={styles.viewChatRecordButton}>
+                              <Text style={styles.viewChatRecordText}>View</Text>
                             </TouchableOpacity>
                           </View>
                         </View>
+                        
                       </View>
                     </ScrollView>
                   </View>
+
+                  {attachedRecord && (
+                      <View style={styles.attachmentButtonsContainer}>
+                        <TouchableOpacity onPress={handleViewRecord} style={styles.viewButton}>
+                          <Text style={styles.viewText}>View</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => setAttachedRecord(null)} style={styles.removeButton}>
+                          <Text style={styles.removeText}>Remove</Text>
+                        </TouchableOpacity>
+                      </View>
+                    )}
 
                   {/* Input Row */}
                   <View style={styles.chatInputRow}>
@@ -226,16 +239,6 @@ export function Messages() {
                       <Icon name="attach-file" size={22} color={theme.colors.text} />
                     </TouchableOpacity>
 
-                    {attachedRecord && (
-                      <>
-                        <TouchableOpacity onPress={handleViewRecord} style={styles.viewButton}>
-                          <Text style={styles.viewText}>View</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={() => setAttachedRecord(null)} style={styles.removeButton}>
-                          <Text style={styles.removeText}>Remove</Text>
-                        </TouchableOpacity>
-                      </>
-                    )}
 
                     <TextInput
                       value={newMessage}
@@ -519,40 +522,46 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginTop: 6,
   },
-  
+
   attachmentTitle: {
     fontWeight: 'bold',
     marginBottom: 6,
     color: '#fff',
   },
-  
+
+  attachmentButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 6,
+    marginLeft: 6,
+  },
+
   viewButton: {
     backgroundColor: '#0091ff',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-    marginTop: 4,
-    alignSelf: 'flex-start',
+    borderRadius: 8,
+    paddingVertical: 4,  // Smaller vertical padding for the button
+    paddingHorizontal: 10, // Smaller horizontal padding
   },
-  
+
+  removeButton: {
+    backgroundColor: '#ff4d4d',
+    borderRadius: 8,
+    paddingVertical: 4,  // Smaller vertical padding for the button
+    paddingHorizontal: 10, // Smaller horizontal padding
+  },
+
   viewText: {
     color: '#fff',
-    fontWeight: '600',
+    fontWeight: 'bold',
   },
-  
-  removeButton: {
-    marginLeft: 8,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    backgroundColor: '#ff4444',
-    borderRadius: 6,
-  },
-  
+
   removeText: {
     color: '#fff',
-    fontWeight: '600',
+    fontWeight: 'bold',
   },
-  
+
   // Modal
   modalOverlay: {
     position: 'absolute',
@@ -562,13 +571,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 10,
   },
-  
+
   popupContent: {
     backgroundColor: '#222',
     padding: 20,
     borderRadius: 10,
     width: '90%',
     maxHeight: '80%',
+    justifyContent: 'space-between',
   },
   
   modalTitle: {
@@ -577,16 +587,32 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginBottom: 10,
   },
-  
+
   popupScroll: {
-    maxHeight: 300,
+    maxHeight: 250,
     marginBottom: 20,
   },
   
   modalCloseBtn: {
     padding: 10,
-    backgroundColor: '#8400ff',
+    backgroundColor: '#d80000cc',
     borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 10,
   },
   
+
+  // For view button inside chat bubbles
+  viewChatRecordButton: {
+    marginTop: 6,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    backgroundColor: '#0091ff',
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+  },
+  viewChatRecordText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
 });
