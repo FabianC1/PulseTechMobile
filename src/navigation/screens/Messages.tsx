@@ -271,26 +271,39 @@ export function Messages() {
                           return (
                             <View
                               key={index}
-                              style={isSent ? styles.sentBubble : styles.receivedBubble}
+                              style={[
+                                isSent ? styles.sentBubble : styles.receivedBubble,
+                                {
+                                  backgroundColor: isSent
+                                    ? theme.colors.sentBubbleBackground
+                                    : theme.colors.receivedBubbleBackground,
+                                },
+                              ]}
                             >
-                              {msg.message && <Text style={styles.bubbleText}>{msg.message}</Text>}
-
+                              {msg.message && (
+                                <Text style={[styles.bubbleText, { color: theme.colors.text }]}>
+                                  {msg.message}
+                                </Text>
+                              )}
+                          
                               {msg.attachment && (
-                                <View style={styles.attachedBlock}>
-                                  <Text style={styles.attachmentTitle}>Attached Medical Record:</Text>
+                                <View style={[styles.attachedBlock, { backgroundColor: theme.colors.attachmentBlockBackground }]}>
+                                  <Text style={[styles.attachmentTitle, { color: theme.colors.text }]}>
+                                    Attached Medical Record:
+                                  </Text>
                                   <TouchableOpacity
                                     onPress={() => {
                                       setViewRecordModalVisible(true);
-                                      // Optionally: setSelectedMessageAttachment(msg.attachment);
                                     }}
-                                    style={styles.viewChatRecordButton}
+                                    style={[styles.viewChatRecordButton, { backgroundColor: theme.colors.sentBubbleBackground }]}
                                   >
-                                    <Text style={styles.viewChatRecordText}>View</Text>
+                                    <Text style={[styles.viewChatRecordText, { color: theme.colors.text }]} >View</Text>
                                   </TouchableOpacity>
                                 </View>
                               )}
                             </View>
-                          );
+                          );                          
+
                         })}
                       </View>
 
@@ -581,7 +594,6 @@ const styles = StyleSheet.create({
 
   sentBubble: {
     alignSelf: 'flex-end',
-    backgroundColor: '#8a5fff',
     padding: 10,
     borderRadius: 16,
     borderBottomRightRadius: 2,
@@ -593,7 +605,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   attachedBlock: {
-    backgroundColor: '#ffffff22',
+    backgroundColor: '#ffffff8c',
     padding: 10,
     borderRadius: 10,
     marginTop: 6,

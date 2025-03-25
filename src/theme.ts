@@ -19,6 +19,9 @@ export const lightTheme = {
     card: '#f0f0f071',
     text1: '#FFFFFF',
     text2: '#0A1F44',
+    sentBubbleBackground: '#b7f4ff7e',
+    receivedBubbleBackground: '#a7a6ff',
+    attachmentBlockBackground: '#549ef3',
   },
 };
 
@@ -36,10 +39,13 @@ export const darkTheme = {
     placeholder: "#ff0000",
     border: "#4A90E2",
     quickActions: '#4A90E2',
-    Appointmentsbackground: ['#00566b',  '#2a004d'],
+    Appointmentsbackground: ['#00566b', '#2a004d'],
     card: '#00014262',
     text1: '#0A1F44',
     text2: '#0A1F44',
+    sentBubbleBackground: '#0A1F44',
+    receivedBubbleBackground: '#0099ffcb',
+    attachmentBlockBackground: '#0e47aaa4',
   },
 };
 
