@@ -49,7 +49,7 @@ export function Messages() {
 
   const handleAttachPress = async () => {
     if (!user) return;
-  
+
     try {
       const response = await axios.get<{ record: any }>(
         'http://192.168.0.84:3000/get-medical-records',
@@ -64,12 +64,12 @@ export function Messages() {
       } else {
         console.warn('No medical record found for this user.');
       }
-      
+
     } catch (error) {
       console.error('Failed to fetch medical record:', error);
     }
   };
-  
+
 
   const handleViewRecord = () => {
     setViewRecordModalVisible(true);
@@ -124,35 +124,25 @@ export function Messages() {
     }
   };
 
+  const fetchContacts = async () => {
+    if (!user) return;
+
+    try {
+      const response = await axios.get(`http://192.168.0.84:3000/get-contacts`, {
+        params: { email: user.email }
+      });
+      setContacts(response.data as any[]);
+    } catch (error) {
+      console.error('Failed to fetch contacts:', error);
+    }
+  };
 
   useEffect(() => {
-    let isMounted = true;
-  
-    const fetchContacts = async () => {
-      if (!user || contacts.length > 0) return;
-  
-      try {
-        const response = await axios.get(`http://192.168.0.84:3000/get-contacts`, {
-          params: { email: user.email }
-        });
-  
-        if (isMounted) {
-          setContacts(response.data as any[]);
-        }
-      } catch (error) {
-        if (isMounted) {
-          console.error('Failed to fetch contacts:', error);
-        }
-      }
-    };
-  
-    fetchContacts();
-  
-    return () => {
-      isMounted = false;
-    };
+    if (user && contacts.length === 0) {
+      fetchContacts();
+    }
   }, [user]);
-  
+
 
   if (!user) {
     return (
@@ -233,38 +223,55 @@ export function Messages() {
                   style={{ flex: 1 }}
                   contentContainerStyle={{ paddingBottom: 20 }}
                   showsVerticalScrollIndicator={false}
+                  refreshControl={
+                    <RefreshControl
+                      refreshing={refreshing}
+                      onRefresh={async () => {
+                        setRefreshing(true);
+                        await fetchContacts();
+                        setRefreshing(false);
+                      }}
+                      tintColor={theme.colors.primary}
+                    />
+                  }
                 >
-                  {contacts.map((contact: any, index: number) => (
-                    <View key={contact.id || index}>
-                      <TouchableOpacity
-                        style={styles.contactRow}
-                        onPress={() => handleSelectContact(contact)}
 
-                      >
-                        {contact.profilePicture ? (
-                          <Image
-                            source={{ uri: contact.profilePicture }}
-                            style={styles.contactAvatar}
+                  {contacts
+                    .filter(contact =>
+                      (contact.fullName || contact.name || '')
+                        .toLowerCase()
+                        .includes(searchText.toLowerCase())
+                    ).map((contact: any, index: number) => (
+                      <View key={contact.id || index}>
+                        <TouchableOpacity
+                          style={styles.contactRow}
+                          onPress={() => handleSelectContact(contact)}
+
+                        >
+                          {contact.profilePicture ? (
+                            <Image
+                              source={{ uri: contact.profilePicture }}
+                              style={styles.contactAvatar}
+                            />
+                          ) : (
+                            <View style={styles.avatarPlaceholder} />
+                          )}
+
+                          <Text style={[styles.contactName, { color: theme.colors.text }]}>
+                            {contact.fullName || contact.name || 'Unnamed'}
+                          </Text>
+                        </TouchableOpacity>
+
+                        {index < contacts.length - 1 && (
+                          <LinearGradient
+                            colors={['#0091ff', '#8400ff']}
+                            style={styles.gradientSeparator}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 0 }}
                           />
-                        ) : (
-                          <View style={styles.avatarPlaceholder} />
                         )}
-
-                        <Text style={[styles.contactName, { color: theme.colors.text }]}>
-                          {contact.fullName || contact.name || 'Unnamed'}
-                        </Text>
-                      </TouchableOpacity>
-
-                      {index < contacts.length - 1 && (
-                        <LinearGradient
-                          colors={['#0091ff', '#8400ff']}
-                          style={styles.gradientSeparator}
-                          start={{ x: 0, y: 0 }}
-                          end={{ x: 1, y: 0 }}
-                        />
-                      )}
-                    </View>
-                  ))}
+                      </View>
+                    ))}
                 </ScrollView>
               </View>
             </View>
