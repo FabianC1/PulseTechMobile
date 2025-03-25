@@ -29,6 +29,9 @@ export function Messages() {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedContact, setSelectedContact] = useState<any>(null);
   const [newMessage, setNewMessage] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchText, setSearchText] = useState('');
+
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -81,43 +84,68 @@ export function Messages() {
           </Text>
         )}
 
-
         <>
-
 
           {/* Contacts View */}
           {!selectedContact && (
-            <View style={styles.contactsFullPage}>
-              <Text style={[styles.panelTitle, { color: theme.colors.text }]}>Contacts</Text>
-
-              <ScrollView
-                style={{ flex: 1, marginTop: 10 }}
-                contentContainerStyle={{ paddingBottom: 20 }}
-                showsVerticalScrollIndicator={false}
-              >
-                {['Contact A', 'Contact B', 'Contact C', 'Contact D', 'Contact E', 'Contact A', 'Contact B', 'Contact C', 'Contact D', 'Contact E'].map((name, index, array) => (
-                  <View key={index}>
-                    <TouchableOpacity
-                      style={styles.contactRow}
-                      onPress={() => setSelectedContact(name)}
-                    >
-                      <View style={styles.avatarPlaceholder} />
-                      <Text style={[styles.contactName, { color: theme.colors.text }]}>{name}</Text>
-                    </TouchableOpacity>
-
-                    {/* Gradient Separator */}
-                    {index < array.length - 1 && (
-                      <LinearGradient
-                        colors={['#0091ff', '#8400ff']}
-                        style={styles.gradientSeparator}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 0 }}
-                      />
-                    )}
+            <View style={[styles.contactsFullPage, { marginBottom: 50 }]}>
+              <View style={[styles.contactsBox, { borderColor: theme.colors.primary }]}>
+                <View style={styles.contactsHeader}>
+                  <View style={styles.contactsLabel}>
+                    <Text style={[styles.panelTitle, { color: theme.colors.text }]}>Contacts</Text>
+                    <LinearGradient
+                      colors={['#0091ff', '#8400ff']}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                      style={styles.contactsUnderline}
+                    />
                   </View>
-                ))}
-              </ScrollView>
+
+                  <TouchableOpacity onPress={() => setShowSearch(!showSearch)} style={styles.searchIcon}>
+                    <Icon name="search" size={28} color={theme.colors.text} />
+                  </TouchableOpacity>
+                </View>
+
+
+                {showSearch && (
+                  <TextInput
+                    value={searchText}
+                    onChangeText={setSearchText}
+                    placeholder="Search contacts..."
+                    placeholderTextColor={theme.colors.text + '66'}
+                    style={[styles.searchInput, { borderColor: theme.colors.primary, color: theme.colors.text }]}
+                  />
+                )}
+
+                <ScrollView
+                  style={{ flex: 1 }}
+                  contentContainerStyle={{ paddingBottom: 20 }}
+                  showsVerticalScrollIndicator={false}
+                >
+                  {['Contact A', 'Contact B', 'Contact C', 'Contact D', 'Contact E', 'Contact D', 'Contact E', 'Contact D', 'Contact E'].map((name, index, array) => (
+                    <View key={index}>
+                      <TouchableOpacity
+                        style={styles.contactRow}
+                        onPress={() => setSelectedContact(name)}
+                      >
+                        <View style={styles.avatarPlaceholder} />
+                        <Text style={[styles.contactName, { color: theme.colors.text }]}>{name}</Text>
+                      </TouchableOpacity>
+
+                      {index < array.length && (
+                        <LinearGradient
+                          colors={['#0091ff', '#8400ff']}
+                          style={styles.gradientSeparator}
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 1, y: 0 }}
+                        />
+                      )}
+                    </View>
+                  ))}
+                </ScrollView>
+              </View>
             </View>
+
           )}
 
           {/* Chat View */}
@@ -190,13 +218,15 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 20,
+    marginTop: 30,
   },
   contactsFullPage: {
     flex: 1,
-    padding: 20,
+    paddingVertical: 20,
     width: '100%',
+    alignItems: 'center', // optional: center the inner content
   },
+
   chatFullPage: {
     position: 'absolute',
     top: 0,
@@ -218,7 +248,9 @@ const styles = StyleSheet.create({
   contactRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    width: '100%',
   },
   avatarPlaceholder: {
     width: 40,
@@ -228,15 +260,14 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   contactName: {
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: 18,
+    fontWeight: '600',
+    marginLeft: 20,
   },
-
   // Chat Display
   panelTitle: {
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 10,
   },
   messagesArea: {
     flex: 1,
@@ -326,5 +357,39 @@ const styles = StyleSheet.create({
     backgroundColor: '#cccccc44',
     marginLeft: 8,
   },
-
+  contactsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  searchInput: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    marginBottom: 10,
+    fontSize: 16,
+  },
+  contactsBox: {
+    flex: 1,
+    width: '100%',
+    borderWidth: 1.5,
+    borderRadius: 12,
+    padding: 16,
+    backgroundColor: '#ffffff05',
+  },
+  searchIcon: {
+    padding: 8,
+  },
+  contactsLabel: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+  },
+  contactsUnderline: {
+    height: 3,
+    width: '100%',
+    marginTop: 4,
+    borderRadius: 10,
+  },
 });
