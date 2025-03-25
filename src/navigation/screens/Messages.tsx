@@ -36,6 +36,8 @@ export function Messages() {
   const [attachedRecord, setAttachedRecord] = useState<{ name: string } | null>(null);
   const [viewRecordModalVisible, setViewRecordModalVisible] = useState(false);
   const [contacts, setContacts] = useState<any[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
+
 
   const handleAttachPress = () => {
     // Simulate fetching the latest record
@@ -53,6 +55,25 @@ export function Messages() {
     setNewMessage('');
     setAttachedRecord(null);
   };
+
+
+  const handleSelectContact = async (contact: any) => {
+    setSelectedContact(contact);
+
+    try {
+      const response = await axios.get('http://192.168.0.84:3000/get-messages', {
+        params: {
+          sender: user?.email,
+          recipient: contact.email,
+        }
+      });
+
+      setMessages(response.data as any[]);
+    } catch (error) {
+      console.error('Failed to fetch messages:', error);
+    }
+  };
+
 
   useEffect(() => {
     const fetchContacts = async () => {
@@ -164,7 +185,8 @@ export function Messages() {
                     <View key={contact.id || index}>
                       <TouchableOpacity
                         style={styles.contactRow}
-                        onPress={() => setSelectedContact(contact.fullName || contact.name || 'Unnamed')}
+                        onPress={() => handleSelectContact(contact)}
+
                       >
                         {contact.profilePicture ? (
                           <Image
@@ -215,8 +237,9 @@ export function Messages() {
 
                     <View style={styles.chatTitleContainer}>
                       <Text style={[styles.chatTitle, { color: theme.colors.text }]}>
-                        Chat with {selectedContact}
+                        Chat with {selectedContact.fullName || selectedContact.name || 'Unnamed'}
                       </Text>
+
                       <LinearGradient
                         colors={['#0091ff', '#8400ff']}
                         style={styles.chatTitleUnderline}
@@ -226,27 +249,52 @@ export function Messages() {
                     </View>
 
                     <View style={styles.avatarWrapper}>
-                      <View style={styles.avatarPlaceholder} />
+                      {selectedContact?.profilePicture ? (
+                        <Image
+                          source={{ uri: selectedContact.profilePicture }}
+                          style={styles.contactAvatar}
+                        />
+                      ) : (
+                        <View style={styles.avatarPlaceholder} />
+                      )}
                     </View>
                   </View>
 
                   {/* Scrollable Messages */}
                   <View style={styles.messagesArea}>
                     <ScrollView contentContainerStyle={{ paddingBottom: 10 }} showsVerticalScrollIndicator={false}>
+
                       <View style={styles.bubbleContainer}>
+                        {messages.map((msg, index) => {
+                          const isSent = msg.sender === user?.email;
 
-                        {/* Example: Sent */}
-                        <View style={styles.sentBubble}>
-                          <Text style={styles.bubbleText}>Here is my medical record</Text>
-                          <View style={styles.attachedBlock}>
-                            <Text style={styles.attachmentTitle}>Attached Medical Record:</Text>
-                            <TouchableOpacity onPress={() => setViewRecordModalVisible(true)} style={styles.viewChatRecordButton}>
-                              <Text style={styles.viewChatRecordText}>View</Text>
-                            </TouchableOpacity>
-                          </View>
-                        </View>
+                          return (
+                            <View
+                              key={index}
+                              style={isSent ? styles.sentBubble : styles.receivedBubble}
+                            >
+                              {msg.message && <Text style={styles.bubbleText}>{msg.message}</Text>}
 
+                              {msg.attachment && (
+                                <View style={styles.attachedBlock}>
+                                  <Text style={styles.attachmentTitle}>Attached Medical Record:</Text>
+                                  <TouchableOpacity
+                                    onPress={() => {
+                                      setViewRecordModalVisible(true);
+                                      // Optionally: setSelectedMessageAttachment(msg.attachment);
+                                    }}
+                                    style={styles.viewChatRecordButton}
+                                  >
+                                    <Text style={styles.viewChatRecordText}>View</Text>
+                                  </TouchableOpacity>
+                                </View>
+                              )}
+                            </View>
+                          );
+                        })}
                       </View>
+
+
                     </ScrollView>
                   </View>
 
