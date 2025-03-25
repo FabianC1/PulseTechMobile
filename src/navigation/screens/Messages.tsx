@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -15,9 +15,8 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { useAuth } from '../AuthContext';
 import { registerForPushNotificationsAsync, scheduleNotification } from '../../NotificationService';
-import Icon from 'react-native-vector-icons/MaterialIcons'; // or use your preferred icon set
-import { useEffect } from 'react';
-import axios from 'axios'; // if you're using axios
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import axios from 'axios';
 
 type RootStackParamList = {
   Auth: { screen: 'Login' | 'Signup' };
@@ -37,6 +36,7 @@ export function Messages() {
   const [viewRecordModalVisible, setViewRecordModalVisible] = useState(false);
   const [contacts, setContacts] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
+  const scrollViewRef = useRef<ScrollView>(null);
 
 
   const handleAttachPress = () => {
@@ -49,13 +49,37 @@ export function Messages() {
     setViewRecordModalVisible(true);
   };
 
-  const handleSendMessage = () => {
-    // Implement sending logic with attachedRecord
-    console.log('Message:', newMessage, 'Attached:', attachedRecord);
-    setNewMessage('');
-    setAttachedRecord(null);
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() && !attachedRecord) return; // prevent empty sends
+
+    const messageToSend = {
+      sender: user?.email,
+      receiver: selectedContact.email,
+      message: newMessage.trim() || null,
+      attachment: attachedRecord || null,
+      timestamp: new Date().toISOString(),
+    };
+
+    try {
+      await axios.post('http://192.168.0.84:3000/send-message', messageToSend);
+
+      // Optimistically update UI
+      setMessages(prev => [...prev, messageToSend]);
+
+      // Clear input and attachment
+      setNewMessage('');
+      setAttachedRecord(null);
+    } catch (error) {
+      console.error('Failed to send message:', error);
+    }
   };
 
+  useEffect(() => {
+    if (scrollViewRef.current) {
+      scrollViewRef.current.scrollToEnd({ animated: true });
+    }
+  }, [messages]);
+  
 
   const handleSelectContact = async (contact: any) => {
     setSelectedContact(contact);
@@ -262,7 +286,11 @@ export function Messages() {
 
                   {/* Scrollable Messages */}
                   <View style={styles.messagesArea}>
-                    <ScrollView contentContainerStyle={{ paddingBottom: 10 }} showsVerticalScrollIndicator={false}>
+                    <ScrollView
+                      ref={scrollViewRef}
+                      contentContainerStyle={{ paddingBottom: 10 }}
+                      showsVerticalScrollIndicator={false}
+                    >
 
                       <View style={styles.bubbleContainer}>
                         {messages.map((msg, index) => {
@@ -285,7 +313,7 @@ export function Messages() {
                                   {msg.message}
                                 </Text>
                               )}
-                          
+
                               {msg.attachment && (
                                 <View style={[styles.attachedBlock, { backgroundColor: theme.colors.attachmentBlockBackground }]}>
                                   <Text style={[styles.attachmentTitle, { color: theme.colors.text }]}>
@@ -302,7 +330,7 @@ export function Messages() {
                                 </View>
                               )}
                             </View>
-                          );                          
+                          );
 
                         })}
                       </View>
@@ -436,7 +464,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#cccccc44',
+    backgroundColor: '#00000044',
     marginRight: 12,
   },
   contactName: {
