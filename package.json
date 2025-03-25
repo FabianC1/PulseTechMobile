@@ -22,7 +22,9 @@
     "expo": "~52.0.11",
     "expo-asset": "~11.0.1",
     "expo-dev-client": "~5.0.4",
+    "expo-device": "~7.0.2",
     "expo-image-picker": "~16.0.6",
+    "expo-notifications": "~0.29.14",
     "expo-splash-screen": "~0.29.13",
     "expo-system-ui": "~4.0.4",
     "react": "18.3.1",
@@ -42,9 +44,7 @@
     "react-native-svg": "^15.11.2",
     "react-native-vector-icons": "^10.2.0",
     "react-native-web": "~0.19.13",
-    "styled-components": "^6.1.15",
-    "expo-notifications": "~0.29.14",
-    "expo-device": "~7.0.2"
+    "styled-components": "^6.1.15"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

@@ -7,7 +7,9 @@ import {
   TextInput,
   RefreshControl,
   ScrollView,
-  Image
+  Image,
+  Platform,
+  Dimensions
 } from 'react-native';
 import { useTheme } from 'styled-components/native';
 import LinearGradient from 'react-native-linear-gradient';
@@ -37,6 +39,11 @@ export function Messages() {
   const [contacts, setContacts] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
   const scrollViewRef = useRef<ScrollView>(null);
+
+  const screenHeight = Dimensions.get('window').height;
+
+  const keyboardVerticalOffset = screenHeight; // Pushes up as much as possible
+
 
 
   const handleAttachPress = () => {
@@ -79,7 +86,7 @@ export function Messages() {
       scrollViewRef.current.scrollToEnd({ animated: true });
     }
   }, [messages]);
-  
+
 
   const handleSelectContact = async (contact: any) => {
     setSelectedContact(contact);
@@ -250,8 +257,10 @@ export function Messages() {
                 contentContainerStyle={styles.chatFullPage}
                 keyboardShouldPersistTaps="handled"
                 enableOnAndroid
-                extraScrollHeight={20}
+                extraScrollHeight={170}
+                {...({ keyboardVerticalOffset } as any)}
               >
+
                 <View style={[styles.chatBox, { borderColor: theme.colors.border }]}>
                   {/* Header Row */}
                   <View style={styles.chatHeaderRow}>
