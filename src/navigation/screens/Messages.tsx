@@ -196,7 +196,18 @@ export function Messages() {
                     contentContainerStyle={{ paddingBottom: 10 }}
                     showsVerticalScrollIndicator={false}
                   >
-                    <Text style={{ color: theme.colors.text, opacity: 0.5 }}>(Messages appear here)</Text>
+                    <View style={styles.bubbleContainer}>
+                      {/* Received message */}
+                      <View style={styles.receivedBubble}>
+                        <Text style={styles.bubbleText}>Hello!</Text>
+                      </View>
+
+                      {/* Sent message */}
+                      <View style={styles.sentBubble}>
+                        <Text style={styles.bubbleText}>Hi, how are you?</Text>
+                      </View>
+                    </View>
+
                   </ScrollView>
                 </View>
 
@@ -217,16 +228,19 @@ export function Messages() {
                     }]}
                   />
 
-                  <LinearGradient
-                    colors={['#0091ff', '#8400ff']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={styles.sendButton}
+                  <TouchableOpacity
+                    onPress={() => { }}
+                    style={[
+                      styles.sendButton,
+                      {
+                        backgroundColor: theme.colors.primary,
+                        paddingHorizontal: 10, // increase for more width
+                      },
+                    ]}
                   >
-                    <TouchableOpacity onPress={() => { }} style={{ paddingHorizontal: 10 }}>
-                      <Text style={styles.sendText}>Send</Text>
-                    </TouchableOpacity>
-                  </LinearGradient>
+                    <Text style={styles.sendText}>Send</Text>
+                  </TouchableOpacity>
+
                 </View>
               </View>
             </KeyboardAwareScrollView>
@@ -438,4 +452,33 @@ const styles = StyleSheet.create({
     marginTop: 4,
     borderRadius: 15,
   },
+  bubbleContainer: {
+    gap: 10,
+    flexDirection: 'column',
+  },
+
+  receivedBubble: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#ffffff22',
+    padding: 10,
+    borderRadius: 16,
+    borderBottomLeftRadius: 2,
+    maxWidth: '80%',
+  },
+
+  sentBubble: {
+    alignSelf: 'flex-end',
+    backgroundColor: '#8a5fff',
+    padding: 10,
+    borderRadius: 16,
+    borderBottomRightRadius: 2,
+    maxWidth: '80%',
+  },
+
+  bubbleText: {
+    color: '#fff',
+    fontSize: 15,
+  },
+
+
 });
