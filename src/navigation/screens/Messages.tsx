@@ -90,16 +90,31 @@ export function Messages() {
             <View style={styles.contactsFullPage}>
               <Text style={[styles.panelTitle, { color: theme.colors.text }]}>Contacts</Text>
 
-              <ScrollView style={{ marginTop: 10 }}>
-                {['Contact A', 'Contact B', 'Contact C', 'Contact D', 'Contact E'].map((name, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={styles.contactRow}
-                    onPress={() => setSelectedContact(name)}
-                  >
-                    <View style={styles.avatarPlaceholder} />
-                    <Text style={[styles.contactName, { color: theme.colors.text }]}>{name}</Text>
-                  </TouchableOpacity>
+              <ScrollView
+                style={{ flex: 1, marginTop: 10 }}
+                contentContainerStyle={{ paddingBottom: 20 }}
+                showsVerticalScrollIndicator={false}
+              >
+                {['Contact A', 'Contact B', 'Contact C', 'Contact D', 'Contact E', 'Contact A', 'Contact B', 'Contact C', 'Contact D', 'Contact E'].map((name, index, array) => (
+                  <View key={index}>
+                    <TouchableOpacity
+                      style={styles.contactRow}
+                      onPress={() => setSelectedContact(name)}
+                    >
+                      <View style={styles.avatarPlaceholder} />
+                      <Text style={[styles.contactName, { color: theme.colors.text }]}>{name}</Text>
+                    </TouchableOpacity>
+
+                    {/* Gradient Separator */}
+                    {index < array.length - 1 && (
+                      <LinearGradient
+                        colors={['#0091ff', '#8400ff']}
+                        style={styles.gradientSeparator}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                      />
+                    )}
+                  </View>
                 ))}
               </ScrollView>
             </View>
@@ -114,10 +129,17 @@ export function Messages() {
                   <Icon name="arrow-back" size={24} color={theme.colors.primary} />
                 </TouchableOpacity>
 
-                <Text style={[styles.chatTitle, { color: theme.colors.text }]}>
-                  Chat with {selectedContact}
-                </Text>
+                <View style={styles.chatTitleContainer}>
+                  <Text style={[styles.chatTitle, { color: theme.colors.text }]}>
+                    Chat with {selectedContact}
+                  </Text>
+                </View>
+
+                <View style={styles.avatarWrapper}>
+                  <View style={styles.avatarPlaceholder} />
+                </View>
               </View>
+
 
 
               {/* Scrollable Messages */}
@@ -170,19 +192,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 20,
   },
-
   contactsFullPage: {
-    position: 'absolute',
-    marginTop: 30,
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    flex: 1,
     padding: 20,
-    backgroundColor: '#00000010', // Optional for semi-transparent feel
-    height: '1200%',
+    width: '100%',
   },
-
   chatFullPage: {
     position: 'absolute',
     top: 0,
@@ -192,17 +206,19 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#00000010',
     justifyContent: 'flex-end',
-    height: '86%',
+    height: '90%',
   },
-
-
+  gradientSeparator: {
+    height: 3,
+    width: '100%',
+    marginVertical: 8,
+    borderRadius: 15,
+  },
   // Contact Row
   contactRow: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ffffff22',
   },
   avatarPlaceholder: {
     width: 40,
@@ -296,7 +312,19 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     flex: 1,
-    textAlign: 'right',
+    marginTop: 5,
+  },
+  chatTitleContainer: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  avatarWrapper: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    overflow: 'hidden',
+    backgroundColor: '#cccccc44',
+    marginLeft: 8,
   },
 
 });
