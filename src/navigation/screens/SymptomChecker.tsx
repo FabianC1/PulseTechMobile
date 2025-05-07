@@ -24,7 +24,7 @@ export function SymptomChecker() {
 
   const startDiagnosis = async () => {
     try {
-      const res = await fetch('http://192.168.0.84:3000/start-diagnosis', {
+      const res = await fetch('http://10.249.112.253:3000/start-diagnosis', {
         method: 'POST',
       });
       const data = await res.json();
@@ -40,7 +40,7 @@ export function SymptomChecker() {
     if (!userInput.trim()) return;
     setLoading(true);
     try {
-      const res = await fetch('http://192.168.0.84:3000/answer-question', {
+      const res = await fetch('http://10.249.112.253:3000/answer-question', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userInput: userInput.toLowerCase() }),

@@ -69,7 +69,7 @@ export function MedicalRecords() {
       setRefreshing(true);
 
       const response = await fetch(
-        `http://192.168.0.84:3000/get-medical-records?email=${encodeURIComponent(user.email)}`,
+        `http://10.249.112.253:3000/get-medical-records?email=${encodeURIComponent(user.email)}`,
         {
           method: "GET",
           headers: { "Content-Type": "application/json" },
@@ -131,7 +131,7 @@ export function MedicalRecords() {
         medications: medicalRecords?.medications || [], // untouched
       };
 
-      const response = await fetch("http://192.168.0.84:3000/save-medical-records", {
+      const response = await fetch("http://10.249.112.253:3000/save-medical-records", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

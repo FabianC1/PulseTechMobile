@@ -86,7 +86,7 @@ export function Settings({ isDarkMode, toggleTheme }: SettingsProps) {
   const fetchProfilePicture = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://192.168.0.84:3000/getUserProfile', {
+      const response = await fetch('http://10.249.112.253:3000/getUserProfile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: user?.email }),
@@ -127,7 +127,7 @@ export function Settings({ isDarkMode, toggleTheme }: SettingsProps) {
         formData.append("profilePicture", blob, "profile.jpg");
   
         // Upload request
-        const uploadResponse = await fetch("http://192.168.0.84:3000/updateProfilePicture", {
+        const uploadResponse = await fetch("http://10.249.112.253:3000/updateProfilePicture", {
           method: "POST",
           body: formData, // ✅ Do NOT manually set `Content-Type`
         });
@@ -156,7 +156,7 @@ export function Settings({ isDarkMode, toggleTheme }: SettingsProps) {
 
     try {
       setLoading(true);
-      const response = await fetch("http://192.168.0.84:3000/removeProfilePicture", {
+      const response = await fetch("http://10.249.112.253:3000/removeProfilePicture", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: user.email }),
@@ -192,7 +192,7 @@ export function Settings({ isDarkMode, toggleTheme }: SettingsProps) {
         updatedData.password = undefined;
       }
   
-      const response = await fetch("http://192.168.0.84:3000/updateProfile", {
+      const response = await fetch("http://10.249.112.253:3000/updateProfile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedData),

@@ -124,7 +124,7 @@ export function Medication() {
 
   const fetchPatients = async () => {
     try {
-      const response = await fetch('http://192.168.0.84:3000/get-patients');
+      const response = await fetch('http://10.249.112.253:3000/get-patients');
       const data = await response.json();
 
       if (response.ok && Array.isArray(data)) {
@@ -220,7 +220,7 @@ export function Medication() {
     if (!user?.email) return;
     try {
       const res = await axios.get<{ medications: MedicationItem[] }>(
-        `http://192.168.0.84:3000/get-medical-records?email=${user.email}`
+        `http://10.249.112.253:3000/get-medical-records?email=${user.email}`
       );
 
       setMedications(res.data.medications || []);
@@ -248,7 +248,7 @@ export function Medication() {
   const markAsTaken = async (medName: string) => {
     if (!user?.email) return;
     try {
-      await axios.post('http://192.168.0.84:3000/mark-medication-taken', {
+      await axios.post('http://10.249.112.253:3000/mark-medication-taken', {
         email: user.email,
         medicationName: medName,
       });
@@ -266,7 +266,7 @@ export function Medication() {
   const markAsMissed = async (medName: string) => {
     if (!user?.email) return;
     try {
-      await axios.post('http://192.168.0.84:3000/mark-medication-missed', {
+      await axios.post('http://10.249.112.253:3000/mark-medication-missed', {
         email: user.email,
         medicationName: medName,
       });
@@ -424,7 +424,7 @@ export function Medication() {
 
     try {
       const response = await axios.get<{ medications: string[] }[]>(
-        `http://192.168.0.84:3000/collections/Medications?name=${encodeURIComponent(query)}`
+        `http://10.249.112.253:3000/collections/Medications?name=${encodeURIComponent(query)}`
       );
 
       const data = response.data;
@@ -469,7 +469,7 @@ export function Medication() {
     };
 
     try {
-      const response = await axios.post("http://192.168.0.84:3000/save-medication", {
+      const response = await axios.post("http://10.249.112.253:3000/save-medication", {
         email,
         medication,
       });

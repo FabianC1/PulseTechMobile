@@ -52,7 +52,7 @@ export function Messages() {
 
     try {
       const response = await axios.get<{ record: any }>(
-        'http://192.168.0.84:3000/get-medical-records',
+        'http://10.249.112.253:3000/get-medical-records',
         {
           params: { email: user.email }
         }
@@ -87,7 +87,7 @@ export function Messages() {
     };
 
     try {
-      await axios.post('http://192.168.0.84:3000/send-message', messageToSend);
+      await axios.post('http://10.249.112.253:3000/send-message', messageToSend);
 
       // Optimistically update UI
       setMessages(prev => [...prev, messageToSend]);
@@ -111,7 +111,7 @@ export function Messages() {
     setSelectedContact(contact);
 
     try {
-      const response = await axios.get('http://192.168.0.84:3000/get-messages', {
+      const response = await axios.get('http://10.249.112.253:3000/get-messages', {
         params: {
           sender: user?.email,
           recipient: contact.email,
@@ -128,7 +128,7 @@ export function Messages() {
     if (!user) return;
 
     try {
-      const response = await axios.get(`http://192.168.0.84:3000/get-contacts`, {
+      const response = await axios.get(`http://10.249.112.253:3000/get-contacts`, {
         params: { email: user.email }
       });
       setContacts(response.data as any[]);

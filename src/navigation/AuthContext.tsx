@@ -78,7 +78,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // ✅ Login Function
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      const response = await fetch("http://192.168.0.84:3000/login", {
+      const response = await fetch("http://10.249.112.253:3000/login", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -105,7 +105,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // ✅ Signup Function
   const signup = async (userData: any): Promise<boolean> => {
     try {
-      const response = await fetch("http://192.168.0.84:3000/register", {
+      const response = await fetch("http://10.249.112.253:3000/register", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData),

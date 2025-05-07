@@ -42,7 +42,7 @@ export function HealthDashboard() {
   const fetchHealthDashboard = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://192.168.0.84:3000/get-health-dashboard?email=${user?.email}`);
+      const response = await fetch(`http://10.249.112.253:3000/get-health-dashboard?email=${user?.email}`);
       const data = await response.json();
 
 

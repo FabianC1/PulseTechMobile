@@ -74,7 +74,7 @@ export function Appointments() {
 
   const fetchPatients = async () => {
     try {
-      const res = await fetch('http://192.168.0.84:3000/get-patients');
+      const res = await fetch('http://10.249.112.253:3000/get-patients');
       const data = await res.json();
       setPatientsList(data);
     } catch (error) {
@@ -84,7 +84,7 @@ export function Appointments() {
 
   const fetchDoctors = async () => {
     try {
-      const res = await fetch('http://192.168.0.84:3000/get-doctors');
+      const res = await fetch('http://10.249.112.253:3000/get-doctors');
       const data = await res.json();
       setDoctorsList(data);
     } catch (error) {
@@ -96,7 +96,7 @@ export function Appointments() {
     if (!user?.email) return;
   
     try {
-      const res = await fetch(`http://192.168.0.84:3000/get-appointments?email=${user.email}`);
+      const res = await fetch(`http://10.249.112.253:3000/get-appointments?email=${user.email}`);
       const data = await res.json();
   
       const filtered = data.filter((a: any) =>
@@ -166,7 +166,7 @@ export function Appointments() {
         status: 'Scheduled',
       };
 
-      const res = await fetch('http://192.168.0.84:3000/create-appointment', {
+      const res = await fetch('http://10.249.112.253:3000/create-appointment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -218,7 +218,7 @@ export function Appointments() {
         status: 'Scheduled',
       };
 
-      const res = await fetch('http://192.168.0.84:3000/create-appointment', {
+      const res = await fetch('http://10.249.112.253:3000/create-appointment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -250,7 +250,7 @@ export function Appointments() {
 
   const markAppointmentCompleted = async (appointmentId: string) => {
     try {
-      const res = await fetch('http://192.168.0.84:3000/update-appointment-status', {
+      const res = await fetch('http://10.249.112.253:3000/update-appointment-status', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ appointmentId, status: 'Completed' }),

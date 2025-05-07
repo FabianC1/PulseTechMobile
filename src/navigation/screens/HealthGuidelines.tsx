@@ -12,7 +12,7 @@ export function HealthGuidelines() {
   useEffect(() => {
     const fetchHealthGuidelines = async () => {
       try {
-        const response = await fetch("http://192.168.0.84:3000/collections/HealthAndWellnessGuidelines");
+        const response = await fetch("http://10.249.112.253:3000/collections/HealthAndWellnessGuidelines");
         const data = await response.json();
 
         if (data && data[0] && data[0].healthAndWellnessGuidelines) {

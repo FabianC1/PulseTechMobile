@@ -12,7 +12,7 @@ export function TermsConditions() {
   useEffect(() => {
     const fetchTerms = async () => {
       try {
-        const response = await fetch("http://192.168.0.84:3000/collections/legalDocs");
+        const response = await fetch("http://10.249.112.253:3000/collections/legalDocs");
         const data = await response.json();
 
         if (data && data[0] && data[0].termsAndConditions) {

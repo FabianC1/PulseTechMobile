@@ -12,7 +12,7 @@ export function PrivacySecurity() {
   useEffect(() => {
     const fetchPrivacySecurity = async () => {
       try {
-        const response = await fetch("http://192.168.0.84:3000/collections/PrivacyAndSecurity");
+        const response = await fetch("http://10.249.112.253:3000/collections/PrivacyAndSecurity");
         const data = await response.json();
 
         if (data && data[0] && data[0].privacyAndSecurity) {
