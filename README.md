@@ -1,65 +1,84 @@
-# Starter Template with React Navigation
+# PulseTechMobile
 
-This is a minimal starter template for React Native apps using Expo and React Navigation.
+An Android mobile application developed using React Native and Expo.
 
-It includes the following:
+## Project Overview
+PulseTechMobile is the mobile extension of the PulseTech healthcare platform. Designed for daily clinical and patient use, the app provides real-time features such as medication tracking, appointment scheduling, secure messaging, and medical record viewing — all customized based on user roles (Doctor, Patient, Admin).
 
-- Example [Native Stack](https://reactnavigation.org/docs/native-stack-navigator) with a nested [Bottom Tab](https://reactnavigation.org/docs/bottom-tab-navigator)
-- Web support with [React Native for Web](https://necolas.github.io/react-native-web/)
-- TypeScript support and configured for React Navigation
-- Automatic deep link and URL handling configuration
-- Expo [Development Build](https://docs.expo.dev/develop/development-builds/introduction/) with [Continuous Native Generation](https://docs.expo.dev/workflow/continuous-native-generation/)
-- Edge-to-edge configured on Android with [`react-native-edge-to-edge`](https://www.npmjs.com/package/react-native-edge-to-edge)
+## Features and Implementation
 
-## Getting Started
+### General Architecture
+- Built with **React Native + TypeScript**, using **Expo** for rapid development and testing.
+- Modular folder structure:
+  - `screens/`: Full-view pages (e.g., Medications, Appointments, Messages)
+  - `components/`: Reusable UI elements (e.g., MedicationCard, MessageBubble)
+  - `services/`: API handlers and notification logic
+  - `context/`: Global state with role-based access
+  - `navigation/`: Stack + Drawer navigation with conditional routing
 
-1. Create a new project using this template:
+### Authentication & Role-Based Navigation
+- Authenticated via backend `/login` endpoint
+- Global context stores user role
+- Drawer and stack navigators render different screens based on role (e.g. patient vs. doctor)
 
-   ```sh
-   npx create-expo-app@latest --template react-navigation/template
-   ```
+### Key Screens & Features
 
-2. Edit the `app.json` file to configure the `name`, `slug`, `scheme` and bundle identifiers (`ios.bundleIdentifier` and `android.bundleIdentifier`) for your app.
+#### Appointments
+- Patients request appointments via a form
+- Doctors approve and mark as completed
+- Features:
+  - Scrollable appointment list
+  - Button state management
+  - 24hr prior notifications via `NotificationService`
 
-3. Edit the `src/App.tsx` file to start working on your app.
+#### Medications
+- Medication cards display:
+  - Name, dosage, diagnosis, frequency
+  - Countdown to next dose
+- Role-specific features:
+  - Doctors prescribe via dynamic form
+  - Patients mark as taken or system auto-logs missed
+- Hidden local time simulation for testing (+10m, +1h, +4h, Reset)
 
-## Running the app
+#### Messaging
+- Real-time chat with auto-scrolling UI
+- Role-colored chat bubbles with timestamps
+- Attach latest medical record to messages
+- Modal-based viewing of attached records
 
-- Install the dependencies:
+#### Medical Records
+- View personal medical history, lifestyle data, and prescriptions
+- Scrollable layout with sectioned cards
+- Galaxy Watch 6 integration placeholder added
 
-  ```sh
-  npm install
-  ```
+### Notifications
+- Medication reminders sent at `timeToTake`
+- Appointment reminders sent 24 hours in advance
+- Centralized in `NotificationService.ts`
+- Time simulation affects local state (not backend)
 
-- Start the development server:
+### Custom UI/UX Components
+- Role-filtered drawer navigation
+- Custom alert system
+- Pull-to-refresh
+- Modals and keyboard-aware layouts
 
-  ```sh
-  npm start
-  ```
+## Tech Stack
+- React Native (with Expo)
+- TypeScript
+- Axios
+- React Navigation
+- React Context API
+- Android Emulator / Physical Devices
 
-- Build and run iOS and Android development builds:
-
-  ```sh
-  npm run ios
-  # or
-  npm run android
-  ```
-
-- In the terminal running the development server, press `i` to open the iOS simulator, `a` to open the Android device or emulator, or `w` to open the web browser.
+## How to Run
+1. Clone the repository.
+2. Install dependencies:  
+   `npm install`
+3. Start Expo:  
+   `npx expo start`
+4. Scan the QR code with Expo Go or run on Android Emulator.
 
 ## Notes
+PulseTechMobile was developed to meet the final year dissertation goals (Objectives 2–6) and represents a significant evolution from static healthcare apps. It includes over 600 commits, reflecting continuous testing, refinement, and real-world UX consideration.
 
-This project uses a [development build](https://docs.expo.dev/develop/development-builds/introduction/) and cannot be run with [Expo Go](https://expo.dev/go). To run the app with Expo Go, edit the `package.json` file, remove the `expo-dev-client` package and `--dev-client` flag from the `start` script. However, Edge-to-edge won't work on Expo Go.
-
-We highly recommend using the development builds for normal development and testing.
-
-The `ios` and `android` folder are gitignored in the project by default as they are automatically generated during the build process ([Continuous Native Generation](https://docs.expo.dev/workflow/continuous-native-generation/)). This means that you should not edit these folders directly and use [config plugins](https://docs.expo.dev/config-plugins/) instead. However, if you need to edit these folders, you can remove them from the `.gitignore` file so that they are tracked by git.
-
-## Resources
-
-- [React Navigation documentation](https://reactnavigation.org/)
-- [Expo documentation](https://docs.expo.dev/)
-
----
-
-Demo assets are from [lucide.dev](https://lucide.dev/)
